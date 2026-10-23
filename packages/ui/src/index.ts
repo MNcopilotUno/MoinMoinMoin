@@ -8,3 +8,5 @@ export { default as FenderSprite } from './components/FenderSprite.svelte';
 export { default as MoinBubble } from './components/MoinBubble.svelte';
 export { default as Stars } from './components/Stars.svelte';
 export { default as IconButton } from './components/IconButton.svelte';
+export { duration, frameAt, LOOT_TICKS, TAIL_TICKS } from './timeline.js';
+export type { Frame } from './timeline.js';

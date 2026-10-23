@@ -9,7 +9,7 @@
   "scripts": {
     "prepare": "git config core.hooksPath .githooks || true",
     "build": "pnpm --filter @moin/moin-moin-moin build",
-    "test": "pnpm -r --filter ./packages/* test",
+    "test": "pnpm -r --filter \"./packages/**\" test",
     "test:e2e": "pnpm --filter @moin/moin-moin-moin test:e2e",
     "test:offline": "pnpm --filter @moin/moin-moin-moin test:offline",
     "validate:levels": "pnpm --filter @moin/levels validate",
