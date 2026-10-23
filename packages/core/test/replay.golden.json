@@ -1,0 +1,288 @@
+{
+ "events": [
+  [
+   {
+    "type": "greeted",
+    "t": 0,
+    "px": 6,
+    "py": 6,
+    "x": 0,
+    "y": 0,
+    "source": "tap",
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 0,
+    "px": 6,
+    "py": 6,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "type": "launched",
+    "t": 9,
+    "px": 6,
+    "py": 6,
+    "x": 0,
+    "y": 0,
+    "dir": "E"
+   },
+   {
+    "type": "bounced",
+    "t": 45,
+    "px": 42,
+    "py": 6,
+    "x": 3,
+    "y": 0,
+    "dir": "S"
+   },
+   {
+    "type": "greeted",
+    "t": 63,
+    "px": 42,
+    "py": 24,
+    "x": 3,
+    "y": 2,
+    "source": "moin",
+    "greetings": 1,
+    "needs": 2
+   },
+   {
+    "type": "chainEnded",
+    "t": 63,
+    "px": 42,
+    "py": 24,
+    "reason": "waiting"
+   }
+  ],
+  [],
+  [
+   {
+    "type": "greeted",
+    "t": 0,
+    "px": 66,
+    "py": 54,
+    "x": 5,
+    "y": 4,
+    "source": "tap",
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 0,
+    "px": 66,
+    "py": 54,
+    "x": 5,
+    "y": 4
+   },
+   {
+    "type": "launched",
+    "t": 9,
+    "px": 66,
+    "py": 54,
+    "x": 5,
+    "y": 4,
+    "dir": "W"
+   },
+   {
+    "type": "greeted",
+    "t": 39,
+    "px": 36,
+    "py": 54,
+    "x": 2,
+    "y": 4,
+    "source": "moin",
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 39,
+    "px": 30,
+    "py": 54,
+    "x": 2,
+    "y": 4
+   },
+   {
+    "type": "launched",
+    "t": 48,
+    "px": 30,
+    "py": 54,
+    "x": 2,
+    "y": 4,
+    "dir": "N"
+   },
+   {
+    "type": "chainEnded",
+    "t": 102,
+    "px": 30,
+    "py": 0,
+    "reason": "edge"
+   }
+  ],
+  [
+   {
+    "type": "greeted",
+    "t": 0,
+    "px": 66,
+    "py": 30,
+    "x": 5,
+    "y": 2,
+    "source": "tap",
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 0,
+    "px": 66,
+    "py": 30,
+    "x": 5,
+    "y": 2
+   },
+   {
+    "type": "launched",
+    "t": 9,
+    "px": 66,
+    "py": 30,
+    "x": 5,
+    "y": 2,
+    "dir": "W"
+   },
+   {
+    "type": "greeted",
+    "t": 27,
+    "px": 48,
+    "py": 30,
+    "x": 3,
+    "y": 2,
+    "source": "moin",
+    "greetings": 2,
+    "needs": 2
+   },
+   {
+    "type": "smiled",
+    "t": 27,
+    "px": 42,
+    "py": 30,
+    "x": 3,
+    "y": 2
+   },
+   {
+    "type": "launched",
+    "t": 36,
+    "px": 42,
+    "py": 30,
+    "x": 3,
+    "y": 2,
+    "dir": "W"
+   },
+   {
+    "type": "bounced",
+    "t": 72,
+    "px": 6,
+    "py": 30,
+    "x": 0,
+    "y": 2,
+    "dir": "S"
+   },
+   {
+    "type": "greeted",
+    "t": 90,
+    "px": 6,
+    "py": 48,
+    "x": 0,
+    "y": 4,
+    "source": "moin",
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 90,
+    "px": 6,
+    "py": 54,
+    "x": 0,
+    "y": 4
+   },
+   {
+    "type": "launched",
+    "t": 99,
+    "px": 6,
+    "py": 54,
+    "x": 0,
+    "y": 4,
+    "dir": "E"
+   },
+   {
+    "type": "stolen",
+    "t": 105,
+    "px": 12,
+    "py": 54,
+    "x": 1,
+    "y": 4
+   },
+   {
+    "type": "chainEnded",
+    "t": 105,
+    "px": 12,
+    "py": 54,
+    "reason": "seagull"
+   }
+  ],
+  [],
+  [
+   {
+    "type": "greeted",
+    "t": 0,
+    "px": 66,
+    "py": 42,
+    "x": 5,
+    "y": 3,
+    "source": "tap",
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 0,
+    "px": 66,
+    "py": 42,
+    "x": 5,
+    "y": 3
+   },
+   {
+    "type": "launched",
+    "t": 9,
+    "px": 66,
+    "py": 42,
+    "x": 5,
+    "y": 3,
+    "dir": "N"
+   },
+   {
+    "type": "chainEnded",
+    "t": 15,
+    "px": 66,
+    "py": 36,
+    "reason": "alreadySmiling"
+   }
+  ],
+  []
+ ],
+ "state": {
+  "greetings": [
+   1,
+   2,
+   1,
+   1,
+   1,
+   1,
+   1
+  ],
+  "taps": 4
+ }
+}
