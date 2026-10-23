@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dev-dist/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.DS_Store
+# audio sources never ship — only the exported, compressed sound does
+*.wav
+*.aiff
+*.flac
+*.als
+*.aup3
+*.rpp

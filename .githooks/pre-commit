@@ -1,0 +1,13 @@
+#!/bin/sh
+# Reject staged files over 5 MB (CLAUDE.md §5.6).
+limit=5242880
+status=0
+for f in $(git diff --cached --name-only --diff-filter=AM); do
+  [ -f "$f" ] || continue
+  size=$(wc -c < "$f")
+  if [ "$size" -gt "$limit" ]; then
+    echo "pre-commit: $f is $size bytes (limit 5 MB) — build output or audio source?" >&2
+    status=1
+  fi
+done
+exit $status
