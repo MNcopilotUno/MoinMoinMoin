@@ -1,0 +1,24 @@
+{
+  "name": "@moin/levels",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts", "./validate": "./src/validate.ts", "./level.schema.json": "./level.schema.json" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc -p .",
+    "validate": "tsx scripts/validate.ts",
+    "gen:types": "tsx scripts/gen-types.ts"
+  },
+  "dependencies": {
+    "@moin/core": "workspace:*",
+    "ajv": "8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "22",
+    "json-schema-to-typescript": "16.0.0",
+    "tsx": "4.23.15",
+    "typescript": "6.0.3",
+    "vitest": "5.0.5"
+  }
+}

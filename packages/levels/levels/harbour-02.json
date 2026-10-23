@@ -1,0 +1,14 @@
+{
+  "formatVersion": "1.0.0",
+  "id": "harbour-02",
+  "title": "Follow the faces",
+  "width": 4,
+  "height": 4,
+  "cells": [
+    {"x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1},
+    {"x": 3, "y": 0, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 0, "y": 3, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 3, "y": 3, "kind": "person", "facing": "W", "needs": 1}
+  ],
+  "par": 1
+}
