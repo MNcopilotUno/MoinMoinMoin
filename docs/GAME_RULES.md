@@ -93,7 +93,8 @@ and decides nothing.
 **R9 — The order of taps does not matter.** Flight paths depend only on the static board, greetings
 only add up, and each person fires once on reaching their threshold, so the final board depends
 only on *how many times* each person was tapped, not in which order (the "abelian" property of a
-sandpile model). `core` carries a fast-check property test that applies random tap sequences and
+sandpile model). The **tap count** can differ between orders: tapping someone a ripple has already
+made smile is ignored (R2), so ripples first is never worse. `core` carries a fast-check property test that applies random tap sequences and
 their shuffles and asserts identical final states. Puzzles are therefore about *where* to start
 ripples, not *when*; if the playtest says that gets samey, the first mechanic added should be one
 where order matters.
