@@ -1,0 +1,20 @@
+/* Palette tokens — mirror of palette.ts. Red (--moin) means Moin and nothing else. */
+:root {
+  --moin: #c8102e;
+  --moin-deep: #9c0c24;
+  --royal: #2346b8;
+  --royal-deep: #183282;
+  --ink: #1c2333;
+  --fog: #eef1f4;
+  --mist: #dfe4ea;
+  --stone: #c3cbd3;
+  --slate: #7c8894;
+  --deep: #4a5664;
+  --water: #c9d6e3;
+  --water-deep: #a9bccf;
+  --sand: #ecdcb8;
+  --sand-deep: #d4bc8c;
+  --wood: #a77b4f;
+  --white: #ffffff;
+  --outline: 3px;
+}

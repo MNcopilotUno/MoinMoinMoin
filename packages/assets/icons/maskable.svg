@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#2346b8"/>
+  <path d="M0 380 Q64 350 128 380 T256 380 T384 380 T512 380 V512 H0Z" fill="#183282"/>
+  <path d="M150 170h212a32 32 0 0 1 32 32v94a32 32 0 0 1-32 32H250l-62 48 9-48h-47a32 32 0 0 1-32-32v-94a32 32 0 0 1 32-32z"
+        fill="#c8102e" stroke="#1c2333" stroke-width="12" stroke-linejoin="round"/>
+  <text x="256" y="276" text-anchor="middle" font-family="Arial Rounded MT Bold, Verdana, sans-serif"
+        font-weight="900" font-size="80" fill="#ffffff">Moin</text>
+</svg>

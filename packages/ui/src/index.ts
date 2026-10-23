@@ -1,0 +1,10 @@
+export { copy } from './copy/en.js';
+export type { Copy } from './copy/en.js';
+export { announceTap, cellLabel, personLabel, roleOf } from './labels.js';
+export { default as Board } from './components/Board.svelte';
+export { default as PersonSprite } from './components/PersonSprite.svelte';
+export { default as SeagullSprite } from './components/SeagullSprite.svelte';
+export { default as FenderSprite } from './components/FenderSprite.svelte';
+export { default as MoinBubble } from './components/MoinBubble.svelte';
+export { default as Stars } from './components/Stars.svelte';
+export { default as IconButton } from './components/IconButton.svelte';
