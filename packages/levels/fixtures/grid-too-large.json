@@ -1,0 +1,2 @@
+{ "formatVersion": "1.0.0", "id": "fixture-09", "title": "Big harbour", "width": 8, "height": 3,
+  "cells": [{ "x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1 }], "par": 1 }

@@ -1,0 +1,2 @@
+{ "formatVersion": "2.0.0", "id": "fixture-12", "title": "From the future", "width": 2, "height": 1,
+  "cells": [{ "x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1 }], "par": 1 }

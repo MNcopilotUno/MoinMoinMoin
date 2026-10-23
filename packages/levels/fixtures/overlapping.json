@@ -1,0 +1,3 @@
+{ "formatVersion": "1.0.0", "id": "fixture-03", "title": "Crowded", "width": 3, "height": 1,
+  "cells": [{ "x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1 },
+            { "x": 0, "y": 0, "kind": "seagull" }], "par": 1 }

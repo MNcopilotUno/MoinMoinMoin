@@ -1,0 +1,55 @@
+harbour-01|First Moin
+.  .  .  .
+E1 E1 .  E1k
+.  .  .  .
+harbour-02|Follow the faces
+E1  .  .  S1m
+.   .  .  .
+.   .  .  .
+E1k .  .  W1
+harbour-03|Two ripples
+E1  .  E1m .  S1
+.   .  .   .  .
+.   .  .   .  .
+W1k .  W1  .  N1
+harbour-04|Cheeky gull
+E1  .  g  E1  .  S1
+.   .  .  .   .  .
+.   .  .  .   .  .
+N1k .  .  W1m .  W1
+harbour-05|The captain
+E1  .  .  S2
+.   .  .  .
+.   .  .  .
+.   E1k . N1
+harbour-06|Upstream
+S1  .  .   .  S1k
+.   .  .   .  .
+E1  .  E1m .  S1
+.   .  .   .  .
+N1k .  .   .  W1
+harbour-07|Fender
+E1  .  .  \
+.   .  .  .
+.   .  .  .
+.   .  .  W1m
+.   E1k . N1
+harbour-08|Round the bend
+E1  .   /   .   S1
+.   .   .   .   .
+.   .   N1m .   .
+.   .   .   .   .
+\   .   W1  .   W1k
+harbour-09|Two for the captain
+E1  .   .   S1m .
+.   .   .   .   .
+.   g   .   W2  .
+.   .   .   .   .
+N1k .   .   \   W1
+harbour-10|Whole harbour awake
+E1  .   .   .   .   \
+.   .   .   g   .   .
+/   .   W2  N1k .   S1m
+.   .   .   .   .   .
+N1  .   N1  W1m .   .
+.   .   .   N1k .   W1
