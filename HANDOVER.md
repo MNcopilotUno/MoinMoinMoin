@@ -18,7 +18,7 @@ _Last session: Phase 0 and Phase 1 built, end to end. Both phase gates are human
 | Sound | Synthesised "Mo-in" (`packages/assets/src/moin-sound.ts`), not a recording |
 | Installable, offline, IndexedDB | Done; `pnpm test:offline` |
 | Reload to update | Done (CLAUDE.md §8) and tested |
-| Deploy | GitHub Actions → GitHub Pages on every push to the default branch |
+| Deploy | GitHub Actions → GitHub Pages on every push to `main` |
 
 Test counts at handover: core 54, levels 31, narration 15, ui 20; e2e 14 (Chromium);
 `validate:levels` 10 levels ok, 12 fixtures fail as expected.
