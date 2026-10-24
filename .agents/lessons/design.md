@@ -7,3 +7,6 @@
   GAME_RULES §7 now says so. Consequence for players: ripples first is never worse.
 - **Under v1 every level with a person is solvable** (tap everyone `needs` times). "Unsolvable
   level" from CLAUDE.md §6 can only mean "no people"; the fixture tests exactly that.
+- **The Phase 1 gate was waived by the owner, not passed** (2026-10-24). Everything in Phase 2 is
+  built on unplaytested assumptions; the first playtest should cover the market set (the
+  chatterbox) as well as level 1.

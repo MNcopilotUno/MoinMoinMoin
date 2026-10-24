@@ -90,10 +90,11 @@ pnpm validate:levels                       # schema + solver on every level; neg
 
 ---
 
-## 4. Game rules — v1 (grid-aligned flight)
+## 4. Game rules — v1.1 (grid-aligned flight)
 
-`docs/GAME_RULES.md` **v1** is the rule book: the *Moin* flies over open water on a fixed integer
-step, bounces off fenders and is stolen by seagulls, and stays fully deterministic. v0 (adjacent
+`docs/GAME_RULES.md` **v1.1** is the rule book: the *Moin* flies over open water on a fixed integer
+step, bounces off fenders and is stolen by seagulls, and stays fully deterministic; a chatterbox's
+*Moin moin* carries two greetings (R13). v0 (adjacent
 only) is kept there as Appendix A, the fallback. The design round that chose v1 is
 `.agents/features/physical-model.md`.
 
@@ -164,7 +165,8 @@ square. A level whose author-claimed par disagrees with the solver is wrong, not
 Negative fixtures in `packages/levels/fixtures/` — the validator must fail each one with a message
 naming the problem: unsolvable level, wrong par, overlapping cells, cell out of bounds, unknown
 `kind`, `needs` outside 1–2, missing `facing` on a person, missing `slant` on a fender, grid
-larger than 7 × 7, more than 16 people, version not `MAJOR.MINOR.PATCH`.
+larger than 7 × 7, more than 16 people, version not `MAJOR.MINOR.PATCH`, unsupported major
+version, a chatterbox in a file older than 1.1.0, `chatterbox` not a boolean.
 Adding a rule without its fixture is a review **blocker**.
 
 ---

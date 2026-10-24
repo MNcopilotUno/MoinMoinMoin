@@ -22,13 +22,15 @@
   const coat = $derived(
     role === 'captain' ? palette.royalDeep : role === 'market' ? palette.sandDeep : role === 'kid' ? palette.royal : palette.royal,
   );
+  // Facing pointer, haloed in white so it reads on every coat and tile (a south pointer used to
+  // vanish into the captain's navy coat).
   const pointer: Record<Facing, string> = {
-    N: '43,9 57,9 50,1', E: '91,43 91,57 99,50', S: '43,91 57,91 50,99', W: '9,43 9,57 1,50',
+    N: '41,11 59,11 50,1', E: '89,41 89,59 99,50', S: '41,89 59,89 50,99', W: '11,41 11,59 1,50',
   };
 </script>
 
 <svg viewBox="0 0 100 100" aria-hidden="true" class="sprite" class:smiling class:half>
-  <polygon points={pointer[facing]} fill={palette.ink} opacity="0.7" />
+
   <!-- shoulders -->
   <path d="M20 100 Q20 72 50 70 Q80 72 80 100 Z" fill={coat} stroke={palette.ink} stroke-width="4" />
   {#if role === 'market'}
@@ -75,6 +77,9 @@
   {:else}
     <path d="M40 60 Q50 53 60 60" fill="none" stroke={palette.ink} stroke-width="4" stroke-linecap="round" />
   {/if}
+
+  <polygon points={pointer[facing]} fill={palette.ink} stroke={palette.white} stroke-width="3"
+    stroke-linejoin="round" paint-order="stroke" />
 
   {#if chatterbox}
     <g class="chatter" stroke={palette.ink} stroke-width="3.5" stroke-linecap="round" fill="none">

@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import { palette } from '@moin/assets';
 import { GAME_NAME, GAME_SHORT_NAME } from '@moin/core';
-import { levels } from '@moin/levels';
-import { freshStart, person, solveCurrent } from './helpers';
+import { dailyLevel, dayId, levels, sets } from '@moin/levels';
+import { freshStart, openLevel, person, solveCurrent, today } from './helpers';
 
 test('cold open → level 1 → first ripple in under ten seconds, no menu, no prompt', async ({ page }) => {
   const started = Date.now();
@@ -85,7 +85,8 @@ test('a tap during the animation is never ignored', async ({ page }) => {
   await expect(page.getByTestId('score')).toContainText('2 taps');
 });
 
-test('all ten levels can be solved at par through the interface, and stars are kept', async ({ page }) => {
+test('all thirty levels can be solved at par through the interface; stars are kept; the story is told', async ({ page }) => {
+  test.setTimeout(180_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('./');
   for (let i = 0; i < levels.length; i++) {
@@ -93,6 +94,7 @@ test('all ten levels can be solved at par through the interface, and stars are k
     const par = await solveCurrent(page, i);
     await expect(page.getByTestId('score')).toContainText(`${par} tap`);
     await expect(page.locator('section.win').getByRole('img', { name: '3 of 3 stars' })).toBeVisible();
+    if (i === 9) await expect(page.getByRole('button', { name: /The harbour is awake/ })).toBeVisible();
     await page.getByRole('button', { name: i === levels.length - 1 ? 'Back to the first level' : 'Next level' }).click();
   }
   await expect(page.locator('h1')).toHaveText(levels[0]!.title);
@@ -129,4 +131,56 @@ test('the web manifest names the game from core and uses the palette', async ({ 
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   expect(html).toContain(`<title>${GAME_NAME}</title>`);
   expect(html).toContain(`content="${palette.royal}"`);
+});
+
+test('level select: three parts of town, star totals, pick any level, Escape closes', async ({ page }) => {
+  await page.goto('./');
+  await solveCurrent(page, 0);
+  await page.getByRole('button', { name: 'Levels' }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading', { level: 3 })).toHaveText([/The harbour/, /The market/, /The ferry/]);
+  await expect(dialog.getByTestId('star-total')).toContainText('3 of 90 stars');
+  await expect(dialog.getByRole('button', { name: /^Level 1, First Moin, 3 of 3 stars$/ })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await openLevel(page, sets[2]!.levels[4]!.title);
+  await expect(page.locator('.level-no')).toHaveText(/The ferry · level 5 of 10/);
+});
+
+test('the fog over the town lifts as its levels are solved', async ({ page }) => {
+  await page.goto('./');
+  const fog = page.locator('.scene .fog');
+  const before = Number(await fog.getAttribute('opacity'));
+  await solveCurrent(page, 0);
+  await expect.poll(async () => Number(await fog.getAttribute('opacity'))).toBeLessThan(before);
+});
+
+test("a chatterbox says Moin moin and wakes the captain with one Moin", async ({ page }) => {
+  await page.goto('./');
+  await openLevel(page, 'Moin moin');
+  const chatty = page.getByRole('button', { name: /chatterbox/ });
+  await chatty.click();
+  await expect(page.getByTestId('moin')).toBeVisible();
+  await expect(page.getByTestId('moin')).toContainText('Moin moin');
+  await expect(page.getByRole('heading', { name: 'Everyone is smiling!' })).toBeVisible();
+  await expect(page.getByTestId('score')).toContainText('1 tap');
+});
+
+test('the daily Moin: same puzzle as the generator, solvable at par, result copied as text', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Levels' }).click();
+  await page.getByRole('button', { name: /Daily Moin/ }).click();
+  const level = dailyLevel(today());
+  await expect(page.locator('.level-no')).toContainText(dayId(today()));
+  await expect(page.locator('button[data-x]')).toHaveCount(level.cells.filter((c) => c.kind === 'person').length);
+  await solveCurrent(page, level);
+  await page.getByRole('button', { name: 'Copy result' }).click();
+  await expect(page.getByText('Copied — paste it anywhere.')).toBeVisible();
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toContain(`daily ${dayId(today())}`);
+  expect(text).toContain('⭐⭐⭐');
+  expect(text).not.toMatch(/https?:/);
+  await page.getByRole('button', { name: 'Back to the town' }).click();
+  await expect(page.locator('h1')).toHaveText(levels[0]!.title);
 });

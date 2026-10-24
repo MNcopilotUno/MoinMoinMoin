@@ -6,10 +6,22 @@
     taps: number;
     par: number;
     last: boolean;
+    nextLabel: string;
     onnext: () => void;
     onreplay: () => void;
+    /** Daily level: copy the emoji result. Resolves to null when copied, or the text to copy by hand. */
+    share?: (() => Promise<string | null>) | null;
   }
-  let { stars, taps, par, last, onnext, onreplay }: Props = $props();
+  let { stars, taps, par, last, nextLabel, onnext, onreplay, share = null }: Props = $props();
+  let shared = $state<'idle' | 'copied' | 'manual'>('idle');
+  let manualText = $state('');
+
+  async function copyResult() {
+    if (!share) return;
+    const left = await share();
+    if (left === null) shared = 'copied';
+    else { manualText = left; shared = 'manual'; }
+  }
 
   function focus(node: HTMLElement) {
     node.focus({ preventScroll: true });
@@ -22,9 +34,19 @@
   <Stars count={stars} />
   <p>{copy.solvedBody(taps, par)}</p>
   {#if last}<p class="done">{copy.allDone}</p>{/if}
+  {#if share}
+    <div class="share">
+      <button type="button" class="secondary" onclick={copyResult}>{copy.copyResult}</button>
+      {#if shared === 'copied'}<p role="status">{copy.copied}</p>{/if}
+      {#if shared === 'manual'}
+        <p role="status">{copy.copyFailed}</p>
+        <textarea readonly rows="8" aria-label={copy.copyResult}>{manualText}</textarea>
+      {/if}
+    </div>
+  {/if}
   <div class="actions">
     <button type="button" class="secondary" onclick={onreplay}>{copy.replay}</button>
-    <button type="button" class="primary" onclick={onnext} use:focus>{last ? copy.fromTheTop : copy.next}</button>
+    <button type="button" class="primary" onclick={onnext} use:focus>{nextLabel}</button>
   </div>
 </section>
 
@@ -42,6 +64,9 @@
   h2 { margin: 0 0 0.4rem; font-size: 1.35rem; }
   p { margin: 0.5rem 0 0; }
   .done { font-style: italic; color: var(--deep); }
+  .share { margin-top: 0.8rem; }
+  .share p { font-size: 0.9rem; color: var(--deep); }
+  textarea { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; border: 2px solid var(--stone); border-radius: 8px; padding: 0.4rem; }
   .actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.9rem; }
   button {
     min-height: 48px; padding: 0 1.1rem; border-radius: 14px; font: inherit; font-weight: 800; cursor: pointer;

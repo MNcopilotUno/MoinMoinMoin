@@ -10,3 +10,6 @@ export { default as Stars } from './components/Stars.svelte';
 export { default as IconButton } from './components/IconButton.svelte';
 export { duration, frameAt, LOOT_TICKS, TAIL_TICKS } from './timeline.js';
 export type { Frame } from './timeline.js';
+export { noteFor, TUNE } from './tune.js';
+export { shareText } from './share.js';
+export { default as Scene } from './components/Scene.svelte';

@@ -1,13 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { createGame, initialState, isSolved, personAt, stars, tap, TICKS_PER_SECOND } from '@moin/core';
+  import { createGame, initialState, isSolved, stars, tap, TICKS_PER_SECOND } from '@moin/core';
   import type { Game, MoinEvent, State } from '@moin/core';
-  import { levels, toBoard } from '@moin/levels';
+  import { dailyLevel, dayId, levels, sets, setOf, toBoard } from '@moin/levels';
+  import type { Level } from '@moin/levels';
   import { freshMemory, pickLine, triggerForTap } from '@moin/narration';
   import type { Cue, Line, NarratorMemory } from '@moin/narration';
-  import { announceTap, Board, copy, frameAt, IconButton, roleOf, Stars } from '@moin/ui';
+  import { announceTap, Board, copy, frameAt, IconButton, noteFor, Scene, shareText, Stars } from '@moin/ui';
   import type { Frame } from '@moin/ui';
   import Icons from './components/Icons.svelte';
+  import LevelSelect from './components/LevelSelect.svelte';
   import Narrator from './components/Narrator.svelte';
   import UpdateToast from './components/UpdateToast.svelte';
   import WinCard from './components/WinCard.svelte';
@@ -23,7 +25,10 @@
   }
 
   let ready = $state(false);
+  /** Index into the story's `levels`, or -1 while playing the daily level. */
   let levelIndex = $state(0);
+  let level = $state.raw<Level>(levels[0]!);
+  let picking = $state(false);
   const firstGame = createGame(toBoard(levels[0]!));
   let game = $state.raw<Game>(firstGame);
   let current = $state.raw<State>(initialState(firstGame));
@@ -41,7 +46,21 @@
   let announcement = $state('');
   let applyUpdate = $state.raw<(() => void) | null>(null);
 
-  const level = $derived(levels[levelIndex]!);
+  const today = (() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+  })();
+  /** The daily level for the player's local calendar day; null if the generator found none. */
+  const daily: Level | null = (() => {
+    try {
+      return dailyLevel(today);
+    } catch {
+      return null;
+    }
+  })();
+  const isDaily = $derived(levelIndex < 0);
+  const set = $derived(setOf(level.id));
+  const solvedIn = (ids: readonly Level[]) => ids.filter((l) => best[l.id]).length;
   const frame = $derived<Frame | null>(playback ? frameAt(playback.events, tick) : null);
   const greetings = $derived.by(() => {
     if (!playback || !frame) return current.greetings;
@@ -51,6 +70,7 @@
     );
   });
   const solved = $derived(playback === null && isSolved(game, current));
+  const fog = $derived(set ? 0.85 * (1 - solvedIn(set.levels) / set.levels.length) : solved ? 0 : 0.45);
   const bestStars = $derived(best[level.id] ? stars(best[level.id]!.bestTaps, level.par) : 0);
 
   function say(cue: Cue) {
@@ -62,14 +82,30 @@
     }
   }
 
-  function startLevel(index: number) {
+  function play(next: Level, index: number) {
     finishPlayback(false);
+    picking = false;
     levelIndex = index;
-    game = createGame(toBoard(levels[index]!));
+    level = next;
+    game = createGame(toBoard(next));
     current = initialState(game);
     history = [];
     announcement = '';
-    say({ trigger: 'levelStart', levelId: levels[index]!.id });
+    say(index < 0 ? { trigger: 'dailyStart' } : { trigger: 'levelStart', levelId: next.id });
+  }
+
+  function startLevel(index: number) {
+    play(levels[index]!, index);
+  }
+
+  function startDaily() {
+    if (daily) play(daily, -1);
+  }
+
+  /** The first level of the story not solved yet (level 1 when everything is). */
+  function firstUnsolved(progress: Record<string, LevelProgress>): number {
+    const i = levels.findIndex((l) => !progress[l.id]);
+    return i < 0 ? 0 : i;
   }
 
   /** Stop animating; `narrate` decides whether the finished tap gets its remark. */
@@ -85,8 +121,10 @@
   function afterTap(events: readonly MoinEvent[]) {
     if (isSolved(game, current)) {
       const taps = current.taps;
-      say({ trigger: taps <= level.par ? 'solvedPar' : 'solvedOver' });
       const id = level.id;
+      const wasDone = set ? solvedIn(set.levels) === set.levels.length : true;
+      const finishesSet = set !== undefined && !wasDone && set.levels.every((l) => l.id === id || best[l.id]);
+      say(finishesSet ? { trigger: 'setComplete', levelId: set.id } : { trigger: taps <= level.par ? 'solvedPar' : 'solvedOver' });
       void saveSolved(id, taps).then((levelsBest) => (best = levelsBest));
       return;
     }
@@ -100,11 +138,9 @@
     const f = frameAt(playback.events, tick, lastTick);
     lastTick = tick;
     if (muted !== true) {
-      for (const launch of f.launches) {
-        const who = game.people[personAt(game, launch.x, launch.y)];
-        const role = who ? roleOf(who) : 'fisherman';
-        sayMoin(role === 'captain' ? -5 : role === 'kid' ? 5 : role === 'market' ? 2 : 0);
-      }
+      // The chain plays a tune: each Moin in the chain one note higher.
+      const all = playback.events.filter((e) => e.type === 'launched');
+      for (const launch of f.launches) sayMoin(noteFor(all.indexOf(launch)), launch.amount);
     }
     if (f.done) finishPlayback(true);
     else raf = requestAnimationFrame(step);
@@ -156,7 +192,20 @@
   }
 
   function next() {
-    startLevel(levelIndex + 1 < levels.length ? levelIndex + 1 : 0);
+    if (isDaily) startLevel(firstUnsolved(best));
+    else startLevel(levelIndex + 1 < levels.length ? levelIndex + 1 : 0);
+  }
+
+  const nextLabel = $derived(isDaily ? copy.backToStory : levelIndex === levels.length - 1 ? copy.fromTheTop : copy.next);
+
+  async function share(): Promise<string | null> {
+    const text = shareText(dayId(today), toBoard(level), current.taps, level.par, stars(current.taps, level.par));
+    try {
+      await navigator.clipboard.writeText(text);
+      return null;
+    } catch {
+      return text;
+    }
   }
 
   onMount(() => {
@@ -167,8 +216,7 @@
       settled = true;
       best = progress.levels;
       muted = progress.muted;
-      const firstUnsolved = levels.findIndex((l) => !progress.levels[l.id]);
-      startLevel(firstUnsolved < 0 ? 0 : firstUnsolved);
+      startLevel(firstUnsolved(progress.levels));
       ready = true;
     };
     // Cold open must not wait on storage: play level 1 if IndexedDB is slow.
@@ -182,14 +230,22 @@
 </script>
 
 {#if applyUpdate}<UpdateToast apply={applyUpdate} />{/if}
+<Scene place={set?.id ?? 'daily'} {fog} />
+{#if picking}
+  <LevelSelect {sets} {best} daily={daily ? { day: dayId(today), level: daily } : null}
+    current={level.id} onpick={startLevel} ondaily={startDaily} onclose={() => (picking = false)} />
+{/if}
 
 <div class="shell" class:ready>
   <header>
     <div class="title">
-      <p class="level-no">{copy.level(levelIndex + 1, levels.length)}</p>
+      <p class="level-no">
+        {isDaily ? copy.dailyHint(dayId(today)) : copy.level(set?.title ?? '', (set?.levels.findIndex((l) => l.id === level.id) ?? 0) + 1, set?.levels.length ?? levels.length)}
+      </p>
       <h1>{level.title}</h1>
     </div>
     <div class="tools">
+      <IconButton label={copy.levels} onclick={() => (picking = true)}><Icons name="levels" /></IconButton>
       <IconButton label={copy.undo} onclick={undo} disabled={history.length === 0}><Icons name="undo" /></IconButton>
       <IconButton label={copy.restart} onclick={restart} disabled={history.length === 0}><Icons name="restart" /></IconButton>
       <IconButton label={copy.mute} onclick={toggleMute} pressed={muted === true}>
@@ -213,13 +269,15 @@
   <Narrator {line} key={lineKey} />
   {#if solved}
     <WinCard stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
-      last={levelIndex === levels.length - 1} onnext={next} onreplay={restart} />
+      last={!isDaily && levelIndex === levels.length - 1} {nextLabel} onnext={next} onreplay={restart}
+      share={isDaily ? share : null} />
   {/if}
   <p class="visually-hidden" aria-live="polite" data-testid="announcer">{announcement}</p>
 </div>
 
 <style>
   .shell {
+    position: relative; z-index: 1;
     max-width: 640px; margin: 0 auto; min-height: 100dvh;
     display: flex; flex-direction: column;
     padding: max(10px, env(safe-area-inset-top)) 0 max(10px, env(safe-area-inset-bottom));

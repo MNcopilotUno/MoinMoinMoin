@@ -19,10 +19,12 @@ export function unlockAudio(): void {
   }
 }
 
-export function sayMoin(pitch: number): void {
+/** Say Moin at `pitch` semitones; a chatterbox (`amount` 2) says it twice — Moin moin. */
+export function sayMoin(pitch: number, amount: 1 | 2 = 1): void {
   if (ctx === null || ctx.state !== 'running') return;
   try {
-    playMoin(ctx, { pitch, volume: 0.35 });
+    const end = playMoin(ctx, { pitch, volume: 0.35 });
+    if (amount === 2) playMoin(ctx, { pitch, volume: 0.3, when: end - 0.12 });
   } catch {
     // never let sound break play
   }

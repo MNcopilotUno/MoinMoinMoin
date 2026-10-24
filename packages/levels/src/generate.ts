@@ -250,7 +250,19 @@ export function dailyLevel(stamp: DayStamp): Level {
     title: 'Daily Moin',
     width: DAILY_RECIPE.width,
     height: DAILY_RECIPE.height,
-    cells: found.cells,
+    cells: cast(found.cells),
     par: found.solution.par,
   };
+}
+
+/** Give a generated crowd its cast (CLAUDE.md §7). Looks only: roles never change the rules. */
+export function cast(cells: readonly Cell[]): Cell[] {
+  const pool = ['fisherman', 'kid', 'market'] as const;
+  let k = 0;
+  return cells.map((c) => {
+    if (c.kind !== 'person') return c;
+    if (c.needs === 2) return { ...c, role: 'captain' };
+    if (c.chatterbox === true) return { ...c, role: 'market' };
+    return { ...c, role: pool[k++ % pool.length] };
+  });
 }

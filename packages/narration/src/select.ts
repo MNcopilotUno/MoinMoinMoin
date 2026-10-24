@@ -39,6 +39,7 @@ export const freshMemory: NarratorMemory = { lastLineId: null, spoken: 0, quietT
 
 export interface Cue {
   readonly trigger: Trigger;
+  /** The level (`levelStart`) or set (`setComplete`) the cue is about. */
   readonly levelId?: string;
 }
 
@@ -54,7 +55,7 @@ export function pickLine(
   const quiet = { ...memory, quietTaps: memory.quietTaps + 1 };
   if (cue.trigger === 'edge' && memory.quietTaps < EDGE_QUIET_TAPS) return { line: null, memory: quiet };
   const candidates = lines.filter(
-    (l) => l.trigger === cue.trigger && (cue.trigger !== 'levelStart' || l.levelId === cue.levelId),
+    (l) => l.trigger === cue.trigger && (l.levelId === undefined || l.levelId === cue.levelId),
   );
   const fresh = candidates.filter((l) => l.id !== memory.lastLineId);
   if (fresh.length === 0) return { line: null, memory: quiet };
