@@ -25,4 +25,50 @@
   --wood: #a77b4f;
   --white: #ffffff;
   --outline: 1.5px;
+  /* Theme roles: text/lines (ink) and surfaces (paper, card) swap in the dark. */
+  --card: rgba(251, 246, 234, 0.88);
+  --card-strong: rgba(251, 246, 234, 0.95);
+  --line: rgba(30, 43, 76, 0.7);
+  --shadow: rgba(30, 43, 76, 0.22);
+  --glow: rgba(255, 210, 122, 0);
+  --title-glow: rgba(251, 246, 234, 0.45);
+  --tile-solved: #e8cfa3;
+  --star: #a87a22;
+  color-scheme: light;
+}
+
+/* Night harbour: a moonlit nocturne. Ink and paper swap; Moin red stays Moin red. */
+:root[data-theme='dark'] {
+  --ink: #f3ead8;
+  --ink-soft: #c9c3e2;
+  --paper: #1a2142;
+  --fog: #10162c;
+  --card: rgba(22, 28, 56, 0.84);
+  --card-strong: rgba(22, 28, 56, 0.95);
+  --line: rgba(243, 234, 216, 0.55);
+  --shadow: rgba(0, 0, 0, 0.45);
+  --glow: rgba(255, 210, 122, 0.55);
+  --title-glow: rgba(10, 14, 32, 0.6);
+  --tile-solved: #5c4a33;
+  --star: #f0c46a;
+  color-scheme: dark;
+}
+
+/* Before the app sets data-theme (and in Auto), follow the phone. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ink: #f3ead8;
+    --ink-soft: #c9c3e2;
+    --paper: #1a2142;
+    --fog: #10162c;
+    --card: rgba(22, 28, 56, 0.84);
+    --card-strong: rgba(22, 28, 56, 0.95);
+    --line: rgba(243, 234, 216, 0.55);
+    --shadow: rgba(0, 0, 0, 0.45);
+    --glow: rgba(255, 210, 122, 0.55);
+    --title-glow: rgba(10, 14, 32, 0.6);
+    --tile-solved: #5c4a33;
+    --star: #f0c46a;
+    color-scheme: dark;
+  }
 }

@@ -11,10 +11,14 @@ export interface LevelProgress {
   readonly bestTaps: number;
 }
 
+export type ThemeSetting = 'auto' | 'light' | 'dark';
+
 export interface Progress {
   readonly levels: Readonly<Record<string, LevelProgress>>;
   /** `null` until the player touches the mute toggle (sound starts after the first tap). */
   readonly muted: boolean | null;
+  /** Day, night, or follow the phone. */
+  readonly theme: ThemeSetting;
 }
 
 const memory = new Map<string, unknown>();
@@ -59,11 +63,12 @@ async function set(key: string, value: unknown): Promise<void> {
 }
 
 export async function loadProgress(): Promise<Progress> {
-  const [levels, muted] = await Promise.all([
+  const [levels, muted, theme] = await Promise.all([
     get<Record<string, LevelProgress>>('levels'),
     get<boolean>('muted'),
+    get<ThemeSetting>('theme'),
   ]);
-  return { levels: levels ?? {}, muted: muted ?? null };
+  return { levels: levels ?? {}, muted: muted ?? null, theme: theme === 'light' || theme === 'dark' ? theme : 'auto' };
 }
 
 /** Record a solve; keeps the best tap count. Returns the updated record. */
@@ -77,4 +82,8 @@ export async function saveSolved(id: string, taps: number): Promise<Record<strin
 
 export async function saveMuted(muted: boolean): Promise<void> {
   await set('muted', muted);
+}
+
+export async function saveTheme(theme: ThemeSetting): Promise<void> {
+  await set('theme', theme);
 }

@@ -11,7 +11,9 @@ const art = fileURLToPath(new URL('../art/', import.meta.url));
 const tmp = mkdtempSync(join(tmpdir(), 'moin-art-'));
 const jobs = [
   ...Object.entries(SCENES).map(([name, o]) => [name, harbour({ w: 390, h: 844, horizon: 0.33, ...o }), 390, 844]),
+  ...Object.entries(SCENES).map(([name, o]) => [`${name}-night`, harbour({ w: 390, h: 844, horizon: 0.33, ...o, night: true }), 390, 844]),
   ['water', water(), 340, 230],
+  ['water-night', water({ night: true }), 340, 230],
 ];
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
 try {

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { CELL } from '@moin/core';
   import waterUrl from '@moin/assets/art/water.jpg';
+  import waterNightUrl from '@moin/assets/art/water-night.jpg';
   import plankUrl from '@moin/assets/art/plank.svg';
   import type { Cell } from '@moin/core';
   import { copy } from '../copy/en.js';
@@ -23,9 +24,23 @@
     thief?: Point | null;
     /** A fender a Moin just bounced off; `key` restarts the animation. */
     bounce?: (Point & { key: number }) | null;
+    /** Night harbour (dark mode): moonlit water. */
+    night?: boolean;
     ontap: (x: number, y: number) => void;
   }
-  let { width, height, cells, greetings, moin = null, thief = null, bounce = null, ontap }: Props = $props();
+  let { width, height, cells, greetings, moin = null, thief = null, bounce = null, night = false, ontap }: Props = $props();
+
+  /** Ripples where the water is touched: decoration only, never a move (R1). */
+  let ripples = $state<{ x: number; y: number; key: number }[]>([]);
+  let rippleKey = 0;
+  function splash(event: PointerEvent) {
+    const el = event.currentTarget as HTMLElement;
+    if ((event.target as HTMLElement).closest('button')) return;
+    const box = el.getBoundingClientRect();
+    const key = ++rippleKey;
+    ripples = [...ripples.slice(-4), { x: event.clientX - box.left, y: event.clientY - box.top, key }];
+    setTimeout(() => (ripples = ripples.filter((r) => r.key !== key)), 900);
+  }
 
   const placed = $derived.by(() => {
     let person = 0;
@@ -33,8 +48,11 @@
   });
 </script>
 
-<div class="board" role="group" aria-label={copy.board}
-  style:--w={width} style:--h={height} style:--water={`url(${waterUrl})`} style:--plank={`url(${plankUrl})`}>
+<div class="board" role="group" aria-label={copy.board} onpointerdown={splash}
+  style:--w={width} style:--h={height} style:--water={`url(${night ? waterNightUrl : waterUrl})`} style:--plank={`url(${plankUrl})`}>
+  {#each ripples as r (r.key)}
+    <span class="ripple" data-testid="ripple" aria-hidden="true" style:left={`${r.x}px`} style:top={`${r.y}px`}></span>
+  {/each}
   {#each placed as { cell, index } (`${cell.x},${cell.y}`)}
     <div class="cell" style:grid-column={cell.x + 1} style:grid-row={cell.y + 1}>
       {#if cell.kind === 'person'}
@@ -71,7 +89,7 @@
 
 <style>
   .board {
-    --cell: min(calc((100vw - 28px) / var(--w)), calc((100dvh - 320px) / var(--h)), 72px);
+    --cell: min(calc((100vw - 28px) / var(--w)), calc((100dvh - 500px) / var(--h)), 72px);
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--w), max(44px, var(--cell)));
@@ -79,7 +97,7 @@
     padding: 6px;
     border-radius: 26px;
     background: var(--water) center / cover, #8eadc5;
-    box-shadow: 0 18px 40px rgba(30, 43, 76, 0.35), inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
+    box-shadow: 0 18px 40px var(--shadow, rgba(30, 43, 76, 0.35)), inset 0 0 0 1.5px rgba(255, 255, 255, 0.3);
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
@@ -105,6 +123,13 @@
   .facing-S { bottom: -7px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-bottom: 0; border-top: 8px solid #fbf6ea; }
   .facing-E { right: -7px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right: 0; border-left: 8px solid #fbf6ea; }
   .facing-W { left: -7px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-left: 0; border-right: 8px solid #fbf6ea; }
+  .ripple {
+    position: absolute; width: 14px; height: 6px; margin: -3px 0 0 -7px; border-radius: 50%; pointer-events: none; z-index: 1;
+    border: 2px solid rgba(255, 255, 255, 0.75); animation: ripple 0.85s ease-out forwards;
+  }
+  @keyframes ripple { to { transform: scale(5); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .ripple { animation-duration: 0.01s; } }
+  :global([data-theme='dark']) .person { box-shadow: 0 3px 0 rgba(60, 40, 20, 0.6), 0 0 14px rgba(255, 196, 110, 0.35), 0 6px 10px rgba(0, 0, 0, 0.4); }
   .moin {
     position: absolute;
     transform: translate(-50%, -78%);

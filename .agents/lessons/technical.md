@@ -12,3 +12,8 @@
   Chromium build 1243 in `/opt/pw-browsers`; 1.64 wants 1248. CI installs its own browsers.
 - **Win card over the narrator.** A `position: fixed` win card covered the narrator's par line on
   a phone; the e2e "narrator can be tapped away" test timed out. The card now sits in the flow.
+- **Re-rendering committed art with Chromium is not byte-stable** (GPU rasterisation noise, mean
+  difference 0.003). Restore unchanged images after `pnpm --filter @moin/assets art` so commits
+  only carry art that really changed.
+- **Anything animated past the viewport edge widens the page on a phone** and shifts every fixed
+  element. Clip ambient animation containers (`overflow-x: clip`) and test `scrollWidth`.

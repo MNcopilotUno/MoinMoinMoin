@@ -1,5 +1,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; }
+/* No sideways scroll on a phone, whatever the ambient life does. */
+html, body { overflow-x: clip; }
 body {
   background: var(--fog);
   color: var(--ink);

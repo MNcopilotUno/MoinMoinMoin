@@ -16,6 +16,8 @@ export const palette = {
   peach: '#f3dfd0',
   sage: '#a9bfa0',
   gold: '#d9a441',
+  night: '#10162c',
+  lantern: '#ffd27a',
   mist: '#dfe4ea',
   stone: '#c3cbd3',
   slate: '#7c8894',
