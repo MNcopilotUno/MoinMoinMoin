@@ -10,7 +10,7 @@
   {#each [0, 1, 2] as i (i)}
     <svg viewBox="0 0 100 100" aria-hidden="true" class:on={i < count} style:animation-delay={`${i * 120}ms`}>
       <path d="M50 6 L62 36 L94 38 L69 58 L78 90 L50 72 L22 90 L31 58 L6 38 L38 36 Z"
-        fill={i < count ? palette.royal : palette.mist} stroke={palette.ink} stroke-width="5" stroke-linejoin="round" />
+        fill={i < count ? palette.gold : palette.paper} stroke={palette.ink} stroke-width="3.5" stroke-linejoin="round" />
     </svg>
   {/each}
 </div>

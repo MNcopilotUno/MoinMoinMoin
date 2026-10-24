@@ -4,8 +4,16 @@
   --moin-deep: #9c0c24;
   --royal: #2346b8;
   --royal-deep: #183282;
-  --ink: #1c2333;
-  --fog: #eef1f4;
+  --ink: #1e2b4c;
+  --ink-soft: #3e4c70;
+  --paper: #fbf6ea;
+  --fog: #f6f1e7;
+  --lilac: #d4cbe2;
+  --peach: #f3dfd0;
+  --sage: #a9bfa0;
+  --gold: #d9a441;
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --mist: #dfe4ea;
   --stone: #c3cbd3;
   --slate: #7c8894;
@@ -16,5 +24,5 @@
   --sand-deep: #d4bc8c;
   --wood: #a77b4f;
   --white: #ffffff;
-  --outline: 3px;
+  --outline: 1.5px;
 }

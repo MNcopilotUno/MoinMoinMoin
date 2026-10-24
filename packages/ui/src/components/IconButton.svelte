@@ -17,16 +17,17 @@
 
 <style>
   .icon-button {
-    min-width: 44px; min-height: 44px; padding: 0 0.6rem;
+    min-width: 44px; min-height: 44px; padding: 0;
     display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;
-    border: var(--outline, 3px) solid var(--ink, #1c2333); border-radius: 12px;
-    background: var(--white, #fff); color: var(--ink, #1c2333);
+    border: 1.5px solid rgba(30, 43, 76, 0.75); border-radius: 50%;
+    background: rgba(251, 246, 234, 0.84); color: var(--ink, #1e2b4c);
+    -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
     font: inherit; font-weight: 700; cursor: pointer;
-    box-shadow: 0 3px 0 var(--ink, #1c2333);
+    box-shadow: 0 3px 10px rgba(30, 43, 76, 0.18);
     touch-action: manipulation;
   }
-  .icon-button:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink, #1c2333); }
+  .icon-button:active:not(:disabled) { transform: scale(0.94); }
   .icon-button:disabled { opacity: 0.45; cursor: default; }
-  .icon-button:focus-visible { outline: 3px solid var(--royal, #2346b8); outline-offset: 3px; }
-  .icon-button :global(svg) { width: 22px; height: 22px; }
+  .icon-button:focus-visible { outline: 3px solid var(--ink, #1e2b4c); outline-offset: 3px; }
+  .icon-button :global(svg) { width: 20px; height: 20px; stroke-width: 1.8; }
 </style>

@@ -6,16 +6,23 @@
   "exports": {
     ".": "./src/index.ts",
     "./palette.css": "./src/palette.css",
-    "./icons/*": "./icons/*"
+    "./fonts.css": "./src/fonts.css",
+    "./icons/*": "./icons/*",
+    "./art/*": "./art/*"
   },
   "scripts": {
     "typecheck": "tsc -p .",
-    "icons": "tsx scripts/render-icons.ts"
+    "icons": "tsx scripts/render-icons.ts",
+    "art": "node scripts/render-art.mjs"
   },
   "devDependencies": {
     "@types/node": "22",
     "playwright-core": "1.63.0",
     "tsx": "4.23.15",
     "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "@fontsource/cormorant-garamond": "5.3.0",
+    "@fontsource/figtree": "5.3.0"
   }
 }

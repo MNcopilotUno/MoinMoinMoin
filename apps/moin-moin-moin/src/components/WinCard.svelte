@@ -54,26 +54,27 @@
   .win {
     margin: 0 auto;
     width: min(calc(100vw - 32px), 26rem);
-    background: var(--white); border: var(--outline) solid var(--ink); border-radius: 20px;
-    box-shadow: 0 6px 0 var(--ink);
+    background: rgba(251, 246, 234, 0.94); border: 0; border-radius: 24px;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    box-shadow: 0 14px 34px rgba(30, 43, 76, 0.28);
     padding: 1rem 1rem 1.1rem; text-align: center;
     animation: rise 0.35s ease-out;
   }
   @keyframes rise { from { transform: translateY(30px); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .win { animation: none; } }
-  h2 { margin: 0 0 0.4rem; font-size: 1.35rem; }
+  h2 { margin: 0 0 0.5rem; font-family: var(--serif); font-weight: 700; font-size: 2rem; line-height: 1.05; color: var(--ink); }
   p { margin: 0.5rem 0 0; }
-  .done { font-style: italic; color: var(--deep); }
+  .done { font-family: var(--serif); font-style: italic; font-size: 1.2rem; color: var(--ink-soft); }
   .share { margin-top: 0.8rem; }
-  .share p { font-size: 0.9rem; color: var(--deep); }
+  .share p { font-size: 0.9rem; color: var(--ink-soft); }
   textarea { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; border: 2px solid var(--stone); border-radius: 8px; padding: 0.4rem; }
   .actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.9rem; }
   button {
-    min-height: 48px; padding: 0 1.1rem; border-radius: 14px; font: inherit; font-weight: 800; cursor: pointer;
-    border: var(--outline) solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+    min-height: 48px; padding: 0 1.3rem; border-radius: 999px; font: inherit; font-weight: 800; cursor: pointer;
+    border: 1.5px solid var(--ink); box-shadow: 0 4px 12px rgba(30, 43, 76, 0.18);
   }
-  button:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
-  button:focus-visible { outline: 3px solid var(--royal); outline-offset: 3px; }
-  .primary { background: var(--royal); color: var(--white); }
-  .secondary { background: var(--white); color: var(--ink); }
+  button:active { transform: scale(0.97); }
+  button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .primary { background: var(--ink); color: var(--paper); }
+  .secondary { background: var(--paper); color: var(--ink); }
 </style>

@@ -1,0 +1,8 @@
+/* Self-hosted fonts (CLAUDE.md §1: no fonts fetched from a CDN at runtime). OFL-1.1, via
+   @fontsource; Latin subset only — the copy is English and Moin stays Moin. */
+@import '@fontsource/cormorant-garamond/latin-500-italic.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-700.css';
+@import '@fontsource/figtree/latin-500.css';
+@import '@fontsource/figtree/latin-700.css';
+@import '@fontsource/figtree/latin-800.css';

@@ -13,3 +13,5 @@ export type { Frame } from './timeline.js';
 export { noteFor, TUNE } from './tune.js';
 export { shareText } from './share.js';
 export { default as Scene } from './components/Scene.svelte';
+export { portrait } from './portrait.js';
+export type { Mood, PortraitOptions, PortraitRole } from './portrait.js';
