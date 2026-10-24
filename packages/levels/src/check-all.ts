@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { levels, TUTORIAL_LEVELS } from './index.js';
+import { levels, TUTORIAL_IDS } from './index.js';
 import { validateLevel } from './validate.js';
 import type { Report } from './validate.js';
 
@@ -22,7 +22,7 @@ export function checkLevels(): { results: LevelResult[]; problems: string[] } {
   const results = files.map((file) => {
     const data = readJson(join(levelsDir, file)) as { id?: string };
     const index = order.indexOf(data.id ?? '');
-    const report = validateLevel(data, { tutorial: index >= 0 && index < TUTORIAL_LEVELS });
+    const report = validateLevel(data, { tutorial: TUTORIAL_IDS.has(data.id ?? '') });
     if (data.id !== basename(file, '.json')) problems.push(`${file}: id "${data.id}" does not match the file name`);
     if (index < 0) problems.push(`${file}: not in the play order (packages/levels/src/index.ts)`);
     return { file, report };

@@ -1,0 +1,19 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "market-09",
+  "title": "Two chatterboxes",
+  "width": 6,
+  "height": 5,
+  "cells": [
+    {"x": 0, "y": 0, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 0, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
+    {"x": 5, "y": 2, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
+    {"x": 0, "y": 3, "kind": "person", "facing": "S", "needs": 2, "role": "captain"},
+    {"x": 1, "y": 3, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 2, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"},
+    {"x": 0, "y": 4, "kind": "person", "facing": "N", "needs": 2, "chatterbox": true, "role": "captain"},
+    {"x": 1, "y": 4, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 5, "y": 4, "kind": "fender", "slant": "rising"}
+  ],
+  "par": 3
+}

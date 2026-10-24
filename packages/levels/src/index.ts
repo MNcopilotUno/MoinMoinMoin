@@ -1,25 +1,66 @@
 import type { BoardSpec } from '@moin/core';
 import type { Level } from './level.generated.js';
-import h01 from '../levels/harbour-01.json' with { type: 'json' };
-import h02 from '../levels/harbour-02.json' with { type: 'json' };
-import h03 from '../levels/harbour-03.json' with { type: 'json' };
-import h04 from '../levels/harbour-04.json' with { type: 'json' };
-import h05 from '../levels/harbour-05.json' with { type: 'json' };
-import h06 from '../levels/harbour-06.json' with { type: 'json' };
-import h07 from '../levels/harbour-07.json' with { type: 'json' };
-import h08 from '../levels/harbour-08.json' with { type: 'json' };
-import h09 from '../levels/harbour-09.json' with { type: 'json' };
-import h10 from '../levels/harbour-10.json' with { type: 'json' };
+import harbour01 from '../levels/harbour-01.json' with { type: 'json' };
+import harbour02 from '../levels/harbour-02.json' with { type: 'json' };
+import harbour03 from '../levels/harbour-03.json' with { type: 'json' };
+import harbour04 from '../levels/harbour-04.json' with { type: 'json' };
+import harbour05 from '../levels/harbour-05.json' with { type: 'json' };
+import harbour06 from '../levels/harbour-06.json' with { type: 'json' };
+import harbour07 from '../levels/harbour-07.json' with { type: 'json' };
+import harbour08 from '../levels/harbour-08.json' with { type: 'json' };
+import harbour09 from '../levels/harbour-09.json' with { type: 'json' };
+import harbour10 from '../levels/harbour-10.json' with { type: 'json' };
+import market01 from '../levels/market-01.json' with { type: 'json' };
+import market02 from '../levels/market-02.json' with { type: 'json' };
+import market03 from '../levels/market-03.json' with { type: 'json' };
+import market04 from '../levels/market-04.json' with { type: 'json' };
+import market05 from '../levels/market-05.json' with { type: 'json' };
+import market06 from '../levels/market-06.json' with { type: 'json' };
+import market07 from '../levels/market-07.json' with { type: 'json' };
+import market08 from '../levels/market-08.json' with { type: 'json' };
+import market09 from '../levels/market-09.json' with { type: 'json' };
+import market10 from '../levels/market-10.json' with { type: 'json' };
+import ferry01 from '../levels/ferry-01.json' with { type: 'json' };
+import ferry02 from '../levels/ferry-02.json' with { type: 'json' };
+import ferry03 from '../levels/ferry-03.json' with { type: 'json' };
+import ferry04 from '../levels/ferry-04.json' with { type: 'json' };
+import ferry05 from '../levels/ferry-05.json' with { type: 'json' };
+import ferry06 from '../levels/ferry-06.json' with { type: 'json' };
+import ferry07 from '../levels/ferry-07.json' with { type: 'json' };
+import ferry08 from '../levels/ferry-08.json' with { type: 'json' };
+import ferry09 from '../levels/ferry-09.json' with { type: 'json' };
+import ferry10 from '../levels/ferry-10.json' with { type: 'json' };
 
 export type { Cell, FenderCell, Level, PersonCell, SeagullCell } from './level.generated.js';
 
-/**
- * Play order. Validated by `pnpm validate:levels` (schema + solver), so the app may trust it.
- * The first three are the tutorial set (R10 warnings do not apply).
- */
-export const levels: readonly Level[] = [h01, h02, h03, h04, h05, h06, h07, h08, h09, h10] as Level[];
+export interface LevelSet {
+  readonly id: 'harbour' | 'market' | 'ferry';
+  /** One part of town, woken up level by level (ROADMAP Phase 2, the story). */
+  readonly title: string;
+  readonly levels: readonly Level[];
+}
 
-export const TUTORIAL_LEVELS = 3;
+/**
+ * Play order, in three sets. Validated by `pnpm validate:levels` (schema + solver), so the app
+ * may trust it.
+ */
+export const sets: readonly LevelSet[] = [
+  { id: 'harbour', title: 'The harbour', levels: [harbour01, harbour02, harbour03, harbour04, harbour05, harbour06, harbour07, harbour08, harbour09, harbour10] as Level[] },
+  { id: 'market', title: 'The market', levels: [market01, market02, market03, market04, market05, market06, market07, market08, market09, market10] as Level[] },
+  { id: 'ferry', title: 'The ferry', levels: [ferry01, ferry02, ferry03, ferry04, ferry05, ferry06, ferry07, ferry08, ferry09, ferry10] as Level[] },
+];
+
+export const levels: readonly Level[] = sets.flatMap((s) => s.levels);
+
+/**
+ * Tutorial levels introduce one idea each and may have many minimum solutions or many par-first
+ * taps (R10 warnings do not apply): the first three of the harbour and the chatterbox's debut.
+ */
+export const TUTORIAL_IDS: ReadonlySet<string> = new Set(['harbour-01', 'harbour-02', 'harbour-03', 'market-01']);
+
+export function setOf(id: string): LevelSet | undefined {
+  return sets.find((s) => s.levels.some((l) => l.id === id));
+}
 
 /** A level is a board plus metadata; core needs only the board. */
 export function toBoard(level: Level): BoardSpec {
@@ -29,3 +70,6 @@ export function toBoard(level: Level): BoardSpec {
 export function levelIndex(id: string): number {
   return levels.findIndex((l) => l.id === id);
 }
+
+export { DAILY_RECIPE, dailyLevel, dayId, generate, candidate, assess, rng, mix } from './generate.js';
+export type { DayStamp, Recipe, Quality } from './generate.js';
