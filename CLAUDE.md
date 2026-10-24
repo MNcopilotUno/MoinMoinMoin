@@ -184,16 +184,19 @@ Adding a rule without its fixture is a review **blocker**.
   fisherman, facing east, needs two greetings"); the ripple is also announced as text.
 - **Sound is optional and never blocking.** Start muted until the first tap; respect a mute toggle.
 - **Copy** lives in `packages/ui/src/copy/`. Interface in plain English; *Moin* stays *Moin*.
-- **Look:** a touch of Monet — generated impressionist paintings behind the play (seeded brush
-  strokes, `packages/assets/scripts/paint.mjs`) and small gouache portraits with real faces
-  (`packages/ui/src/portrait.ts`); the smile is still the reward you see. Palette: lilac, dawn
+- **Look:** a touch of Monet on the North German coast — generated paintings behind the play
+  (`packages/assets/scripts/paint.browser.js`: a composed underpainting of Speicherstadt gables,
+  the fish auction hall or the dyke, then seeded brush strokes that follow its edges) and small
+  gouache portraits with real faces in northern dress (`packages/ui/src/portrait.ts`); the smile
+  is still the reward you see. Palette: lilac, dawn
   peach, harbour water and sage, harbour ink for lines and text. **Red means *Moin*** (speech
   bubble, smiles) and is used for nothing else; stars are ochre-gold. Cormorant Garamond and
   Figtree, self-hosted. **Night harbour** (dark mode): moonlit nocturnes; `--ink` and `--paper`
   swap, red still means Moin. **The harbour is alive:** onlookers on the quay, gulls, a boat,
   bunting, ripples — decoration only, never a move.
-- **Cast:** fishermen, a grumpy captain (the one who needs two greetings), a market woman, kids,
-  and seagulls as the cheeky villains.
+- **Cast:** fishermen in sou'wester and oilskin, a grumpy captain in an Elbsegler cap (the one who
+  needs two greetings), a market woman in a Kopftuch, kids in raincoats, and herring gulls on
+  mooring posts as the cheeky villains. The lighthouse is white and ink: red means Moin.
 - **Narration** lines live in `packages/narration/` as data: one sentence each, dry northern
   humour, reacting to events (a long chain, a stolen *Moin*, a par finish), never repeating the
   same line twice in a row.

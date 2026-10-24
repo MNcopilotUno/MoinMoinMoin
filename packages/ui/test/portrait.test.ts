@@ -34,11 +34,18 @@ describe('portrait (impressionist art direction)', () => {
     for (const ref of a.matchAll(/url\(#([^)]+)\)/g)) expect(ids).toContain(ref[1]);
   });
 
-  it('draws each role\'s details', () => {
-    expect(portrait({ role: 'captain' })).toContain('#D9B46A'); // brass anchor badge
-    expect(portrait({ role: 'fisherman' })).toContain('#3552A6'); // knit beanie
-    expect(portrait({ role: 'market' })).toContain('#8FAE8A'); // headscarf
-    expect(portrait({ role: 'kid' })).toContain('#9A5A3A'); // freckles
+  it('dresses the cast for the North German coast', () => {
+    const fisherman = portrait({ role: 'fisherman' });
+    expect(fisherman).toContain('#E2AE36'); // yellow sou'wester
+    expect(fisherman).toContain('#D6A12E'); // oilskin
+    const captain = portrait({ role: 'captain' });
+    expect(captain).toContain('#1E2D57'); // navy Elbsegler cap
+    expect(captain).toContain('#D9B46A'); // gold cord and anchor badge
+    expect(portrait({ role: 'market' })).toContain('#5F79B8'); // blue dotted Kopftuch
+    const kid = portrait({ role: 'kid' });
+    expect(kid).toContain('#DDA935'); // yellow raincoat
+    expect(kid).toContain('#2F4A8C'); // striped Fischerhemd
+    expect(kid).toContain('#9A5A3A'); // freckles
     expect(portrait({ role: 'market', chatter: true }).length).toBeGreaterThan(portrait({ role: 'market' }).length);
   });
 

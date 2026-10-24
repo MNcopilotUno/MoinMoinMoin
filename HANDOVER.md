@@ -15,10 +15,11 @@ the owner on 2026-10-24**, not passed. Live: <https://mncopilotuno.github.io/Moi
 | Deploy | Every push to `main` → CI (lint, typecheck, unit, levels, e2e incl. Firefox + WebKit replay) → GitHub Pages |
 | Art | Impressionist direction (2026-10-24): generated Monet-like paintings per part of town, gouache portraits, Cormorant Garamond + Figtree self-hosted. Sketch: Claude Design canvas (private to the owner) |
 | Crowd and night | Onlookers on the quay cheer each smile and celebrate a solve; gulls, boat, bunting and water ripples react to taps (never moves); dark mode = moonlit nocturnes, Auto/Day/Night in the menu |
+| North German art | Paintings of the Speicherstadt, the fish auction hall and the dyke (underpainting + brush pass), northern dress, herring gull, rope fender — `.agents/features/north-german-art.md` |
 | QA pass | Two QA agents (function/a11y, feel/sound); findings and outcomes in `.agents/reviews/qa-polish.md` |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 62, narration 48, ui 52; e2e 26 on Chromium; `validate:levels` 30
+Test counts: core 60, levels 62, narration 48, ui 54; e2e 26 on Chromium; `validate:levels` 30
 levels ok, 14 fixtures fail as expected.
 
 ## Next

@@ -12,6 +12,11 @@ export default tseslint.config(
     languageOptions: { globals: { console: 'readonly', process: 'readonly', URL: 'readonly' } },
   },
   {
+    // The painter runs inside Chromium at build time (packages/assets/scripts/render-art.mjs).
+    files: ['packages/assets/scripts/paint.browser.js'],
+    languageOptions: { globals: { document: 'readonly', window: 'readonly' } },
+  },
+  {
     // CLAUDE.md §7: core is pure — no clock, no randomness, no I/O, no transcendental maths,
     // no imports from anywhere (GAME_RULES R12).
     files: ['packages/core/src/**/*.ts'],
