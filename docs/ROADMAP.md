@@ -15,8 +15,10 @@ unfinished platform. The gates are there to stop that.
 ---
 
 > **Status (2026-10-24):** Phases 0–2 built and live at
-> <https://mncopilotuno.github.io/MoinMoinMoin/>. The Phase 0 and Phase 1 gates were **waived by
-> the owner, not passed** — no playtest yet. Phase 3 has not started. See `HANDOVER.md`.
+> <https://mncopilotuno.github.io/MoinMoinMoin/>. The Phase 0, 1 and 2 gates were **waived by
+> the owner, not passed** — no playtest yet, and the Phase 2 month has not elapsed. Phase 3 is
+> **open for design**: the owner will post a separate roadmap for Moin Domi; no code is written
+> in `apps/moin-domi` before it. See `HANDOVER.md`.
 
 ## Phase 0 — Design and foundations · ~1–2 weeks
 
@@ -74,6 +76,14 @@ before — nothing in the repo anticipates it except the shared assets and UI pa
 
 Questions to answer at the start of the phase, not now: what a hop carries, what the receiver
 sees, and how to keep it private and server-free.
+
+**Owner's direction (2026-10-24), pending the Moin Domi roadmap:** a private sharing platform for
+small moments — a hop carries a *wave*; tiny links and custom links, optionally protected by a
+password with the hello encrypted; it counts reach and is customisable. Hosting: the same Pages
+site, with the payload in the URL `#fragment`. To settle in that roadmap, because they pull in
+different directions: tiny and custom links and a reach count *seen by the sender* need storage
+somewhere, while a `#fragment` link is server-free (an encrypted, password-protected hello and a
+hop count carried in the link itself work without a server).
 
 **Gate:** a *Moin* travels through at least five real people without you explaining how.
 

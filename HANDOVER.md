@@ -1,7 +1,8 @@
 # Handover
 
-_Last session: Phases 0, 1 and 2 built and deployed. The Phase 1 gate (playtest) was **waived by
-the owner on 2026-10-24**, not passed. Live: <https://mncopilotuno.github.io/MoinMoinMoin/>._
+_Last session: Phases 0, 1 and 2 built and deployed. The Phase 1 gate (playtest) and the Phase 2
+gate (a month of play) were **waived by the owner on 2026-10-24**, not passed. Phase 3 (Moin Domi)
+waits for the owner's own roadmap for it — see `docs/ROADMAP.md` Phase 3. Live: <https://mncopilotuno.github.io/MoinMoinMoin/>._
 
 ## Where things stand
 
@@ -28,4 +29,5 @@ levels ok, 14 fixtures fail as expected.
    then hand them the market set. Does anyone ask for more?
 2. **Phase 2 gate:** a month from now, do you still open it for fun?
 3. Real-device checks still **predicted**: iOS silent switch and Web Audio; install banner on Android.
-4. Phase 3 (Moin Domi) must not start before the Phase 2 gate. Its design starts in conversation.
+4. Phase 3 (Moin Domi): gate waived; **wait for the owner's Moin Domi roadmap** before any code in
+   `apps/moin-domi`. Direction so far is recorded in `docs/ROADMAP.md` Phase 3.
