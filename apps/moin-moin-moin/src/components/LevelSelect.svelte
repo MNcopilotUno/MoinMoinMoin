@@ -7,8 +7,12 @@
   import harbourUrl from '@moin/assets/art/harbour.jpg';
   import marketUrl from '@moin/assets/art/market.jpg';
   import ferryUrl from '@moin/assets/art/ferry.jpg';
+  import harbourNightUrl from '@moin/assets/art/harbour-night.jpg';
+  import marketNightUrl from '@moin/assets/art/market-night.jpg';
+  import ferryNightUrl from '@moin/assets/art/ferry-night.jpg';
 
-  const paintings: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl };
+  const days: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl };
+  const nights: Record<string, string> = { harbour: harbourNightUrl, market: marketNightUrl, ferry: ferryNightUrl };
 
   interface Props {
     sets: readonly LevelSet[];
@@ -21,9 +25,12 @@
     onclose: () => void;
     theme: ThemeSetting;
     ontheme: (theme: ThemeSetting) => void;
+    /** Night theme: the banners show the moonlit paintings (QA M6). */
+    night?: boolean;
   }
-  let { sets, best, daily, current, onpick, ondaily, onclose, theme, ontheme }: Props = $props();
+  let { sets, best, daily, current, onpick, ondaily, onclose, theme, ontheme, night = false }: Props = $props();
   const themes: ThemeSetting[] = ['light', 'auto', 'dark'];
+  const paintings = $derived(night ? nights : days);
 
   const starsOf = (l: Level): 0 | 1 | 2 | 3 => (best[l.id] ? starsFor(best[l.id]!.bestTaps, l.par) : 0);
   const total = $derived(sets.reduce((n, s) => n + s.levels.reduce((m, l) => m + starsOf(l), 0), 0));
@@ -31,11 +38,18 @@
 
   let dialog: HTMLElement;
   onMount(() => {
-    dialog.querySelector<HTMLElement>('[aria-current="true"]')?.focus();
+    (dialog.querySelector<HTMLElement>('[aria-current="true"]') ?? dialog.querySelector<HTMLElement>('.daily, .close'))?.focus();
   });
 
+  /** Escape closes; Tab cycles inside the dialog (the page behind is inert). */
   function keydown(event: KeyboardEvent) {
     if (event.key === 'Escape') onclose();
+    if (event.key !== 'Tab') return;
+    const items = [...dialog.querySelectorAll<HTMLElement>('button, input:checked')];
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
   }
 </script>
 

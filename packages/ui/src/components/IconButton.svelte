@@ -7,11 +7,13 @@
     pressed?: boolean | undefined;
     disabled?: boolean;
     children: Snippet;
+    /** The button element, for returning focus to it. */
+    element?: HTMLButtonElement | null;
   }
-  let { label, onclick, pressed = undefined, disabled = false, children }: Props = $props();
+  let { label, onclick, pressed = undefined, disabled = false, children, element = $bindable(null) }: Props = $props();
 </script>
 
-<button type="button" class="icon-button" aria-label={label} title={label} aria-pressed={pressed} {disabled} {onclick}>
+<button bind:this={element} type="button" class="icon-button" aria-label={label} title={label} aria-pressed={pressed} {disabled} {onclick}>
   {@render children()}
 </button>
 

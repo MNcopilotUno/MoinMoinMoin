@@ -9,15 +9,16 @@
   }
   let { line, key }: Props = $props();
 
-  /** Lines sit beside the play, auto-dismiss and never gate input (CLAUDE.md §8). */
-  const SHOW_MS = 5200;
+  /** Lines sit beside the play, auto-dismiss and never gate input (CLAUDE.md §8); longer lines
+   *  stay longer (QA feel L4). */
+  const showMs = (text: string) => Math.min(6200, Math.max(3200, 2200 + 230 * text.split(/\s+/).length));
   let visible = $state(false);
 
   $effect(() => {
     void key;
     if (line === null) return;
     visible = true;
-    const timer = setTimeout(() => (visible = false), SHOW_MS);
+    const timer = setTimeout(() => (visible = false), showMs(line.text));
     return () => clearTimeout(timer);
   });
 </script>
@@ -26,7 +27,6 @@
   {#if visible && line}
     <button type="button" class="line" onclick={() => (visible = false)} title={copy.narratorDismiss}>
       <span class="text">{line.text}</span>
-      <span class="visually-hidden">{copy.narratorDismiss}</span>
     </button>
   {/if}
 </div>

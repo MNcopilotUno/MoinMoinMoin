@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { createGame, initialState, tap } from '@moin/core';
 import type { BoardSpec, Cell } from '@moin/core';
@@ -101,5 +102,21 @@ describe('pickLine', () => {
 
   it('an unknown level has no intro', () => {
     expect(pickLine({ trigger: 'levelStart', levelId: 'nowhere-99' }, freshMemory).line).toBeNull();
+  });
+});
+
+describe('QA m4: intros never contradict their boards', () => {
+  const board = (id: string) => JSON.parse(readFileSync(new URL(`../../levels/levels/${id}.json`, import.meta.url), 'utf8')) as {
+    cells: { kind: string; needs?: number; chatterbox?: boolean }[];
+  };
+  it.each(lines.filter((l) => l.trigger === 'levelStart').map((l) => [l.levelId!, l.text] as const))('%s', (id, text) => {
+    const cells = board(id).cells;
+    const gulls = cells.filter((c) => c.kind === 'seagull').length;
+    const chatty = cells.filter((c) => c.chatterbox === true).length;
+    const fenders = cells.filter((c) => c.kind === 'fender').length;
+    if (/\b(sea)?gulls?\b/i.test(text)) expect(gulls, 'mentions a gull').toBeGreaterThan(0);
+    if (/\bfenders?\b/i.test(text)) expect(fenders, 'mentions a fender').toBeGreaterThan(0);
+    if (/two chatterboxes/i.test(text)) expect(chatty).toBeGreaterThanOrEqual(2);
+    if (/chatterbox|moin moin/i.test(text)) expect(chatty, 'mentions a chatterbox').toBeGreaterThan(0);
   });
 });

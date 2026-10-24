@@ -67,14 +67,14 @@
   }
   .gull {
     pointer-events: auto; position: absolute; left: 0; width: 44px; height: 44px; padding: 6px; border: 0; background: transparent;
-    cursor: pointer; transform: scale(var(--s)); -webkit-tap-highlight-color: transparent;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .gull svg { width: 100%; height: 100%; overflow: visible; }
+  .gull svg { width: 100%; height: 100%; overflow: visible; transform: scale(var(--s)); }
   .wings { transform-origin: 30px 16px; animation: flap 0.6s ease-in-out infinite; }
-  .startled { animation: flee 1.2s ease-in forwards; }
+  .startled { animation: flee 1.2s ease-in forwards; pointer-events: none; }
   .startled .wings { animation-duration: 0.18s; }
   .boat {
-    pointer-events: auto; position: absolute; right: 18px; bottom: -6px; width: 64px; height: 48px; padding: 0;
+    pointer-events: auto; position: absolute; right: 18px; bottom: -6px; width: 64px; height: 48px; padding: 0; min-height: 44px;
     border: 0; background: transparent; cursor: pointer; animation: bob 3s ease-in-out infinite; -webkit-tap-highlight-color: transparent;
   }
   .boat svg { width: 100%; height: 100%; }
