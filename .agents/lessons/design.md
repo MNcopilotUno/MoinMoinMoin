@@ -18,3 +18,10 @@
   the narrator and win card on translucent paper; never a light text colour over the sky.
 - **Keep the sun out of the title.** A painting's focal point must avoid the UI's fixed regions
   (the market's sun sat behind the title until it was repainted on the right).
+- **Paint a picture, then brush it — not dabs on a gradient.** Random seeded dabs over a sky
+  gradient read as "texture", never as a place. Drawing a composed underpainting first (real
+  buildings, perspective, a mirrored and rippled reflection) and then laying strokes that take its
+  colour, follow its edges and stop at colour changes gave paintings people recognise as Hamburg.
+  The owner's word was "realistic": realism came from the composition, the brush only styles it.
+- **Regional detail lives in the art, not the copy.** Sou'wester, Elbsegler, Kopftuch, stepped
+  gables, Strandkörbe make it northern; the interface stays in plain English (CLAUDE.md §7).

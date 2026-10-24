@@ -17,3 +17,8 @@
   only carry art that really changed.
 - **Anything animated past the viewport edge widens the page on a phone** and shifts every fixed
   element. Clip ambient animation containers (`overflow-x: clip`) and test `scrollWidth`.
+- **JPEG quality is a precache budget decision.** The new paintings at quality 86 added 540 KB
+  to the offline precache; at 78 (what the old renders used) the cost was ~100 KB with no visible
+  loss at phone size. Measure the `dist/assets/*.jpg` total against the previous build.
+- **Svelte adds scope classes**, so a test asserting `class="post"` in rendered HTML fails;
+  query with `container.querySelector('.post')` instead.

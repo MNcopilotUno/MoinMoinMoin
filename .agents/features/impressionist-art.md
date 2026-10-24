@@ -1,5 +1,8 @@
 # Feature: impressionist art direction ("a touch of Monet")
 
+> Superseded in part by `north-german-art.md`: the painter is now an underpainting plus a
+> brush pass (`scripts/paint.browser.js`), and the cast wears northern dress.
+
 ## Problem
 The owner asked for a new art style: a *little* Claude Monet impressionism, while staying stylish
 and realistic enough to read faces and details. The first canvas sketch used blurry CSS ovals and

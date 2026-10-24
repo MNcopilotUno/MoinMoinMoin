@@ -2,7 +2,8 @@
   interface Props { flags?: number }
   let { flags = 14 }: Props = $props();
   // No red: red means Moin.
-  const colours = ['#3552a6', '#8fae8a', '#f2c9a5', '#b7a9d3', '#d9a441'];
+  // Harbour-festival Wimpelkette: Elbe navy, paper, oilskin yellow, verdigris, sage.
+  const colours = ['#1e2d57', '#fbf6ea', '#e2ae36', '#79a596', '#a9bfa0'];
   const items = $derived(Array.from({ length: flags }, (_, i) => {
     const t = (i + 0.5) / flags;
     const x = t * 400;
