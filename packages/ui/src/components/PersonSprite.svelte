@@ -7,10 +7,12 @@
     facing: Facing;
     needs: 1 | 2;
     greetings: number;
+    /** R13: drawn with speech marks. */
+    chatterbox?: boolean;
     /** Index used to vary skin tone deterministically. */
     variant?: number;
   }
-  let { role, facing, needs, greetings, variant = 0 }: Props = $props();
+  let { role, facing, needs, greetings, chatterbox = false, variant = 0 }: Props = $props();
 
   const look: Record<Facing, [number, number]> = { N: [0, -3], E: [3.5, 0], S: [0, 3], W: [-3.5, 0] };
   const smiling = $derived(greetings >= needs);
@@ -72,6 +74,12 @@
     <path d="M40 58 Q52 60 61 53" fill="none" stroke={palette.ink} stroke-width="4" stroke-linecap="round" />
   {:else}
     <path d="M40 60 Q50 53 60 60" fill="none" stroke={palette.ink} stroke-width="4" stroke-linecap="round" />
+  {/if}
+
+  {#if chatterbox}
+    <g class="chatter" stroke={palette.ink} stroke-width="3.5" stroke-linecap="round" fill="none">
+      <path d="M80 30 Q88 24 86 14" /><path d="M88 36 Q98 30 97 18" />
+    </g>
   {/if}
 
   {#if needs === 2}

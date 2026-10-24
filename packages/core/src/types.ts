@@ -9,6 +9,8 @@ export interface PersonCell {
   readonly facing: Facing;
   readonly needs: 1 | 2;
   readonly role?: Role;
+  /** R13: says *Moin moin* — their Moin carries two greetings. */
+  readonly chatterbox?: boolean;
 }
 
 export interface SeagullCell {
@@ -73,6 +75,9 @@ export interface GreetedEvent extends At {
   readonly x: number;
   readonly y: number;
   readonly source: 'tap' | 'moin';
+  /** Greetings delivered: 1, or 2 from a chatterbox (R13). */
+  readonly amount: 1 | 2;
+  /** Greetings now held, capped at `needs`. */
   readonly greetings: number;
   readonly needs: 1 | 2;
 }
@@ -86,6 +91,8 @@ export interface LaunchedEvent extends At {
   readonly x: number;
   readonly y: number;
   readonly dir: Facing;
+  /** Greetings the Moin carries: 2 for a chatterbox (R13). */
+  readonly amount: 1 | 2;
 }
 export interface BouncedEvent extends At {
   readonly type: 'bounced';

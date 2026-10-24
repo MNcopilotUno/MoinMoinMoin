@@ -1,10 +1,12 @@
-# Moin Moin Moin — game rules v1 (grid-aligned flight)
+# Moin Moin Moin — game rules v1.1 (grid-aligned flight)
 
 > **Status:** v1, decided in the Phase 0 design round
 > ([`.agents/features/physical-model.md`](../.agents/features/physical-model.md)). Every rule is
 > **proposed** until the Phase 1 playtest, then **confirmed** or struck out.
 > v1 keeps every v0 rule except R3, which is replaced by **R3′ (line of flight)**, and adds the
-> fender (R11) and the timing model (R12). v0 is kept below as Appendix A, the fallback.
+> fender (R11) and the timing model (R12). **v1.1** (Phase 2) adds the chatterbox (R13,
+> [`.agents/features/chatterbox.md`](../.agents/features/chatterbox.md)). v0 is kept below as
+> Appendix A, the fallback.
 
 Normative. `packages/core` implements exactly this, and every rule below has a test in
 `packages/core/test/`. A change here is a change to every level: re-run `pnpm validate:levels`.
@@ -18,6 +20,7 @@ Normative. `packages/core` implements exactly this, and every rule below has a t
   per square.
 - A person has a **facing** (N, E, S, W) and **needs** 1 or 2 greetings to smile.
   `needs: 2` is drawn as the grumpy captain.
+- A person may be a **chatterbox** (R13).
 - A fender has a **slant**: `rising` (drawn `/`) or `falling` (drawn `\`).
 - A level has 1–16 people.
 
@@ -46,6 +49,11 @@ Normative. `packages/core` implements exactly this, and every rule below has a t
    on: `rising` (`/`) turns E→N, N→E, W→S, S→W; `falling` (`\`) turns E→S, S→E, W→N, N→W.
    Fenders are never greeted and never stop a Moin.
 
+9. **R13 — Chatterboxes say *Moin moin*.** A chatterbox's Moin carries **two** greetings. A
+   person reached by it receives both at once; greetings never exceed `needs`, so a fisherman
+   simply smiles and a captain smiles from that one Moin. Tapping a chatterbox is still one
+   greeting. Level files using chatterboxes need `formatVersion` 1.1.0 or later.
+
 **Termination.** Every person starts smiling at most once, and only that moment sends anything
 onward, so a tap sends at most `people` Moins, one after another. A single flight cannot circle
 forever: fender reflection is reversible, so a flight that began at a person cannot enter a loop
@@ -68,9 +76,9 @@ each with its tick `t`:
 
 | Event | Meaning |
 |:--|:--|
-| `greeted(x, y, source: "tap" \| "moin", greetings, needs)` | a person received a greeting |
+| `greeted(x, y, source: "tap" \| "moin", amount, greetings, needs)` | a person received `amount` greetings (1, or 2 from a chatterbox) |
 | `smiled(x, y)` | that greeting reached `needs` |
-| `launched(x, y, dir)` | a Moin leaves that person |
+| `launched(x, y, dir, amount)` | a Moin leaves that person, carrying `amount` greetings |
 | `bounced(x, y, dir)` | a Moin turned on a fender |
 | `stolen(x, y)` | a seagull took it |
 | `chainEnded(reason: "edge" \| "seagull" \| "alreadySmiling" \| "waiting")` | the chain is over |
@@ -101,7 +109,8 @@ where order matters.
 
 ## 8. The solver
 
-- Thanks to R9, the solver searches **tap counts per person** (0 … `needs`) rather than tap
+- Thanks to R9 (which R13 keeps: a chatterbox's greetings still only add up), the solver
+  searches **tap counts per person** (0 … `needs`) rather than tap
   sequences, smallest total first. A person no Moin can ever reach must be tapped `needs` times,
   which prunes the search.
 - It returns the minimum number of taps (par) and one solution.
@@ -111,10 +120,10 @@ where order matters.
 - Because tapping everyone `needs` times always works, every level with at least one person is
   solvable. "Unsolvable" therefore means a level with no people.
 
-## 9. Not in v1 (parking lot)
+## 9. Not in v1.1 (parking lot)
 
 Ideas that need their own analysis document before they enter the rules: people who turn, a
-chatterbox who says "Moin moin" and greets twice (Phase 2), a seagull that flies off after one
+seagull that flies off after one
 theft, a moving ferry. Each must keep chains terminating (§3), and any that makes order matter
 must say so in R9.
 

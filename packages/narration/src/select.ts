@@ -13,6 +13,7 @@ export const EDGE_QUIET_TAPS = 3;
  */
 export function triggerForTap(events: readonly MoinEvent[]): Trigger | null {
   if (events.length === 0) return null;
+  if (events.some((e) => e.type === 'greeted' && e.amount === 2 && e.needs === 2 && e.greetings === 2)) return 'chatterbox';
   if (events.filter((e) => e.type === 'smiled').length >= LONG_CHAIN) return 'longChain';
   const last = events[events.length - 1];
   if (last?.type !== 'chainEnded') return null;

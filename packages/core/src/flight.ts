@@ -15,6 +15,11 @@ const DY: Readonly<Record<Facing, number>> = { N: -1, E: 0, S: 1, W: 0 };
 const RISING: Readonly<Record<Facing, Facing>> = { E: 'N', N: 'E', W: 'S', S: 'W' };
 const FALLING: Readonly<Record<Facing, Facing>> = { E: 'S', S: 'E', W: 'N', N: 'W' };
 
+/** R13: greetings a person's Moin carries. */
+export function moinAmount(person: PersonCell): 1 | 2 {
+  return person.chatterbox === true ? 2 : 1;
+}
+
 /** R11: the direction after a fender of the given slant. */
 export function deflect(dir: Facing, slant: Slant): Facing {
   return slant === 'rising' ? RISING[dir] : FALLING[dir];
@@ -49,7 +54,7 @@ export function fly(game: Game, from: PersonCell, t0: number): Flight {
   let py = from.y * CELL + HALF_CELL;
   let t = t0;
   const path: (LaunchedEvent | BouncedEvent)[] = [
-    { type: 'launched', t, px, py, x: from.x, y: from.y, dir },
+    { type: 'launched', t, px, py, x: from.x, y: from.y, dir, amount: moinAmount(from) },
   ];
   // Termination (GAME_RULES §3): at most one visit per (cell, direction) state, 2 decisions each.
   const maxTicks = 4 * game.width * game.height * CELL + CELL;

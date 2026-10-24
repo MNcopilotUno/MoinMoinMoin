@@ -222,3 +222,48 @@ describe('R6, R7, R8 — winning', () => {
     expect(isSolved(game, state)).toBe(true);
   });
 });
+
+describe('R13 — chatterboxes say Moin moin', () => {
+  it('a chatterbox wakes a captain with one Moin', () => {
+    const game = board(`E1* . E2 .`);
+    const r = tap(game, initialState(game), 0, 0);
+    expect(r.events.find((e) => e.type === 'launched')).toMatchObject({ amount: 2 });
+    expect(r.events.find((e) => e.type === 'greeted' && e.source === 'moin'))
+      .toMatchObject({ x: 2, amount: 2, greetings: 2, needs: 2 });
+    expect(isSolved(game, r.state)).toBe(true);
+    expect(r.state.taps).toBe(1);
+  });
+
+  it('greetings are capped at needs: half-greeted captain and fisherman', () => {
+    const half = board(`E1* E2`);
+    let state = tap(half, initialState(half), 1, 0).state;
+    expect(state.greetings).toEqual([0, 1]);
+    state = tap(half, state, 0, 0).state;
+    expect(state.greetings).toEqual([1, 2]);
+    const fisher = board(`E1* E1`);
+    const r = tap(fisher, initialState(fisher), 0, 0);
+    expect(r.state.greetings).toEqual([1, 1]);
+    expect(r.events.filter((e) => e.type === 'greeted').map((e) => (e as { amount: number }).amount)).toEqual([1, 2]);
+  });
+
+  it('a Moin passed on by an ordinary person carries one greeting again', () => {
+    const game = board(`E1* E1 E2`);
+    const r = tap(game, initialState(game), 0, 0);
+    expect(ended(r.events)).toBe('waiting');
+    expect(r.state.greetings).toEqual([1, 1, 1]);
+  });
+
+  it('tapping a chatterbox captain is still one greeting', () => {
+    const game = board(`E2* .`);
+    const r = tap(game, initialState(game), 0, 0);
+    expect(r.events[0]).toMatchObject({ type: 'greeted', amount: 1, greetings: 1 });
+    expect(ended(r.events)).toBe('waiting');
+  });
+
+  it('chatterbox Moins still end at gulls, edges and smiling people', () => {
+    expect(ended(tap(board(`E1* g`), initialState(board(`E1* g`)), 0, 0).events)).toBe('seagull');
+    expect(ended(tap(board(`E1* .`), initialState(board(`E1* .`)), 0, 0).events)).toBe('edge');
+    const back = board(`E1* W1*`);
+    expect(ended(tap(back, initialState(back), 0, 0).events)).toBe('alreadySmiling');
+  });
+});

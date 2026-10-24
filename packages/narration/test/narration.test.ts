@@ -10,7 +10,7 @@ const row = (tokens: string): BoardSpec => ({
   cells: tokens.split(' ').flatMap((t, x): Cell[] => {
     if (t === '.') return [];
     if (t === 'g') return [{ x, y: 0, kind: 'seagull' as const }];
-    return [{ x, y: 0, kind: 'person' as const, facing: t[0] as 'E', needs: Number(t[1]) as 1 | 2 }];
+    return [{ x, y: 0, kind: 'person' as const, facing: t[0] as 'E', needs: Number(t[1]) as 1 | 2, ...(t[2] === '*' ? { chatterbox: true } : {}) }];
   }),
 });
 const firstTap = (tokens: string) => {
@@ -42,6 +42,8 @@ describe('triggerForTap', () => {
     ['lost at sea', 'E1 .', 'edge'],
     ['smiled back', 'E1 W1', null],
     ['own captain tap, needs two', 'E2 .', 'waiting'],
+    ['chatterbox wakes a captain in one go', 'E1* E2 .', 'chatterbox'],
+    ['chatterbox into a fisherman is just a chain', 'E1* E1 .', 'edge'],
   ])('%s', (_, tokens, trigger) => {
     expect(triggerForTap(firstTap(tokens))).toBe(trigger);
   });

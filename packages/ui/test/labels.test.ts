@@ -14,6 +14,7 @@ describe('labels (CLAUDE.md §7)', () => {
     [fisherman, 0, 'Grumpy fisherman, facing east, needs one greeting'],
     [{ ...fisherman, role: 'market', facing: 'W' } as PersonCell, 0, 'Grumpy market woman, facing west, needs one greeting'],
     [{ ...fisherman, role: 'kid', facing: 'N' } as PersonCell, 1, 'Smiling kid, facing north'],
+    [{ ...fisherman, role: 'market', chatterbox: true } as PersonCell, 0, 'Grumpy market woman, chatterbox, facing east, needs one greeting'],
   ])('%#: %s', (person, greetings, label) => {
     expect(personLabel(person, greetings)).toBe(label);
   });

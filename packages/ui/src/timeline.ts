@@ -9,7 +9,7 @@ export interface Frame {
   /** Greetings applied so far, keyed "x,y" (add to the state before the tap). */
   readonly greeted: ReadonlyMap<string, number>;
   /** The Moin in flight in sub-units, or null between flights. */
-  readonly moin: { readonly px: number; readonly py: number } | null;
+  readonly moin: { readonly px: number; readonly py: number; readonly amount: 1 | 2 } | null;
   readonly thief: { readonly x: number; readonly y: number } | null;
   readonly bounce: { readonly x: number; readonly y: number; readonly key: number } | null;
   /** `launched` events whose tick passed since `since` (to play the Moin sound). */
@@ -39,19 +39,23 @@ export function frameAt(events: readonly MoinEvent[], tick: number, since = -1):
   let thief: Frame['thief'] = null;
   let bounce: Frame['bounce'] = null;
   const launches: Extract<MoinEvent, { type: 'launched' }>[] = [];
+  let amount: 1 | 2 = 1;
 
   events.forEach((e, i) => {
     if (e.t > tick) return;
     if (e.type === 'greeted') greeted.set(`${e.x},${e.y}`, (greeted.get(`${e.x},${e.y}`) ?? 0) + 1);
     if (e.type === 'stolen' && tick < e.t + LOOT_TICKS) thief = { x: e.x, y: e.y };
     if (e.type === 'bounced') bounce = { x: e.x, y: e.y, key: e.t };
-    if (e.type === 'launched' && e.t > since) launches.push(e);
+    if (e.type === 'launched') {
+      amount = e.amount;
+      if (e.t > since) launches.push(e);
+    }
     if (startsFlight(e)) {
       const end = events.slice(i + 1).find(endsFlight);
       if (end !== undefined && tick < end.t) {
         const span = end.t - e.t;
         const k = span === 0 ? 1 : (tick - e.t) / span;
-        moin = { px: e.px + (end.px - e.px) * k, py: e.py + (end.py - e.py) * k };
+        moin = { px: e.px + (end.px - e.px) * k, py: e.py + (end.py - e.py) * k, amount };
       }
     }
   });

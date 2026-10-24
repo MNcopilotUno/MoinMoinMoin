@@ -5,7 +5,8 @@ import type { BoardSpec, Cell, Facing, Game } from '../src/index.js';
 /**
  * Build a board from rows of space-separated tokens:
  * `.` water, `g` seagull, `/` rising fender, `\` falling fender,
- * `E1` person facing east needing 1 greeting, `N2` facing north needing 2, …
+ * `E1` person facing east needing 1 greeting, `N2` facing north needing 2, …;
+ * a trailing `*` makes a chatterbox (`E1*`, R13).
  */
 export function spec(rows: string): BoardSpec {
   const lines = rows.trim().split('\n').map((l) => l.trim().split(/\s+/));
@@ -20,7 +21,7 @@ export function spec(rows: string): BoardSpec {
         const facing = tok[0] as Facing;
         const needs = Number(tok[1]) as 1 | 2;
         if (!'NESW'.includes(facing) || (needs !== 1 && needs !== 2)) throw new Error(`bad token ${tok}`);
-        cells.push({ x, y, kind: 'person', facing, needs });
+        cells.push({ x, y, kind: 'person', facing, needs, ...(tok[2] === '*' ? { chatterbox: true } : {}) });
       }
     }),
   );
@@ -34,7 +35,7 @@ export function board(rows: string): Game {
 const facing = fc.constantFrom<Facing>('N', 'E', 'S', 'W');
 const token = fc.oneof(
   { weight: 4, arbitrary: fc.constant('.') },
-  { weight: 4, arbitrary: fc.tuple(facing, fc.constantFrom(1, 2, 1)).map(([f, n]) => `${f}${n}`) },
+  { weight: 4, arbitrary: fc.tuple(facing, fc.constantFrom(1, 2, 1), fc.constantFrom('', '', '', '*')).map(([f, n, c]) => `${f}${n}${c}`) },
   { weight: 1, arbitrary: fc.constant('g') },
   { weight: 2, arbitrary: fc.constantFrom('/', '\\') },
 );
