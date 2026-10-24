@@ -15,3 +15,6 @@ export { shareText } from './share.js';
 export { default as Scene } from './components/Scene.svelte';
 export { portrait } from './portrait.js';
 export type { Mood, PortraitOptions, PortraitRole } from './portrait.js';
+export { default as Onlookers } from './components/Onlookers.svelte';
+export { default as SkyLife } from './components/SkyLife.svelte';
+export { default as Bunting } from './components/Bunting.svelte';

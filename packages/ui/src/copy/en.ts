@@ -45,6 +45,11 @@ export const copy = {
   starTotal: (got: number, of: number) => `${got} of ${of} stars`,
   levelTile: (n: number, title: string, stars: number) =>
     `Level ${n}, ${title}${stars > 0 ? `, ${stars} of 3 stars` : ', not solved yet'}`,
+  onlooker: (who: string) => `Onlooker, a ${who}: say Moin`,
+  gull: 'A gull overhead: shoo it',
+  boat: 'A boat on the water: toot',
+  theme: 'Theme',
+  themes: { auto: 'Auto', light: 'Day', dark: 'Night' } as Record<'auto' | 'light' | 'dark', string>,
   narratorDismiss: 'Dismiss',
   updateReady: 'A new version of the harbour is ready.',
   reload: 'Reload',

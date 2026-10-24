@@ -54,9 +54,9 @@
   .win {
     margin: 0 auto;
     width: min(calc(100vw - 32px), 26rem);
-    background: rgba(251, 246, 234, 0.94); border: 0; border-radius: 24px;
+    background: var(--card-strong); border: 0; border-radius: 24px;
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-    box-shadow: 0 14px 34px rgba(30, 43, 76, 0.28);
+    box-shadow: 0 14px 34px var(--shadow);
     padding: 1rem 1rem 1.1rem; text-align: center;
     animation: rise 0.35s ease-out;
   }
@@ -71,7 +71,7 @@
   .actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.9rem; }
   button {
     min-height: 48px; padding: 0 1.3rem; border-radius: 999px; font: inherit; font-weight: 800; cursor: pointer;
-    border: 1.5px solid var(--ink); box-shadow: 0 4px 12px rgba(30, 43, 76, 0.18);
+    border: 1.5px solid var(--ink); box-shadow: 0 4px 12px var(--shadow);
   }
   button:active { transform: scale(0.97); }
   button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }

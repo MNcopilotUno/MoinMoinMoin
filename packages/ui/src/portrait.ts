@@ -17,6 +17,8 @@ export interface PortraitOptions {
   readonly chatter?: boolean;
   /** Prefix for SVG ids; must be unique on the page. */
   readonly id?: string;
+  /** Draw a captain's greeting pips (off for onlookers, who are not in the puzzle). */
+  readonly pips?: boolean;
 }
 
 const SKIN: readonly { base: string; shade: string; light: string; lip: string }[] = [
@@ -27,7 +29,7 @@ const SKIN: readonly { base: string; shade: string; light: string; lip: string }
 const LOOK: Readonly<Record<Facing, readonly [number, number]>> = { N: [0, -2.2], E: [3.2, 0.2], S: [0, 2.4], W: [-3.2, 0.2] };
 const TURN: Readonly<Record<Facing, readonly [number, number]>> = { N: [0, -1.5], E: [4, 0], S: [0, 2], W: [-4, 0] };
 
-export function portrait({ role = 'fisherman', mood = 'grumpy', facing = 'E', tone = 0, chatter = false, id = 'p' }: PortraitOptions = {}): string {
+export function portrait({ role = 'fisherman', mood = 'grumpy', facing = 'E', tone = 0, chatter = false, id = 'p', pips = true }: PortraitOptions = {}): string {
   const k = SKIN[((tone % 3) + 3) % 3]!;
   const [lx, ly] = LOOK[facing];
   const [tx, ty] = TURN[facing];
@@ -163,7 +165,7 @@ export function portrait({ role = 'fisherman', mood = 'grumpy', facing = 'E', to
   // chatterbox marks
   if (chatter) g.push(`<path d="M160 64 Q174 56 172 40 M172 74 Q190 64 190 44" fill="none" stroke="#2B3A5C" stroke-width="3" stroke-linecap="round"/>`);
   // pips for the captain
-  if (captain) {
+  if (captain && pips) {
     const n = smile ? 2 : half ? 1 : 0;
     for (let i = 0; i < 2; i++) g.push(`<circle cx="${18 + i * 20}" cy="18" r="7" fill="${i < n ? '#C8102E' : '#FBF6EA'}" stroke="#2B3A5C" stroke-width="2"/>`);
   }

@@ -189,7 +189,9 @@ Adding a rule without its fixture is a review **blocker**.
   (`packages/ui/src/portrait.ts`); the smile is still the reward you see. Palette: lilac, dawn
   peach, harbour water and sage, harbour ink for lines and text. **Red means *Moin*** (speech
   bubble, smiles) and is used for nothing else; stars are ochre-gold. Cormorant Garamond and
-  Figtree, self-hosted.
+  Figtree, self-hosted. **Night harbour** (dark mode): moonlit nocturnes; `--ink` and `--paper`
+  swap, red still means Moin. **The harbour is alive:** onlookers on the quay, gulls, a boat,
+  bunting, ripples — decoration only, never a move.
 - **Cast:** fishermen, a grumpy captain (the one who needs two greetings), a market woman, kids,
   and seagulls as the cheeky villains.
 - **Narration** lines live in `packages/narration/` as data: one sentence each, dry northern

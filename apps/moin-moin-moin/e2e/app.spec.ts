@@ -186,3 +186,47 @@ test('the daily Moin: same puzzle as the generator, solvable at par, result copi
   await page.getByRole('button', { name: 'Back to the town' }).click();
   await expect(page.locator('h1')).toHaveText(levels[0]!.title);
 });
+
+test('night harbour: follows the phone, can be switched in the menu, and is remembered', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('./');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(page.locator('.scene')).toHaveAttribute('data-painting', 'night');
+  const bg = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--paper').trim());
+  expect(bg).toBe('#1a2142');
+  await page.getByRole('button', { name: 'Levels' }).click();
+  await page.getByText('Day', { exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await expect(page.locator('.scene')).toHaveAttribute('data-painting', 'day');
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+  await page.getByRole('button', { name: 'Levels' }).click();
+  await page.getByText('Night', { exact: true }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+});
+
+test('a crowded, living harbour: poking it is never a move (also with reduced motion)', async ({ page }) => {
+  // Ambient sway never settles, so click with motion reduced: the harbour must stay interactive.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./');
+  await expect(page.getByRole('button', { name: /^Onlooker, / })).toHaveCount(7);
+  await page.getByRole('button', { name: /^Onlooker, / }).nth(1).click();
+  await expect(page.getByText('Moin!')).toBeVisible();
+  await page.getByRole('button', { name: 'A boat on the water: toot' }).click();
+  await page.getByRole('button', { name: 'A gull overhead: shoo it' }).first().click();
+  const board = page.getByRole('group', { name: 'Harbour' });
+  const box = (await board.boundingBox())!;
+  await page.mouse.click(box.x + box.width - 12, box.y + box.height - 12);
+  await expect(page.getByTestId('ripple')).toHaveCount(1);
+  await expect(page.getByTestId('score')).toContainText('0 taps');
+  // the crowd celebrates a solve
+  await person(page, 0, 1).click();
+  await expect(page.getByRole('heading', { name: 'Everyone is smiling!' })).toBeVisible();
+  await expect(page.locator('.quay')).toHaveClass(/celebrate/);
+});
+
+test('no sideways scrolling on a phone', async ({ page }) => {
+  await page.goto('./');
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
+});

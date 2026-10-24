@@ -36,11 +36,11 @@
   .line {
     width: 100%; max-width: 30rem; min-height: 44px;
     border: 0; border-radius: 18px;
-    background: rgba(251, 246, 234, 0.9); color: var(--ink);
+    background: var(--card); color: var(--ink);
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     padding: 0.8rem 1.1rem; text-align: left; cursor: pointer;
     font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.3rem; line-height: 1.25;
-    box-shadow: 0 8px 20px rgba(30, 43, 76, 0.18);
+    box-shadow: 0 8px 20px var(--shadow);
     animation: drift 0.35s ease-out;
   }
   @keyframes drift { from { opacity: 0; transform: translateY(6px); } }

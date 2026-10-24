@@ -6,16 +6,17 @@
   import type { Level } from '@moin/levels';
   import { freshMemory, pickLine, triggerForTap } from '@moin/narration';
   import type { Cue, Line, NarratorMemory } from '@moin/narration';
-  import { announceTap, Board, copy, frameAt, IconButton, noteFor, Scene, shareText, Stars } from '@moin/ui';
+  import { announceTap, Board, copy, frameAt, IconButton, noteFor, Onlookers, Scene, shareText, SkyLife, Stars } from '@moin/ui';
   import type { Frame } from '@moin/ui';
   import Icons from './components/Icons.svelte';
   import LevelSelect from './components/LevelSelect.svelte';
   import Narrator from './components/Narrator.svelte';
   import UpdateToast from './components/UpdateToast.svelte';
   import WinCard from './components/WinCard.svelte';
-  import { sayMoin, unlockAudio } from './lib/audio';
-  import { loadProgress, saveMuted, saveSolved } from './lib/progress';
-  import type { LevelProgress } from './lib/progress';
+  import { sayAmbient, sayMoin, unlockAudio } from './lib/audio';
+  import { applyTheme, effectiveTheme, watchSystemTheme } from './lib/theme';
+  import { loadProgress, saveMuted, saveSolved, saveTheme } from './lib/progress';
+  import type { LevelProgress, ThemeSetting } from './lib/progress';
   import { startServiceWorker } from './lib/sw';
 
   interface Playback {
@@ -40,6 +41,12 @@
 
   let best = $state.raw<Record<string, LevelProgress>>({});
   let muted = $state<boolean | null>(null);
+  let themeSetting = $state<ThemeSetting>('auto');
+  let systemTick = $state(0);
+  const theme = $derived((void systemTick, effectiveTheme(themeSetting)));
+  $effect(() => applyTheme(theme));
+  /** Bumped once per smile as the animation reaches it: the crowd on the quay cheers. */
+  let cheer = $state(0);
   let memory: NarratorMemory = freshMemory;
   let line = $state.raw<Line | null>(null);
   let lineKey = $state(0);
@@ -143,6 +150,7 @@
       const all = playback.events.filter((e) => e.type === 'launched');
       for (const launch of f.launches) sayMoin(noteFor(all.indexOf(launch)), launch.amount);
     }
+    cheer += f.launches.length;
     if (f.done) finishPlayback(true);
     else raf = requestAnimationFrame(step);
   }
@@ -158,6 +166,7 @@
     current = result.state;
     announcement = announceTap(result.events, isSolved(game, current));
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      cheer += result.events.filter((e) => e.type === 'smiled').length;
       afterTap(result.events);
       return;
     }
@@ -192,6 +201,16 @@
     void saveMuted(muted);
   }
 
+  function setTheme(next: ThemeSetting) {
+    themeSetting = next;
+    void saveTheme(next);
+  }
+
+  function poke(kind: 'squawk' | 'horn' | 'moin', pitch = 0) {
+    unlockAudio();
+    if (muted !== true) sayAmbient(kind, pitch);
+  }
+
   function next() {
     if (isDaily) startLevel(firstUnsolved(best));
     else startLevel(levelIndex + 1 < levels.length ? levelIndex + 1 : 0);
@@ -212,29 +231,35 @@
   onMount(() => {
     startServiceWorker((apply) => (applyUpdate = apply));
     let settled = false;
-    const begin = (progress: { levels: Record<string, LevelProgress>; muted: boolean | null }) => {
+    const stopWatching = watchSystemTheme(() => (systemTick += 1));
+    const begin = (progress: { levels: Record<string, LevelProgress>; muted: boolean | null; theme: ThemeSetting }) => {
       if (settled) return;
       settled = true;
       best = progress.levels;
       muted = progress.muted;
+      themeSetting = progress.theme;
       startLevel(firstUnsolved(progress.levels));
       ready = true;
     };
     // Cold open must not wait on storage: play level 1 if IndexedDB is slow.
-    const fallback = setTimeout(() => begin({ levels: {}, muted: null }), 600);
+    const fallback = setTimeout(() => begin({ levels: {}, muted: null, theme: 'auto' }), 600);
     void loadProgress().then((p) => {
       clearTimeout(fallback);
-      begin({ levels: { ...p.levels }, muted: p.muted });
+      begin({ levels: { ...p.levels }, muted: p.muted, theme: p.theme });
     });
-    return () => finishPlayback(false);
+    return () => {
+      stopWatching();
+      finishPlayback(false);
+    };
   });
 </script>
 
 {#if applyUpdate}<UpdateToast apply={applyUpdate} />{/if}
-<Scene place={set?.id ?? 'daily'} {fog} />
+<Scene place={set?.id ?? 'daily'} {fog} night={theme === 'dark'} />
 {#if picking}
   <LevelSelect {sets} {best} daily={daily ? { day: dayId(today), level: daily } : null}
-    current={level.id} onpick={startLevel} ondaily={startDaily} onclose={() => (picking = false)} />
+    current={level.id} onpick={startLevel} ondaily={startDaily} onclose={() => (picking = false)}
+    theme={themeSetting} ontheme={setTheme} />
 {/if}
 
 <div class="shell" class:ready>
@@ -260,12 +285,18 @@
     {#if bestStars > 0}<span class="best"><Stars count={bestStars} size="1rem" /></span>{/if}
   </p>
 
+  <SkyLife onsquawk={() => poke('squawk')} onhorn={() => poke('horn')} />
+
   <main>
     {#if ready}
-      <Board width={game.width} height={game.height} cells={game.cells} {greetings}
+      <Board width={game.width} height={game.height} cells={game.cells} {greetings} night={theme === 'dark'}
         moin={frame?.moin ?? null} thief={frame?.thief ?? null} bounce={frame?.bounce ?? null} ontap={onTap} />
     {/if}
   </main>
+
+  <div class="quay-wrap">
+    <Onlookers {cheer} celebrate={solved} onpoke={(i) => poke('moin', [5, 2, 0, -5, 3, -2, 7][i] ?? 0)} />
+  </div>
 
   <Narrator {line} key={lineKey} />
   {#if solved}
@@ -292,7 +323,7 @@
   }
   h1 {
     margin: 0.85rem 0 0; font-family: var(--serif); font-weight: 700; font-size: 2.5rem; line-height: 1;
-    color: var(--ink); overflow-wrap: anywhere; text-shadow: 0 1px 8px rgba(251, 246, 234, 0.45);
+    color: var(--ink); overflow-wrap: anywhere; text-shadow: 0 1px 8px var(--title-glow);
   }
   .tools { display: flex; gap: 0.4rem; flex-shrink: 0; }
   .score {
@@ -301,5 +332,6 @@
   }
   .dot { opacity: 0.6; }
   .best { margin-left: auto; }
-  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 18px 14px 14px; }
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 14px 14px; }
+  .quay-wrap { padding: 0 14px 10px; }
 </style>

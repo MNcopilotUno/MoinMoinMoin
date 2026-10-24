@@ -1,4 +1,4 @@
-import { playMoin } from '@moin/assets';
+import { playHorn, playMoin, playSquawk } from '@moin/assets';
 
 /**
  * Sound is optional and never blocking (CLAUDE.md §7). The AudioContext is created or resumed on
@@ -25,6 +25,18 @@ export function sayMoin(pitch: number, amount: 1 | 2 = 1): void {
   try {
     const end = playMoin(ctx, { pitch, volume: 0.35 });
     if (amount === 2) playMoin(ctx, { pitch, volume: 0.3, when: end - 0.12 });
+  } catch {
+    // never let sound break play
+  }
+}
+
+/** Ambient sounds for poking the harbour's life; never part of a move. */
+export function sayAmbient(kind: 'squawk' | 'horn' | 'moin', pitch = 0): void {
+  if (ctx === null || ctx.state !== 'running') return;
+  try {
+    if (kind === 'squawk') playSquawk(ctx);
+    else if (kind === 'horn') playHorn(ctx);
+    else playMoin(ctx, { pitch, volume: 0.22 });
   } catch {
     // never let sound break play
   }
