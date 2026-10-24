@@ -1,5 +1,7 @@
 <script lang="ts">
   import { CELL } from '@moin/core';
+  import waterUrl from '@moin/assets/art/water.jpg';
+  import plankUrl from '@moin/assets/art/plank.svg';
   import type { Cell } from '@moin/core';
   import { copy } from '../copy/en.js';
   import { cellLabel, roleOf } from '../labels.js';
@@ -32,7 +34,7 @@
 </script>
 
 <div class="board" role="group" aria-label={copy.board}
-  style:--w={width} style:--h={height}>
+  style:--w={width} style:--h={height} style:--water={`url(${waterUrl})`} style:--plank={`url(${plankUrl})`}>
   {#each placed as { cell, index } (`${cell.x},${cell.y}`)}
     <div class="cell" style:grid-column={cell.x + 1} style:grid-row={cell.y + 1}>
       {#if cell.kind === 'person'}
@@ -41,7 +43,8 @@
           aria-label={cellLabel(cell, g)} data-x={cell.x} data-y={cell.y}
           onclick={() => ontap(cell.x, cell.y)}>
           <PersonSprite role={roleOf(cell)} facing={cell.facing} needs={cell.needs} greetings={g}
-            chatterbox={cell.chatterbox === true} variant={cell.x * 3 + cell.y} />
+            chatterbox={cell.chatterbox === true} variant={cell.x * 3 + cell.y} uid={`p${cell.x}-${cell.y}`} />
+          <span class={`facing facing-${cell.facing}`} aria-hidden="true"></span>
         </button>
       {:else if cell.kind === 'seagull'}
         {@const holding = thief?.x === cell.x && thief?.y === cell.y}
@@ -68,35 +71,40 @@
 
 <style>
   .board {
-    --cell: min(calc((100vw - 32px) / var(--w)), calc((100dvh - 230px) / var(--h)), 76px);
+    --cell: min(calc((100vw - 28px) / var(--w)), calc((100dvh - 320px) / var(--h)), 72px);
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--w), max(44px, var(--cell)));
     grid-template-rows: repeat(var(--h), max(44px, var(--cell)));
-    border: var(--outline, 3px) solid var(--ink, #1c2333);
-    border-radius: 18px;
-    background:
-      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.35) 0 2px, transparent 3px) 0 0 / 38px 31px,
-      repeating-linear-gradient(170deg, transparent 0 14px, rgba(255, 255, 255, 0.22) 14px 16px, transparent 16px 30px),
-      var(--water, #c9d6e3);
-    box-shadow: 0 5px 0 var(--ink, #1c2333);
+    padding: 6px;
+    border-radius: 26px;
+    background: var(--water) center / cover, #8eadc5;
+    box-shadow: 0 18px 40px rgba(30, 43, 76, 0.35), inset 0 0 0 1.5px rgba(255, 255, 255, 0.35);
     touch-action: manipulation;
     user-select: none;
     -webkit-user-select: none;
   }
-  .cell { position: relative; padding: 6%; }
+  .cell { position: relative; padding: 5%; }
   .person, .thing { width: 100%; height: 100%; }
   .person {
-    padding: 4%; margin: 0;
-    border: 2px solid rgba(28, 35, 51, 0.55); border-radius: 22%;
-    background: repeating-linear-gradient(90deg, var(--sand, #ecdcb8) 0 30%, var(--sand-deep, #d4bc8c) 30% 33%);
+    position: relative;
+    padding: 2% 3% 0; margin: 0;
+    border: 0; border-radius: 26%;
+    background: var(--plank) center / cover, #ddc195;
+    box-shadow: 0 3px 0 rgba(110, 78, 46, 0.45), 0 6px 10px rgba(30, 43, 76, 0.25);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .person:hover:not(.smiling) { border-color: var(--ink, #1c2333); }
+  .person:hover:not(.smiling) { box-shadow: 0 3px 0 rgba(110, 78, 46, 0.45), 0 0 0 2px rgba(251, 246, 234, 0.9), 0 6px 14px rgba(30, 43, 76, 0.3); }
   .person:active:not(.smiling) { transform: scale(0.94); }
-  .person:focus-visible { outline: 3px solid var(--royal, #2346b8); outline-offset: 2px; }
+  .person:focus-visible { outline: 3px solid var(--ink, #1e2b4c); outline-offset: 2px; }
   .person.smiling { cursor: default; }
+  /* Facing: a paper chip at the edge the person faces (readable on every coat and tile). */
+  .facing { position: absolute; width: 0; height: 0; filter: drop-shadow(0 0 1px #1e2b4c) drop-shadow(0 0 1px #1e2b4c); }
+  .facing-N { top: -7px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top: 0; border-bottom: 8px solid #fbf6ea; }
+  .facing-S { bottom: -7px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-bottom: 0; border-top: 8px solid #fbf6ea; }
+  .facing-E { right: -7px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right: 0; border-left: 8px solid #fbf6ea; }
+  .facing-W { left: -7px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-left: 0; border-right: 8px solid #fbf6ea; }
   .moin {
     position: absolute;
     transform: translate(-50%, -78%);

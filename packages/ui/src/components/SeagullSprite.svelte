@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { palette } from '@moin/assets';
-
   interface Props {
     /** Holding a stolen Moin in its beak. */
     holding?: boolean;
@@ -9,18 +7,23 @@
 </script>
 
 <svg viewBox="0 0 100 100" aria-hidden="true" class="gull" class:holding>
-  <ellipse cx="48" cy="62" rx="28" ry="20" fill={palette.white} stroke={palette.ink} stroke-width="4" />
-  <path d="M30 58 Q46 44 66 60 Q50 70 30 58 Z" fill={palette.stone} stroke={palette.ink} stroke-width="3" />
-  <path d="M20 66 L6 60 L18 74 Z" fill={palette.slate} stroke={palette.ink} stroke-width="3" stroke-linejoin="round" />
-  <path d="M42 82 V92 M54 82 V92" stroke={palette.sandDeep} stroke-width="4" stroke-linecap="round" />
-  <circle cx="66" cy="38" r="15" fill={palette.white} stroke={palette.ink} stroke-width="4" />
-  <path d="M78 38 L96 42 L78 47 Z" fill={palette.sandDeep} stroke={palette.ink} stroke-width="3" stroke-linejoin="round" />
-  <circle cx="69" cy="35" r="3" fill={palette.ink} />
-  <path d="M62 28 L74 31" stroke={palette.ink} stroke-width="3.5" stroke-linecap="round" />
+  <ellipse cx="46" cy="88" rx="26" ry="5" fill="#1e2b4c" fill-opacity="0.18" />
+  <ellipse cx="46" cy="64" rx="27" ry="17" fill="#f7f5f0" />
+  <path d="M28 60 Q46 46 68 62 Q50 72 28 60Z" fill="#b7c2d2" />
+  <path d="M33 62 Q46 54 60 63" fill="none" stroke="#8a97ad" stroke-width="1.5" />
+  <path d="M40 70 Q46 74 54 72" fill="none" stroke="#cbd3de" stroke-width="2" />
+  <path d="M20 68 L6 60 L17 76Z" fill="#5f6c86" />
+  <path d="M41 80 V90 M52 80 V90" stroke="#d99a4a" stroke-width="3" stroke-linecap="round" />
+  <circle cx="66" cy="40" r="14" fill="#f7f5f0" />
+  <path d="M78 39 L96 43 L78 48Z" fill="#e8a447" />
+  <circle cx="84" cy="44.5" r="1.8" fill="#c8102e" />
+  <circle cx="69" cy="37" r="2.8" fill="#1b2236" />
+  <circle cx="70" cy="36" r="0.9" fill="#fff" />
+  <path d="M61 30 L75 33" stroke="#1b2236" stroke-width="2.6" stroke-linecap="round" />
   {#if holding}
     <g class="loot">
-      <rect x="74" y="8" width="26" height="16" rx="5" fill={palette.moin} stroke={palette.ink} stroke-width="2.5" />
-      <path d="M82 24 L84 31 L88 24 Z" fill={palette.moin} stroke={palette.ink} stroke-width="2" stroke-linejoin="round" />
+      <rect x="72" y="8" width="28" height="17" rx="5" fill="#c8102e" stroke="#8e0a20" stroke-width="1.5" />
+      <path d="M80 25 L82 32 L87 25 Z" fill="#c8102e" />
     </g>
   {/if}
 </svg>

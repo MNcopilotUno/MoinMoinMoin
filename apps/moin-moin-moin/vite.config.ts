@@ -28,8 +28,8 @@ export default defineConfig({
         scope: '.',
         display: 'standalone',
         orientation: 'portrait',
-        theme_color: '#2346b8',
-        background_color: '#eef1f4',
+        theme_color: '#1e2b4c',
+        background_color: '#f6f1e7',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -40,7 +40,7 @@ export default defineConfig({
       workbox: {
         // CLAUDE.md §8 (stale service worker): workbox revisions change with content; the cache
         // name stays stable; the new worker waits until the player chooses to reload.
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2,webmanifest}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,

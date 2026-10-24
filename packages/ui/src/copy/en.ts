@@ -21,6 +21,7 @@ export const copy = {
   taps: (n: number) => `${n} ${n === 1 ? 'tap' : 'taps'}`,
   par: (n: number) => `par ${n}`,
   level: (place: string, n: number, of: number) => `${place} · level ${n} of ${of}`,
+  levelOf: (n: number, of: number) => `level ${n} of ${of}`,
   backToStory: 'Back to the town',
   stars: (n: number) => `${n} of 3 stars`,
 

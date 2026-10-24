@@ -126,11 +126,11 @@ test('the web manifest names the game from core and uses the palette', async ({ 
   const manifest = await (await request.get('manifest.webmanifest')).json();
   expect(manifest.name).toBe(GAME_NAME);
   expect(manifest.short_name).toBe(GAME_SHORT_NAME);
-  expect(manifest.theme_color).toBe(palette.royal);
+  expect(manifest.theme_color).toBe(palette.ink);
   expect(manifest.background_color).toBe(palette.fog);
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   expect(html).toContain(`<title>${GAME_NAME}</title>`);
-  expect(html).toContain(`content="${palette.royal}"`);
+  expect(html).toContain(`content="${palette.ink}"`);
 });
 
 test('level select: three parts of town, star totals, pick any level, Escape closes', async ({ page }) => {
@@ -144,15 +144,17 @@ test('level select: three parts of town, star totals, pick any level, Escape clo
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
   await openLevel(page, sets[2]!.levels[4]!.title);
-  await expect(page.locator('.level-no')).toHaveText(/The ferry · level 5 of 10/);
+  await expect(page.locator('.level-no')).toHaveText(/The ferry\s*level 5 of 10/);
 });
 
 test('the fog over the town lifts as its levels are solved', async ({ page }) => {
   await page.goto('./');
   const fog = page.locator('.scene .fog');
-  const before = Number(await fog.getAttribute('opacity'));
+  const opacity = () => fog.evaluate((el) => Number((el as HTMLElement).style.opacity));
+  const before = await opacity();
+  expect(before).toBeGreaterThan(0);
   await solveCurrent(page, 0);
-  await expect.poll(async () => Number(await fog.getAttribute('opacity'))).toBeLessThan(before);
+  await expect.poll(opacity).toBeLessThan(before);
 });
 
 test("a chatterbox says Moin moin and wakes the captain with one Moin", async ({ page }) => {

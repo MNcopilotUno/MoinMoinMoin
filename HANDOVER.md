@@ -13,9 +13,10 @@ the owner on 2026-10-24**, not passed. Live: <https://mncopilotuno.github.io/Moi
 | Narration | 30 level intros, set-complete story beats, daily lines, reactions (chain, chatterbox, gull, captain, sea, par) |
 | App | Cold open → first unsolved level; level select with star totals (90); fog lifting over each part of town; chain tune; chatterbox "Moin moin"; daily with copyable emoji result; undo/restart/mute; offline; reload to update |
 | Deploy | Every push to `main` → CI (lint, typecheck, unit, levels, e2e incl. Firefox + WebKit replay) → GitHub Pages |
+| Art | Impressionist direction (2026-10-24): generated Monet-like paintings per part of town, gouache portraits, Cormorant Garamond + Figtree self-hosted. Sketch: Claude Design canvas (private to the owner) |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 62, narration 18, ui 25; e2e 19 on Chromium; `validate:levels` 30
+Test counts: core 60, levels 62, narration 18, ui 42; e2e 19 on Chromium; `validate:levels` 30
 levels ok, 14 fixtures fail as expected.
 
 ## Next

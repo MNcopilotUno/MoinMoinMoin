@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Slant } from '@moin/core';
-  import { palette } from '@moin/assets';
 
   interface Props {
     slant: Slant;
@@ -12,8 +11,11 @@
 
 <svg viewBox="0 0 100 100" aria-hidden="true" class="fender" class:hit>
   <g transform={`rotate(${slant === 'rising' ? -45 : 45} 50 50)`}>
-    <rect x="6" y="38" width="88" height="24" rx="12" fill={palette.wood} stroke={palette.ink} stroke-width="4" />
-    <path d="M28 40 V60 M50 40 V60 M72 40 V60" stroke={palette.ink} stroke-width="2.5" opacity="0.45" />
+    <rect x="8" y="42" width="84" height="22" rx="11" fill="#1e2b4c" fill-opacity="0.18" />
+    <rect x="6" y="38" width="88" height="22" rx="11" fill="#b08458" />
+    <rect x="6" y="38" width="88" height="9" rx="4.5" fill="#d2a978" fill-opacity="0.8" />
+    <path d="M24 40 V58 M50 40 V58 M76 40 V58" stroke="#7a5634" stroke-width="2" stroke-opacity="0.55" />
+    <path d="M10 49 Q4 49 4 55 M90 49 Q96 49 96 55" fill="none" stroke="#e9dcc0" stroke-width="2.5" stroke-linecap="round" />
   </g>
 </svg>
 

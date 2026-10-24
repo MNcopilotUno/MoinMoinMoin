@@ -70,7 +70,8 @@
     );
   });
   const solved = $derived(playback === null && isSolved(game, current));
-  const fog = $derived(set ? 0.85 * (1 - solvedIn(set.levels) / set.levels.length) : solved ? 0 : 0.45);
+  // The story: a light morning mist over each part of town, lifting as its levels are solved.
+  const fog = $derived(set ? 0.5 * (1 - solvedIn(set.levels) / set.levels.length) : solved ? 0 : 0.25);
   const bestStars = $derived(best[level.id] ? stars(best[level.id]!.bestTaps, level.par) : 0);
 
   function say(cue: Cue) {
@@ -238,12 +239,10 @@
 
 <div class="shell" class:ready>
   <header>
-    <div class="title">
+    <div class="topline">
       <p class="level-no">
-        {isDaily ? copy.dailyHint(dayId(today)) : copy.level(set?.title ?? '', (set?.levels.findIndex((l) => l.id === level.id) ?? 0) + 1, set?.levels.length ?? levels.length)}
+        {#if isDaily}{copy.daily}<br />{dayId(today)}{:else}{set?.title ?? ''}<br />{copy.levelOf((set?.levels.findIndex((l) => l.id === level.id) ?? 0) + 1, set?.levels.length ?? levels.length)}{/if}
       </p>
-      <h1>{level.title}</h1>
-    </div>
     <div class="tools">
       <IconButton label={copy.levels} onclick={() => (picking = true)}><Icons name="levels" /></IconButton>
       <IconButton label={copy.undo} onclick={undo} disabled={history.length === 0}><Icons name="undo" /></IconButton>
@@ -252,6 +251,8 @@
         <Icons name={muted === true ? 'muted' : 'sound'} />
       </IconButton>
     </div>
+    </div>
+    <h1>{level.title}</h1>
   </header>
 
   <p class="score" data-testid="score">
@@ -280,18 +281,25 @@
     position: relative; z-index: 1;
     max-width: 640px; margin: 0 auto; min-height: 100dvh;
     display: flex; flex-direction: column;
-    padding: max(10px, env(safe-area-inset-top)) 0 max(10px, env(safe-area-inset-bottom));
+    padding: max(14px, env(safe-area-inset-top)) 0 max(12px, env(safe-area-inset-bottom));
   }
-  header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0 16px; }
-  .title { min-width: 0; }
-  .level-no { margin: 0; font-size: 0.8rem; font-weight: 700; color: var(--slate); text-transform: uppercase; letter-spacing: 0.06em; }
-  h1 { margin: 0; font-size: 1.3rem; line-height: 1.15; overflow-wrap: anywhere; }
+  header { padding: 0 16px; }
+  .topline { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+  .level-no {
+    margin: 0; max-width: 11rem;
+    font-size: 0.7rem; line-height: 1.5; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  h1 {
+    margin: 0.85rem 0 0; font-family: var(--serif); font-weight: 700; font-size: 2.5rem; line-height: 1;
+    color: var(--ink); overflow-wrap: anywhere; text-shadow: 0 1px 8px rgba(251, 246, 234, 0.45);
+  }
   .tools { display: flex; gap: 0.4rem; flex-shrink: 0; }
   .score {
-    display: flex; align-items: center; gap: 0.4rem; margin: 0.5rem 16px 0; font-weight: 700; color: var(--deep);
-    font-variant-numeric: tabular-nums;
+    display: flex; align-items: center; gap: 0.4rem; margin: 0.5rem 16px 0; font-weight: 700; color: var(--ink-soft);
+    font-variant-numeric: tabular-nums; font-size: 0.95rem;
   }
-  .dot { color: var(--stone); }
+  .dot { opacity: 0.6; }
   .best { margin-left: auto; }
-  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 12px 16px; }
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 18px 14px 14px; }
 </style>

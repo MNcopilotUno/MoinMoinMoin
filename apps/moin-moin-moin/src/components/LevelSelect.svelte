@@ -4,6 +4,11 @@
   import type { Level, LevelSet } from '@moin/levels';
   import { copy, Stars } from '@moin/ui';
   import type { LevelProgress } from '../lib/progress';
+  import harbourUrl from '@moin/assets/art/harbour.jpg';
+  import marketUrl from '@moin/assets/art/market.jpg';
+  import ferryUrl from '@moin/assets/art/ferry.jpg';
+
+  const paintings: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl };
 
   interface Props {
     sets: readonly LevelSet[];
@@ -53,7 +58,10 @@
 
   {#each sets as set, s (set.id)}
     {@const got = set.levels.reduce((n, l) => n + starsOf(l), 0)}
-    <h3>{set.title} <span>{copy.starTotal(got, set.levels.length * 3)}</span></h3>
+    <div class="banner" style:--painting={`url(${paintings[set.id] ?? harbourUrl})`}
+      style:--mist={1 - got / (set.levels.length * 3)}>
+      <h3>{set.title} <span>{copy.starTotal(got, set.levels.length * 3)}</span></h3>
+    </div>
     <ol class="tiles">
       {#each set.levels as l, i (l.id)}
         {@const n = starsOf(l)}
@@ -70,36 +78,53 @@
 </div>
 
 <style>
-  .backdrop { position: fixed; inset: 0; background: rgba(28, 35, 51, 0.35); z-index: 30; }
+  .backdrop { position: fixed; inset: 0; background: rgba(30, 43, 76, 0.32); z-index: 30; }
   .select {
     position: fixed; z-index: 31; left: 50%; top: max(12px, env(safe-area-inset-top)); transform: translateX(-50%);
     width: min(calc(100vw - 24px), 30rem); max-height: calc(100dvh - 24px); overflow-y: auto;
-    background: var(--white); border: var(--outline) solid var(--ink); border-radius: 20px; box-shadow: 0 6px 0 var(--ink);
-    padding: 0.8rem 1rem 1.1rem;
+    background: rgba(251, 246, 234, 0.96); border-radius: 24px; box-shadow: 0 18px 44px rgba(30, 43, 76, 0.35);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    padding: 0.9rem 1rem 1.2rem;
   }
   header { display: flex; align-items: center; gap: 0.6rem; }
-  h2 { margin: 0; font-size: 1.25rem; }
-  .total { margin-left: auto; font-weight: 700; color: var(--royal); font-size: 0.9rem; }
+  h2 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: 2.1rem; line-height: 1; color: var(--ink); }
+  .total { margin-left: auto; font-weight: 700; color: var(--ink-soft); font-size: 0.85rem; }
   .close {
-    min-width: 44px; min-height: 44px; border: 0; background: transparent; font-size: 1.2rem; cursor: pointer; color: var(--ink);
+    min-width: 44px; min-height: 44px; border-radius: 50%; border: 1.5px solid rgba(30, 43, 76, 0.6);
+    background: var(--paper); font-size: 1rem; cursor: pointer; color: var(--ink);
   }
-  h3 { margin: 1rem 0 0.4rem; font-size: 1rem; display: flex; justify-content: space-between; }
-  h3 span { font-weight: 600; color: var(--slate); font-size: 0.85rem; }
   .daily {
-    width: 100%; margin-top: 0.6rem; min-height: 56px; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-    border: var(--outline) solid var(--ink); border-radius: 14px; background: var(--royal); color: var(--white);
-    font: inherit; padding: 0.5rem 0.8rem; cursor: pointer; text-align: left;
+    width: 100%; margin-top: 0.8rem; min-height: 56px; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    border: 0; border-radius: 18px; background: var(--ink); color: var(--paper);
+    font: inherit; padding: 0.6rem 1rem; cursor: pointer; text-align: left;
+    box-shadow: 0 8px 18px rgba(30, 43, 76, 0.28);
   }
+  .daily strong { font-family: var(--serif); font-size: 1.45rem; font-weight: 700; }
   .daily span { opacity: 0.9; font-size: 0.9rem; }
-  .note { color: var(--slate); font-style: italic; }
+  .note { color: var(--ink-soft); font-style: italic; }
+  .banner {
+    position: relative; margin: 1rem 0 0.5rem; height: 68px; border-radius: 16px; overflow: hidden;
+    background: var(--painting) center 30% / cover;
+    display: flex; align-items: flex-end; padding: 0 0.8rem 0.45rem;
+  }
+  .banner::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(246, 241, 231, 0.2), rgba(246, 241, 231, 0.85));
+    opacity: calc(0.35 + var(--mist) * 0.55);
+  }
+  h3 {
+    position: relative; margin: 0; width: 100%; display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--serif); font-size: 1.55rem; font-weight: 700; color: var(--ink);
+  }
+  h3 span { font-family: var(--sans); font-weight: 700; color: var(--ink-soft); font-size: 0.78rem; }
   .tiles { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.45rem; }
   .tile {
-    width: 100%; min-height: 52px; border: 2px solid var(--ink); border-radius: 12px; background: var(--fog);
+    width: 100%; min-height: 52px; border: 1.5px solid rgba(30, 43, 76, 0.35); border-radius: 14px; background: var(--paper);
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     font: inherit; font-weight: 800; cursor: pointer; color: var(--ink);
   }
-  .tile.solved { background: var(--sand); }
-  .tile[aria-current='true'] { outline: 3px solid var(--royal); outline-offset: 2px; }
-  .tile:focus-visible, .daily:focus-visible, .close:focus-visible { outline: 3px solid var(--royal); outline-offset: 2px; }
-  .mini { font-size: 0.7rem; color: var(--royal); letter-spacing: 1px; }
+  .tile.solved { background: #e8cfa3; border-color: rgba(110, 78, 46, 0.5); }
+  .tile[aria-current='true'] { outline: 2.5px solid var(--ink); outline-offset: 2px; }
+  .tile:focus-visible, .daily:focus-visible, .close:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .mini { font-size: 0.7rem; color: #a87a22; letter-spacing: 1px; }
 </style>
