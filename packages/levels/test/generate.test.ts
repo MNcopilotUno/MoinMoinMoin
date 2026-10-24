@@ -63,6 +63,13 @@ describe('daily level', () => {
     }
   });
 
+  it('the daily crowd has the whole cast, and roles never change the puzzle', () => {
+    const level = dailyLevel({ year: 2026, month: 10, day: 24 });
+    const roles = new Set(level.cells.flatMap((c) => (c.kind === 'person' ? [c.role] : [])));
+    expect(roles.has('fisherman') && roles.has('kid')).toBe(true);
+    for (const c of level.cells) if (c.kind === 'person' && c.needs === 2) expect(c.role).toBe('captain');
+  });
+
   it('formats day ids with leading zeros', () => {
     expect(dayId({ year: 2026, month: 3, day: 7 })).toBe('2026-03-07');
   });

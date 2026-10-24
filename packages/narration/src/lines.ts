@@ -4,6 +4,8 @@
  */
 export type Trigger =
   | 'levelStart'
+  | 'setComplete'
+  | 'dailyStart'
   | 'longChain'
   | 'chatterbox'
   | 'stolen'
@@ -17,7 +19,7 @@ export type Trigger =
 export interface Line {
   readonly id: string;
   readonly trigger: Trigger;
-  /** Only for `levelStart`: the level this intro belongs to. */
+  /** Only for `levelStart`: the level this intro belongs to; for `setComplete`: the set. */
   readonly levelId?: string;
   readonly text: string;
 }
@@ -33,6 +35,34 @@ export const lines: readonly Line[] = [
   { id: 'intro-08', trigger: 'levelStart', levelId: 'harbour-08', text: 'A Moin will go the long way round if you let it.' },
   { id: 'intro-09', trigger: 'levelStart', levelId: 'harbour-09', text: 'Two greetings for the captain, and he still will not say thank you.' },
   { id: 'intro-10', trigger: 'levelStart', levelId: 'harbour-10', text: 'The whole harbour, still grumpy — time to wake the lot.' },
+
+  { id: 'intro-market-01', trigger: 'levelStart', levelId: 'market-01', text: 'The fog lifts off the market, and the first stall-holder clears her throat.' },
+  { id: 'intro-market-02', trigger: 'levelStart', levelId: 'market-02', text: 'At the market nobody says Moin once when Moin moin will do.' },
+  { id: 'intro-market-03', trigger: 'levelStart', levelId: 'market-03', text: 'The fish stall opens grumpy, as fish stalls do.' },
+  { id: 'intro-market-04', trigger: 'levelStart', levelId: 'market-04', text: 'Two captains buying herring, and neither will greet first.' },
+  { id: 'intro-market-05', trigger: 'levelStart', levelId: 'market-05', text: 'Gossip travels faster than a Moin, but only just.' },
+  { id: 'intro-market-06', trigger: 'levelStart', levelId: 'market-06', text: 'Somebody has to start talking, and it will not be the captain.' },
+  { id: 'intro-market-07', trigger: 'levelStart', levelId: 'market-07', text: 'Round the stalls the long way, like everyone on a Saturday.' },
+  { id: 'intro-market-08', trigger: 'levelStart', levelId: 'market-08', text: 'The gull at the bakery has had three buns and wants a Moin for afters.' },
+  { id: 'intro-market-09', trigger: 'levelStart', levelId: 'market-09', text: 'Two chatterboxes in one market is either a blessing or a very long morning.' },
+  { id: 'intro-market-10', trigger: 'levelStart', levelId: 'market-10', text: 'Market day in full swing, and still half of them are scowling.' },
+  { id: 'intro-ferry-01', trigger: 'levelStart', levelId: 'ferry-01', text: 'The fog is off the water and the ferry queue is not amused.' },
+  { id: 'intro-ferry-02', trigger: 'levelStart', levelId: 'ferry-02', text: 'On the car deck everyone faces forward, which helps, mostly.' },
+  { id: 'intro-ferry-03', trigger: 'levelStart', levelId: 'ferry-03', text: 'The ticket office opens at seven, the ticket man wakes up at ten past.' },
+  { id: 'intro-ferry-04', trigger: 'levelStart', levelId: 'ferry-04', text: 'Mind the gangway — Moins bounce off it like everything else.' },
+  { id: 'intro-ferry-05', trigger: 'levelStart', levelId: 'ferry-05', text: 'Bow to stern is a long way for a Moin, so plan the route.' },
+  { id: 'intro-ferry-06', trigger: 'levelStart', levelId: 'ferry-06', text: 'Late for the ferry and grumpy about it, all of them.' },
+  { id: 'intro-ferry-07', trigger: 'levelStart', levelId: 'ferry-07', text: 'The foghorn says Moin too, but nobody counts it.' },
+  { id: 'intro-ferry-08', trigger: 'levelStart', levelId: 'ferry-08', text: 'Rush hour at the ferry: thirteen grumps and a seagull.' },
+  { id: 'intro-ferry-09', trigger: 'levelStart', levelId: 'ferry-09', text: 'Halfway across, the captain finally looks up.' },
+  { id: 'intro-ferry-10', trigger: 'levelStart', levelId: 'ferry-10', text: 'Last crossing of the morning, and the whole town on board.' },
+
+  { id: 'set-harbour', trigger: 'setComplete', levelId: 'harbour', text: 'The harbour is awake; next door, the market still has its shutters down.' },
+  { id: 'set-market', trigger: 'setComplete', levelId: 'market', text: 'The market is talking again, and the ferry is about to leave without a single Moin.' },
+  { id: 'set-ferry', trigger: 'setComplete', levelId: 'ferry', text: 'The whole town is smiling, which has not happened since the herring festival.' },
+
+  { id: 'daily-1', trigger: 'dailyStart', text: 'A new day, a new crowd of grumps — same as yesterday, really.' },
+  { id: 'daily-2', trigger: 'dailyStart', text: 'Today\'s grumps, freshly delivered with the morning fog.' },
 
   { id: 'chain-1', trigger: 'longChain', text: 'That Moin got further than the ferry does.' },
   { id: 'chain-2', trigger: 'longChain', text: 'Moin, moin, moin — that is practically a speech up here.' },

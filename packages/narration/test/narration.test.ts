@@ -19,9 +19,16 @@ const firstTap = (tokens: string) => {
 };
 
 describe('lines (data)', () => {
-  it('about twenty placeholder lines plus one intro per level', () => {
-    expect(lines.filter((l) => l.trigger !== 'levelStart').length).toBeGreaterThanOrEqual(16);
-    expect(lines.filter((l) => l.trigger === 'levelStart')).toHaveLength(10);
+  it('one intro per level for all thirty, plus the reactions', () => {
+    expect(lines.filter((l) => l.trigger === 'levelStart')).toHaveLength(30);
+    expect(new Set(lines.filter((l) => l.trigger === 'levelStart').map((l) => l.levelId)).size).toBe(30);
+    expect(lines.filter((l) => l.trigger !== 'levelStart' && l.trigger !== 'setComplete').length).toBeGreaterThanOrEqual(18);
+  });
+
+  it('the story: each part of town gets a line when it wakes up', () => {
+    for (const set of ['harbour', 'market', 'ferry']) {
+      expect(pickLine({ trigger: 'setComplete', levelId: set }, freshMemory).line?.id).toBe(`set-${set}`);
+    }
   });
 
   it('every line is one sentence and ids are unique', () => {
@@ -57,6 +64,7 @@ describe('pickLine', () => {
   it('plays the intro of the level being started', () => {
     const { line } = pickLine({ trigger: 'levelStart', levelId: 'harbour-04' }, freshMemory);
     expect(line?.id).toBe('intro-04');
+    expect(pickLine({ trigger: 'levelStart', levelId: 'ferry-09' }, freshMemory).line?.id).toBe('intro-ferry-09');
   });
 
   it('never repeats the same line twice in a row', () => {

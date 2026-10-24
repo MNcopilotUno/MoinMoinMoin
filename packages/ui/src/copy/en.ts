@@ -20,7 +20,8 @@ export const copy = {
   unmute: 'Sound on',
   taps: (n: number) => `${n} ${n === 1 ? 'tap' : 'taps'}`,
   par: (n: number) => `par ${n}`,
-  level: (n: number, of: number) => `Level ${n} of ${of}`,
+  level: (place: string, n: number, of: number) => `${place} · level ${n} of ${of}`,
+  backToStory: 'Back to the town',
   stars: (n: number) => `${n} of 3 stars`,
 
   solvedTitle: 'Everyone is smiling!',
@@ -31,6 +32,18 @@ export const copy = {
   allDone: 'The whole harbour is awake. More harbour soon.',
   fromTheTop: 'Back to the first level',
 
+  levels: 'Levels',
+  levelsTitle: 'The town',
+  close: 'Close',
+  daily: 'Daily Moin',
+  dailyHint: (day: string) => `Today's harbour, ${day}`,
+  dailyUnavailable: 'No daily Moin today — the fog is too thick.',
+  copyResult: 'Copy result',
+  copied: 'Copied — paste it anywhere.',
+  copyFailed: 'Could not copy; select the text below instead.',
+  starTotal: (got: number, of: number) => `${got} of ${of} stars`,
+  levelTile: (n: number, title: string, stars: number) =>
+    `Level ${n}, ${title}${stars > 0 ? `, ${stars} of 3 stars` : ', not solved yet'}`,
   narratorDismiss: 'Dismiss',
   updateReady: 'A new version of the harbour is ready.',
   reload: 'Reload',

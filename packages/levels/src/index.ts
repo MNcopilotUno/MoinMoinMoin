@@ -71,5 +71,5 @@ export function levelIndex(id: string): number {
   return levels.findIndex((l) => l.id === id);
 }
 
-export { DAILY_RECIPE, dailyLevel, dayId, generate, candidate, assess, rng, mix } from './generate.js';
+export { DAILY_RECIPE, assess, candidate, cast, dailyLevel, dayId, generate, mix, rng } from './generate.js';
 export type { DayStamp, Recipe, Quality } from './generate.js';

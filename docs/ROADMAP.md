@@ -14,6 +14,10 @@ unfinished platform. The gates are there to stop that.
 
 ---
 
+> **Status (2026-10-24):** Phases 0–2 built and live at
+> <https://mncopilotuno.github.io/MoinMoinMoin/>. The Phase 0 and Phase 1 gates were **waived by
+> the owner, not passed** — no playtest yet. Phase 3 has not started. See `HANDOVER.md`.
+
 ## Phase 0 — Design and foundations · ~1–2 weeks
 
 - **Design round (consilium):** settle the physical model, the player's move, determinism, the
@@ -89,4 +93,5 @@ network call to the puzzle until it is pressed.
 - Hosting and domain for the two apps.
 - Whether the *Moin* sound is your own voice or a few different voices.
 - Whether the puzzle eventually gets a level editor (probably not — that's how small projects grow).
-- Whether the daily level needs the same puzzle for everyone on the same local day, or the same UTC day.
+- ~~Whether the daily level needs the same puzzle for everyone on the same local day, or the same UTC day.~~
+  Decided: the player's **local** calendar day (`.agents/features/daily-level.md`).

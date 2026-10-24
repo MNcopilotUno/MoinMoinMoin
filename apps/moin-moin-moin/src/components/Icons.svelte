@@ -1,10 +1,13 @@
 <script lang="ts">
-  interface Props { name: 'undo' | 'restart' | 'sound' | 'muted' }
+  interface Props { name: 'undo' | 'restart' | 'sound' | 'muted' | 'levels' }
   let { name }: Props = $props();
 </script>
 
 <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-  {#if name === 'undo'}
+  {#if name === 'levels'}
+    <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+    <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+  {:else if name === 'undo'}
     <path d="M9 7 4 12l5 5" /><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)" />
   {:else if name === 'restart'}
     <path d="M20 12a8 8 0 1 1-2.3-5.6" /><path d="M20 4v5h-5" />
