@@ -25,6 +25,11 @@ describe('solve', () => {
     expect(s).toMatchObject({ par: 1, minimumSolutions: 4, firstTapsToPar: 4 });
   });
 
+  it('a chatterbox makes a captain free', () => {
+    expect(solve(board(`E1 . E2 .`))?.par).toBe(2);
+    expect(solve(board(`E1* . E2 .`))?.par).toBe(1);
+  });
+
   it('counts minimum solutions up to the limit', () => {
     const s = solve(board(`N1 N1 N1 N1`), 2);
     expect(s).toMatchObject({ par: 4, minimumSolutions: 1, capped: false });

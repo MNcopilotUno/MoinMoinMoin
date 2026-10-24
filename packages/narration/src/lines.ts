@@ -5,6 +5,7 @@
 export type Trigger =
   | 'levelStart'
   | 'longChain'
+  | 'chatterbox'
   | 'stolen'
   | 'waiting'
   | 'edge'
@@ -36,6 +37,9 @@ export const lines: readonly Line[] = [
   { id: 'chain-1', trigger: 'longChain', text: 'That Moin got further than the ferry does.' },
   { id: 'chain-2', trigger: 'longChain', text: 'Moin, moin, moin — that is practically a speech up here.' },
   { id: 'chain-3', trigger: 'longChain', text: 'Steady on, that is more talking than we do all winter.' },
+
+  { id: 'chatty-1', trigger: 'chatterbox', text: 'Moin moin — that is the captain told, twice, in one breath.' },
+  { id: 'chatty-2', trigger: 'chatterbox', text: 'She said Moin moin, which round here counts as a whole conversation.' },
 
   { id: 'gull-1', trigger: 'stolen', text: 'The gull took it — of course the gull took it.' },
   { id: 'gull-2', trigger: 'stolen', text: 'Seagull one, harbour nil.' },

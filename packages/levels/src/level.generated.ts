@@ -4,7 +4,7 @@ export type Cell = PersonCell | SeagullCell | FenderCell;
 export type Facing = 'N' | 'E' | 'S' | 'W';
 
 /**
- * A Moin Moin Moin level, formatVersion 1.x (CLAUDE.md §6).
+ * A Moin Moin Moin level, formatVersion 1.x (CLAUDE.md §6). Chatterboxes need 1.1.0 or later.
  */
 export interface Level {
   $schema?: string;
@@ -26,6 +26,10 @@ export interface PersonCell {
   facing: Facing;
   needs: 1 | 2;
   role?: 'fisherman' | 'captain' | 'market' | 'kid';
+  /**
+   * R13: their Moin carries two greetings. Needs formatVersion 1.1.0 or later.
+   */
+  chatterbox?: boolean;
 }
 export interface SeagullCell {
   x: number;

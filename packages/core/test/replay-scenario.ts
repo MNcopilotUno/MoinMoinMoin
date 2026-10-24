@@ -19,9 +19,11 @@ export const replayBoard: BoardSpec = {
     { x: 2, y: 4, kind: 'person', facing: 'N', needs: 1 },
     { x: 0, y: 4, kind: 'person', facing: 'E', needs: 1 },
     { x: 5, y: 3, kind: 'person', facing: 'N', needs: 1 },
+    { x: 4, y: 1, kind: 'person', facing: 'W', needs: 1, chatterbox: true },
+    { x: 1, y: 1, kind: 'person', facing: 'S', needs: 2 },
   ],
 };
 
 export const replayTaps: readonly (readonly [number, number])[] = [
-  [0, 0], [3, 3], [5, 4], [5, 2], [2, 4], [5, 3], [0, 0],
+  [0, 0], [3, 3], [5, 4], [5, 2], [2, 4], [5, 3], [4, 1], [0, 0],
 ];

@@ -16,7 +16,7 @@
     /** Greetings per person, in the order people appear in `cells` (core's order). */
     greetings: readonly number[];
     /** The Moin in flight, in core sub-units (R12), or null. */
-    moin?: { px: number; py: number } | null;
+    moin?: { px: number; py: number; amount?: 1 | 2 } | null;
     /** A seagull currently holding a stolen Moin. */
     thief?: Point | null;
     /** A fender a Moin just bounced off; `key` restarts the animation. */
@@ -40,7 +40,8 @@
         <button type="button" class="person" class:smiling={g >= cell.needs}
           aria-label={cellLabel(cell, g)} data-x={cell.x} data-y={cell.y}
           onclick={() => ontap(cell.x, cell.y)}>
-          <PersonSprite role={roleOf(cell)} facing={cell.facing} needs={cell.needs} greetings={g} variant={cell.x * 3 + cell.y} />
+          <PersonSprite role={roleOf(cell)} facing={cell.facing} needs={cell.needs} greetings={g}
+            chatterbox={cell.chatterbox === true} variant={cell.x * 3 + cell.y} />
         </button>
       {:else if cell.kind === 'seagull'}
         {@const holding = thief?.x === cell.x && thief?.y === cell.y}
@@ -59,8 +60,8 @@
     <div class="moin" data-testid="moin"
       style:left={`${(moin.px / (width * CELL)) * 100}%`}
       style:top={`${(moin.py / (height * CELL)) * 100}%`}
-      style:width={`${(100 / width) * 0.95}%`}>
-      <MoinBubble />
+      style:width={`${(100 / width) * 0.95 * ((moin.amount ?? 1) === 2 ? 200 / 120 : 1)}%`}>
+      <MoinBubble amount={moin.amount ?? 1} />
     </div>
   {/if}
 </div>

@@ -1,4 +1,4 @@
-import { targets } from './flight.js';
+import { moinAmount, targets } from './flight.js';
 import type { Game } from './types.js';
 
 export interface SolutionStep {
@@ -45,7 +45,8 @@ export function smilesAfter(
     smiling[i] = true;
     const hit = hits[i];
     if (hit?.kind !== 'person' || smiling[hit.index]) continue;
-    const g = (greetings[hit.index] ?? 0) + 1;
+    const from = game.people[i];
+    const g = (greetings[hit.index] ?? 0) + (from ? moinAmount(from) : 1);
     greetings[hit.index] = g;
     if (g >= (game.people[hit.index]?.needs ?? 0)) queue.push(hit.index);
   }

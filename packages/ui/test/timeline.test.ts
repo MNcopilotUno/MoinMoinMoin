@@ -21,14 +21,14 @@ describe('frameAt', () => {
   });
 
   it('moves the Moin linearly between events, in sub-units', () => {
-    expect(frameAt(events, launch).moin).toEqual({ px: HALF_CELL, py: HALF_CELL });
-    expect(frameAt(events, launch + 18).moin).toEqual({ px: HALF_CELL + 18, py: HALF_CELL });
+    expect(frameAt(events, launch).moin).toEqual({ px: HALF_CELL, py: HALF_CELL, amount: 1 });
+    expect(frameAt(events, launch + 18).moin).toEqual({ px: HALF_CELL + 18, py: HALF_CELL, amount: 1 });
   });
 
   it('marks the fender it bounces off, then flies on', () => {
     const f = frameAt(events, bounceAt + 3);
     expect(f.bounce).toEqual({ x: 3, y: 0, key: bounceAt });
-    expect(f.moin).toEqual({ px: 3 * CELL + HALF_CELL, py: HALF_CELL + 3 });
+    expect(f.moin).toEqual({ px: 3 * CELL + HALF_CELL, py: HALF_CELL + 3, amount: 1 });
   });
 
   it('hands the stolen Moin to the gull, then lets go', () => {
@@ -44,6 +44,16 @@ describe('frameAt', () => {
   it('reports each launch once across consecutive frames', () => {
     expect(frameAt(events, launch, launch - 1).launches).toHaveLength(1);
     expect(frameAt(events, launch + 1, launch).launches).toHaveLength(0);
+  });
+
+  it("a chatterbox's Moin is drawn as Moin moin all the way, bounces included", () => {
+    const chatty = createGame({ width: 4, height: 2, cells: [
+      { x: 0, y: 0, kind: 'person', facing: 'E', needs: 1, chatterbox: true },
+      { x: 3, y: 0, kind: 'fender', slant: 'falling' },
+    ] });
+    const { events: ev } = tap(chatty, initialState(chatty), 0, 0);
+    expect(frameAt(ev, launch + 1).moin?.amount).toBe(2);
+    expect(frameAt(ev, bounceAt + 2).moin?.amount).toBe(2);
   });
 
   it('an empty event list is done at once', () => {

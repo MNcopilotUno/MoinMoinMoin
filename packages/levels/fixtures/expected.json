@@ -10,5 +10,7 @@
   "grid-too-large.json": "grid larger than 7 × 7",
   "too-many-people.json": "more than 16 people",
   "bad-version.json": "is not MAJOR.MINOR.PATCH",
-  "unsupported-major.json": "unsupported formatVersion 2.0.0"
+  "unsupported-major.json": "unsupported formatVersion 2.0.0",
+  "chatterbox-old-version.json": "chatterbox at cells[0] needs formatVersion 1.1.0 or later",
+  "chatterbox-not-boolean.json": "chatterbox must be true or false"
 }

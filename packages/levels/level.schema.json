@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://moin.local/level.schema.json",
   "title": "Level",
-  "description": "A Moin Moin Moin level, formatVersion 1.x (CLAUDE.md §6).",
+  "description": "A Moin Moin Moin level, formatVersion 1.x (CLAUDE.md §6). Chatterboxes need 1.1.0 or later.",
   "type": "object",
   "additionalProperties": false,
   "required": ["formatVersion", "id", "title", "width", "height", "cells", "par"],
@@ -39,7 +39,8 @@
         "kind": { "const": "person" },
         "facing": { "$ref": "#/definitions/facing" },
         "needs": { "type": "integer", "enum": [1, 2] },
-        "role": { "type": "string", "enum": ["fisherman", "captain", "market", "kid"] }
+        "role": { "type": "string", "enum": ["fisherman", "captain", "market", "kid"] },
+        "chatterbox": { "type": "boolean", "description": "R13: their Moin carries two greetings. Needs formatVersion 1.1.0 or later." }
       }
     },
     "seagull": {

@@ -9,6 +9,7 @@
     "x": 0,
     "y": 0,
     "source": "tap",
+    "amount": 1,
     "greetings": 1,
     "needs": 1
    },
@@ -27,7 +28,8 @@
     "py": 6,
     "x": 0,
     "y": 0,
-    "dir": "E"
+    "dir": "E",
+    "amount": 1
    },
    {
     "type": "bounced",
@@ -46,6 +48,7 @@
     "x": 3,
     "y": 2,
     "source": "moin",
+    "amount": 1,
     "greetings": 1,
     "needs": 2
    },
@@ -67,6 +70,7 @@
     "x": 5,
     "y": 4,
     "source": "tap",
+    "amount": 1,
     "greetings": 1,
     "needs": 1
    },
@@ -85,7 +89,8 @@
     "py": 54,
     "x": 5,
     "y": 4,
-    "dir": "W"
+    "dir": "W",
+    "amount": 1
    },
    {
     "type": "greeted",
@@ -95,6 +100,7 @@
     "x": 2,
     "y": 4,
     "source": "moin",
+    "amount": 1,
     "greetings": 1,
     "needs": 1
    },
@@ -113,7 +119,8 @@
     "py": 54,
     "x": 2,
     "y": 4,
-    "dir": "N"
+    "dir": "N",
+    "amount": 1
    },
    {
     "type": "chainEnded",
@@ -132,6 +139,7 @@
     "x": 5,
     "y": 2,
     "source": "tap",
+    "amount": 1,
     "greetings": 1,
     "needs": 1
    },
@@ -150,7 +158,8 @@
     "py": 30,
     "x": 5,
     "y": 2,
-    "dir": "W"
+    "dir": "W",
+    "amount": 1
    },
    {
     "type": "greeted",
@@ -160,6 +169,7 @@
     "x": 3,
     "y": 2,
     "source": "moin",
+    "amount": 1,
     "greetings": 2,
     "needs": 2
    },
@@ -178,7 +188,8 @@
     "py": 30,
     "x": 3,
     "y": 2,
-    "dir": "W"
+    "dir": "W",
+    "amount": 1
    },
    {
     "type": "bounced",
@@ -197,6 +208,7 @@
     "x": 0,
     "y": 4,
     "source": "moin",
+    "amount": 1,
     "greetings": 1,
     "needs": 1
    },
@@ -215,7 +227,8 @@
     "py": 54,
     "x": 0,
     "y": 4,
-    "dir": "E"
+    "dir": "E",
+    "amount": 1
    },
    {
     "type": "stolen",
@@ -243,6 +256,7 @@
     "x": 5,
     "y": 3,
     "source": "tap",
+    "amount": 1,
     "greetings": 1,
     "needs": 1
    },
@@ -261,7 +275,8 @@
     "py": 42,
     "x": 5,
     "y": 3,
-    "dir": "N"
+    "dir": "N",
+    "amount": 1
    },
    {
     "type": "chainEnded",
@@ -269,6 +284,83 @@
     "px": 66,
     "py": 36,
     "reason": "alreadySmiling"
+   }
+  ],
+  [
+   {
+    "type": "greeted",
+    "t": 0,
+    "px": 54,
+    "py": 18,
+    "x": 4,
+    "y": 1,
+    "source": "tap",
+    "amount": 1,
+    "greetings": 1,
+    "needs": 1
+   },
+   {
+    "type": "smiled",
+    "t": 0,
+    "px": 54,
+    "py": 18,
+    "x": 4,
+    "y": 1
+   },
+   {
+    "type": "launched",
+    "t": 9,
+    "px": 54,
+    "py": 18,
+    "x": 4,
+    "y": 1,
+    "dir": "W",
+    "amount": 2
+   },
+   {
+    "type": "greeted",
+    "t": 39,
+    "px": 24,
+    "py": 18,
+    "x": 1,
+    "y": 1,
+    "source": "moin",
+    "amount": 2,
+    "greetings": 2,
+    "needs": 2
+   },
+   {
+    "type": "smiled",
+    "t": 39,
+    "px": 18,
+    "py": 18,
+    "x": 1,
+    "y": 1
+   },
+   {
+    "type": "launched",
+    "t": 48,
+    "px": 18,
+    "py": 18,
+    "x": 1,
+    "y": 1,
+    "dir": "S",
+    "amount": 1
+   },
+   {
+    "type": "stolen",
+    "t": 78,
+    "px": 18,
+    "py": 48,
+    "x": 1,
+    "y": 4
+   },
+   {
+    "type": "chainEnded",
+    "t": 78,
+    "px": 18,
+    "py": 48,
+    "reason": "seagull"
    }
   ],
   []
@@ -281,8 +373,10 @@
    1,
    1,
    1,
-   1
+   1,
+   1,
+   2
   ],
-  "taps": 4
+  "taps": 5
  }
 }

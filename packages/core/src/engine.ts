@@ -1,6 +1,6 @@
 import { personAt } from './board.js';
 import { CELL, HALF_CELL, SMILE_DELAY } from './constants.js';
-import { fly } from './flight.js';
+import { fly, moinAmount } from './flight.js';
 import type { Game, MoinEvent, State, TapResult } from './types.js';
 
 export function initialState(game: Game): State {
@@ -36,6 +36,7 @@ export function tap(game: Game, state: State, x: number, y: number): TapResult {
   const events: MoinEvent[] = [];
   let current = first;
   let source: 'tap' | 'moin' = 'tap';
+  let amount: 1 | 2 = 1;
   let t = 0;
   let px = x * CELL + HALF_CELL;
   let py = y * CELL + HALF_CELL;
@@ -43,10 +44,10 @@ export function tap(game: Game, state: State, x: number, y: number): TapResult {
   for (;;) {
     const person = game.people[current];
     if (person === undefined) throw new Error(`no person ${current}`);
-    const now = (greetings[current] ?? 0) + 1;
+    const now = Math.min(person.needs, (greetings[current] ?? 0) + amount);
     greetings[current] = now;
     events.push({
-      type: 'greeted', t, px, py, x: person.x, y: person.y, source, greetings: now, needs: person.needs,
+      type: 'greeted', t, px, py, x: person.x, y: person.y, source, amount, greetings: now, needs: person.needs,
     });
     if (now < person.needs) {
       events.push({ type: 'chainEnded', t, px, py, reason: 'waiting' });
@@ -73,6 +74,7 @@ export function tap(game: Game, state: State, x: number, y: number): TapResult {
       events.push({ type: 'chainEnded', t, px, py, reason: 'alreadySmiling' });
       break;
     }
+    amount = moinAmount(person);
     current = target.index;
     source = 'moin';
   }

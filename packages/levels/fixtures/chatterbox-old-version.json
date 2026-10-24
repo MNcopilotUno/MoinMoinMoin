@@ -1,0 +1,3 @@
+{ "formatVersion": "1.0.0", "id": "fixture-13", "title": "Chatty too early", "width": 3, "height": 1,
+  "cells": [{ "x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1, "chatterbox": true },
+            { "x": 2, "y": 0, "kind": "person", "facing": "E", "needs": 2 }], "par": 1 }

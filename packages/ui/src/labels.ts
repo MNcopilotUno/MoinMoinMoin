@@ -12,7 +12,7 @@ export function roleOf(person: PersonCell): 'fisherman' | 'captain' | 'market' |
  * "Grumpy captain, facing east, needs two greetings".
  */
 export function personLabel(person: PersonCell, greetings: number): string {
-  const role = copy.role[roleOf(person)];
+  const role = copy.role[roleOf(person)] + (person.chatterbox === true ? `, ${copy.chatterbox}` : '');
   const facing = `facing ${copy.facing[person.facing]}`;
   if (greetings >= person.needs) return `Smiling ${role}, ${facing}`;
   const left = person.needs - greetings;

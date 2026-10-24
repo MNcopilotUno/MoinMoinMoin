@@ -4,6 +4,8 @@ export const copy = {
   role: { fisherman: 'fisherman', captain: 'captain', market: 'market woman', kid: 'kid' },
   count: { 1: 'one', 2: 'two' } as Record<number, string>,
 
+  chatterbox: 'chatterbox',
+  moin: (amount: number) => (amount === 2 ? 'Moin moin' : 'Moin'),
   seagull: 'Seagull',
   seagullHolding: 'Seagull, holding a stolen Moin',
   fender: {

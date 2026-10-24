@@ -6,6 +6,8 @@ import schema from '../level.schema.json' with { type: 'json' };
 import type { Level } from './level.generated.js';
 
 export const SUPPORTED_MAJOR = 1;
+/** R13: chatterboxes arrived in format 1.1. */
+export const CHATTERBOX_MINOR = 1;
 
 export interface Report {
   readonly ok: boolean;
@@ -44,6 +46,7 @@ function describe(error: ErrorObject, data: unknown): string {
     }
     case 'enum':
     case 'type':
+      if (field === 'chatterbox') return `chatterbox must be true or false at ${where}`;
       if (field === 'needs') return `needs outside 1–2 at ${where}: got ${JSON.stringify(valueAt(data, error.instancePath))}`;
       return `${where} ${error.message ?? 'is invalid'}`;
     case 'pattern':
@@ -83,6 +86,11 @@ export function validateLevel(data: unknown, options: ValidateOptions = {}): Rep
   const major = Number(level.formatVersion.split('.')[0]);
   if (major !== SUPPORTED_MAJOR) {
     return { ok: false, errors: [`unsupported formatVersion ${level.formatVersion} (this build reads ${SUPPORTED_MAJOR}.x)`], warnings: [] };
+  }
+  const minor = Number(level.formatVersion.split('.')[1]);
+  const chatty = level.cells.findIndex((c) => c.kind === 'person' && c.chatterbox !== undefined);
+  if (chatty >= 0 && minor < CHATTERBOX_MINOR) {
+    return { ok: false, errors: [`chatterbox at cells[${chatty}] needs formatVersion 1.${CHATTERBOX_MINOR}.0 or later (file says ${level.formatVersion})`], warnings: [] };
   }
   let game;
   try {
