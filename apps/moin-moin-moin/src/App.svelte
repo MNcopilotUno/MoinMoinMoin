@@ -1,19 +1,20 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { createGame, initialState, isSolved, stars, tap, TICKS_PER_SECOND } from '@moin/core';
+  import { onMount, tick as nextDom } from 'svelte';
+  import { createGame, initialState, isSolved, stars, tap } from '@moin/core';
   import type { Game, MoinEvent, State } from '@moin/core';
   import { dailyLevel, dayId, levels, sets, setOf, toBoard } from '@moin/levels';
   import type { Level } from '@moin/levels';
   import { freshMemory, pickLine, triggerForTap } from '@moin/narration';
   import type { Cue, Line, NarratorMemory } from '@moin/narration';
-  import { announceTap, Board, copy, frameAt, IconButton, noteFor, Onlookers, Scene, shareText, SkyLife, Stars } from '@moin/ui';
+  import { announceTap, Board, copy, frameAt, IconButton, msAt, Onlookers, Scene, shareText, SkyLife, Stars, tickAt } from '@moin/ui';
   import type { Frame } from '@moin/ui';
   import Icons from './components/Icons.svelte';
   import LevelSelect from './components/LevelSelect.svelte';
   import Narrator from './components/Narrator.svelte';
   import UpdateToast from './components/UpdateToast.svelte';
   import WinCard from './components/WinCard.svelte';
-  import { sayAmbient, sayMoin, unlockAudio } from './lib/audio';
+  import { buzz, sayAmbient, sayUndo, sayWin, scheduleChain, setMuted, unlockAudio } from './lib/audio';
+  import type { ChainSound } from './lib/audio';
   import { applyTheme, effectiveTheme, watchSystemTheme } from './lib/theme';
   import { loadProgress, saveMuted, saveSolved, saveTheme } from './lib/progress';
   import type { LevelProgress, ThemeSetting } from './lib/progress';
@@ -23,6 +24,8 @@
     readonly events: readonly MoinEvent[];
     readonly before: State;
     readonly start: number;
+    /** Tick of the last smile when this tap solves the level: the win moment. */
+    readonly winTick: number | null;
   }
 
   let ready = $state(false);
@@ -47,24 +50,35 @@
   $effect(() => applyTheme(theme));
   /** Bumped once per smile as the animation reaches it: the crowd on the quay cheers. */
   let cheer = $state(0);
+  /** The win moment (board wave, bells) and, 600 ms later, the card (QA feel H1, H2). */
+  let celebrating = $state(false);
+  let showWin = $state(false);
+  let winTimer = 0;
+  let chainSound: ChainSound = { cancel() {} };
+  let lastBuzz = 0;
   let memory: NarratorMemory = freshMemory;
   let line = $state.raw<Line | null>(null);
   let lineKey = $state(0);
   let announcement = $state('');
   let applyUpdate = $state.raw<(() => void) | null>(null);
 
-  const today = (() => {
+  const localDay = () => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
-  })();
+  };
+  /** Today, refreshed whenever the menu opens: the daily rolls over at midnight (QA m5). */
+  let today = $state(localDay());
   /** The daily level for the player's local calendar day; null if the generator found none. */
-  const daily: Level | null = (() => {
+  const daily: Level | null = $derived.by(() => {
     try {
       return dailyLevel(today);
     } catch {
       return null;
     }
-  })();
+  });
+  let levelsButton = $state<HTMLButtonElement | null>(null);
+  let titleEl = $state<HTMLElement | null>(null);
+  let dismissedUpdate = $state(false);
   const isDaily = $derived(levelIndex < 0);
   const set = $derived(setOf(level.id));
   const solvedIn = (ids: readonly Level[]) => ids.filter((l) => best[l.id]).length;
@@ -76,7 +90,7 @@
       Math.min(p.needs, (before.greetings[i] ?? 0) + (frame.greeted.get(`${p.x},${p.y}`) ?? 0)),
     );
   });
-  const solved = $derived(playback === null && isSolved(game, current));
+  const solved = $derived(isSolved(game, current));
   // The story: a light morning mist over each part of town, lifting as its levels are solved.
   const fog = $derived(set ? 0.5 * (1 - solvedIn(set.levels) / set.levels.length) : solved ? 0 : 0.25);
   const bestStars = $derived(best[level.id] ? stars(best[level.id]!.bestTaps, level.par) : 0);
@@ -90,8 +104,28 @@
     }
   }
 
+  function resetWin() {
+    clearTimeout(winTimer);
+    celebrating = false;
+    showWin = false;
+  }
+
+  /** Everyone is smiling: wave, buzz and bells now; the card a beat later. */
+  function celebrateNow(delay = 600) {
+    if (celebrating) return;
+    celebrating = true;
+    buzz([12, 40, 12]);
+    const starCount = stars(current.taps, level.par);
+    clearTimeout(winTimer);
+    winTimer = window.setTimeout(() => {
+      showWin = true;
+      sayWin(starCount);
+    }, delay);
+  }
+
   function play(next: Level, index: number) {
     finishPlayback(false);
+    resetWin();
     picking = false;
     levelIndex = index;
     level = next;
@@ -102,12 +136,24 @@
     say(index < 0 ? { trigger: 'dailyStart' } : { trigger: 'levelStart', levelId: next.id });
   }
 
-  function startLevel(index: number) {
+  function startLevel(index: number, focusTitle = false) {
     play(levels[index]!, index);
+    if (focusTitle) void nextDom().then(() => titleEl?.focus());
   }
 
   function startDaily() {
     if (daily) play(daily, -1);
+    void nextDom().then(() => titleEl?.focus());
+  }
+
+  function openLevels() {
+    today = localDay();
+    picking = true;
+  }
+
+  function closeLevels() {
+    picking = false;
+    void nextDom().then(() => levelsButton?.focus());
   }
 
   /** The first level of the story not solved yet (level 1 when everything is). */
@@ -123,6 +169,8 @@
     const done = playback;
     playback = null;
     lastTick = -1;
+    if (done && !narrate) chainSound.cancel();
+    if (done && isSolved(game, current)) celebrateNow(narrate ? 600 : 300);
     if (done && narrate) afterTap(done.events);
   }
 
@@ -133,7 +181,7 @@
       const wasDone = set ? solvedIn(set.levels) === set.levels.length : true;
       const finishesSet = set !== undefined && !wasDone && set.levels.every((l) => l.id === id || best[l.id]);
       say(finishesSet ? { trigger: 'setComplete', levelId: set.id } : { trigger: taps <= level.par ? 'solvedPar' : 'solvedOver' });
-      void saveSolved(id, taps).then((levelsBest) => (best = levelsBest));
+      void id;
       return;
     }
     const trigger = triggerForTap(events);
@@ -142,35 +190,50 @@
 
   function step(now: number) {
     if (!playback) return;
-    tick = Math.floor(((now - playback.start) * TICKS_PER_SECOND) / 1000);
+    // Long chains speed up a little (UI only); sounds were scheduled with the same mapping.
+    tick = tickAt(playback.events, now - playback.start);
     const f = frameAt(playback.events, tick, lastTick);
     lastTick = tick;
-    if (muted !== true) {
-      // The chain plays a tune: each Moin in the chain one note higher.
-      const all = playback.events.filter((e) => e.type === 'launched');
-      for (const launch of f.launches) sayMoin(noteFor(all.indexOf(launch)), launch.amount);
-    }
     cheer += f.launches.length;
+    if (f.launches.length > 0 && now - lastBuzz > 120) {
+      buzz(5);
+      lastBuzz = now;
+    }
+    if (playback.winTick !== null && tick >= playback.winTick) celebrateNow();
     if (f.done) finishPlayback(true);
     else raf = requestAnimationFrame(step);
   }
 
   function onTap(x: number, y: number) {
     unlockAudio();
-    // A tap during an animation skips to its end; input is never gated.
-    finishPlayback(false);
     const result = tap(game, current, x, y);
+    // A tap during an animation skips to its end; input is never gated. A tap the rules ignore
+    // (R1, R2) finishes the animation *with* its remark and win, so nothing is lost (QA B1).
+    finishPlayback(result.events.length === 0);
     if (result.events.length === 0) return;
     history = [...history, current];
     const before = current;
     current = result.state;
-    announcement = announceTap(result.events, isSolved(game, current));
+    buzz(8);
+    const nowSolved = isSolved(game, current);
+    // Save the solve the moment it happens, not when the animation ends (QA B1).
+    if (nowSolved) {
+      const solvedId = level.id;
+      void saveSolved(solvedId, current.taps).then((levelsBest) => (best = levelsBest));
+    }
+    const text = announceTap(result.events, nowSolved);
+    announcement = '';
+    requestAnimationFrame(() => (announcement = text));
+    const smiles = result.events.filter((e) => e.type === 'smiled');
+    const winTick = nowSolved ? (smiles[smiles.length - 1]?.t ?? 0) : null;
+    chainSound = scheduleChain(result.events, (t) => msAt(result.events, t));
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      cheer += result.events.filter((e) => e.type === 'smiled').length;
+      cheer += smiles.length;
+      if (nowSolved) celebrateNow(300);
       afterTap(result.events);
       return;
     }
-    playback = { events: result.events, before, start: performance.now() };
+    playback = { events: result.events, before, start: performance.now(), winTick };
     tick = 0;
     lastTick = -1;
     raf = requestAnimationFrame(step);
@@ -183,6 +246,8 @@
     history = history.slice(0, -1);
     current = previous;
     announcement = '';
+    resetWin();
+    sayUndo();
     say({ trigger: 'undo' });
   }
 
@@ -192,12 +257,15 @@
     current = initialState(game);
     history = [];
     announcement = '';
+    resetWin();
+    sayUndo();
     say({ trigger: 'restart' });
   }
 
   function toggleMute() {
     unlockAudio();
     muted = !(muted ?? false);
+    setMuted(muted);
     void saveMuted(muted);
   }
 
@@ -212,8 +280,8 @@
   }
 
   function next() {
-    if (isDaily) startLevel(firstUnsolved(best));
-    else startLevel(levelIndex + 1 < levels.length ? levelIndex + 1 : 0);
+    if (isDaily) startLevel(firstUnsolved(best), true);
+    else startLevel(levelIndex + 1 < levels.length ? levelIndex + 1 : 0, true);
   }
 
   const nextLabel = $derived(isDaily ? copy.backToStory : levelIndex === levels.length - 1 ? copy.fromTheTop : copy.next);
@@ -232,11 +300,20 @@
     startServiceWorker((apply) => (applyUpdate = apply));
     let settled = false;
     const stopWatching = watchSystemTheme(() => (systemTick += 1));
+    // Create the AudioContext on the very first touch, before click handlers run (QA feel M7).
+    document.addEventListener('pointerdown', unlockAudio, { capture: true, once: true });
     const begin = (progress: { levels: Record<string, LevelProgress>; muted: boolean | null; theme: ThemeSetting }) => {
-      if (settled) return;
+      if (settled) {
+        best = { ...progress.levels, ...best };
+        muted = muted ?? progress.muted;
+        setMuted(muted === true);
+        themeSetting = progress.theme;
+        return;
+      }
       settled = true;
       best = progress.levels;
       muted = progress.muted;
+      setMuted(progress.muted === true);
       themeSetting = progress.theme;
       startLevel(firstUnsolved(progress.levels));
       ready = true;
@@ -245,6 +322,10 @@
     const fallback = setTimeout(() => begin({ levels: {}, muted: null, theme: 'auto' }), 600);
     void loadProgress().then((p) => {
       clearTimeout(fallback);
+      if (settled) {
+        begin({ levels: { ...p.levels }, muted: p.muted, theme: p.theme });
+        return;
+      }
       begin({ levels: { ...p.levels }, muted: p.muted, theme: p.theme });
     });
     return () => {
@@ -254,22 +335,22 @@
   });
 </script>
 
-{#if applyUpdate}<UpdateToast apply={applyUpdate} />{/if}
+{#if applyUpdate && !dismissedUpdate}<UpdateToast apply={applyUpdate} dismiss={() => (dismissedUpdate = true)} />{/if}
 <Scene place={set?.id ?? 'daily'} {fog} night={theme === 'dark'} />
 {#if picking}
   <LevelSelect {sets} {best} daily={daily ? { day: dayId(today), level: daily } : null}
-    current={level.id} onpick={startLevel} ondaily={startDaily} onclose={() => (picking = false)}
-    theme={themeSetting} ontheme={setTheme} />
+    current={level.id} onpick={(i) => startLevel(i, true)} ondaily={startDaily} onclose={closeLevels}
+    theme={themeSetting} ontheme={setTheme} night={theme === 'dark'} />
 {/if}
 
-<div class="shell" class:ready>
+<div class="shell" class:ready inert={picking}>
   <header>
     <div class="topline">
       <p class="level-no">
-        {#if isDaily}{copy.daily}<br />{dayId(today)}{:else}{set?.title ?? ''}<br />{copy.levelOf((set?.levels.findIndex((l) => l.id === level.id) ?? 0) + 1, set?.levels.length ?? levels.length)}{/if}
+        {#if isDaily}{copy.todaysHarbour}<br />{dayId(today)}{:else}{set?.title ?? ''}<br />{copy.levelOf((set?.levels.findIndex((l) => l.id === level.id) ?? 0) + 1, set?.levels.length ?? levels.length)}{/if}
       </p>
     <div class="tools">
-      <IconButton label={copy.levels} onclick={() => (picking = true)}><Icons name="levels" /></IconButton>
+      <IconButton label={copy.levels} onclick={openLevels} bind:element={levelsButton}><Icons name="levels" /></IconButton>
       <IconButton label={copy.undo} onclick={undo} disabled={history.length === 0}><Icons name="undo" /></IconButton>
       <IconButton label={copy.restart} onclick={restart} disabled={history.length === 0}><Icons name="restart" /></IconButton>
       <IconButton label={copy.mute} onclick={toggleMute} pressed={muted === true}>
@@ -277,7 +358,7 @@
       </IconButton>
     </div>
     </div>
-    <h1>{level.title}</h1>
+    <h1 tabindex="-1" bind:this={titleEl}>{level.title}</h1>
   </header>
 
   <p class="score" data-testid="score">
@@ -285,24 +366,26 @@
     {#if bestStars > 0}<span class="best"><Stars count={bestStars} size="1rem" /></span>{/if}
   </p>
 
-  <SkyLife onsquawk={() => poke('squawk')} onhorn={() => poke('horn')} />
-
   <main>
     {#if ready}
       <Board width={game.width} height={game.height} cells={game.cells} {greetings} night={theme === 'dark'}
+        arrivals={frame?.arrivals} {celebrating}
         moin={frame?.moin ?? null} thief={frame?.thief ?? null} bounce={frame?.bounce ?? null} ontap={onTap} />
     {/if}
   </main>
 
+  <div class="sky-wrap"><SkyLife onsquawk={() => poke('squawk')} onhorn={() => poke('horn')} /></div>
+
   <div class="quay-wrap">
-    <Onlookers {cheer} celebrate={solved} onpoke={(i) => poke('moin', [5, 2, 0, -5, 3, -2, 7][i] ?? 0)} />
+    <Onlookers {cheer} celebrate={celebrating} onpoke={(i) => poke('moin', [5, 2, 0, -5, 3, -2, 7][i] ?? 0)} />
   </div>
 
-  <Narrator {line} key={lineKey} />
-  {#if solved}
-    <WinCard stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
+  <!-- On a win the line moves into the card; its space is kept so the board never shifts. -->
+  {#if !showWin}<Narrator {line} key={lineKey} />{:else}<div class="narrator-space" aria-hidden="true"></div>{/if}
+  {#if showWin && solved}
+    <WinCard autofocus={!picking} stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
       last={!isDaily && levelIndex === levels.length - 1} {nextLabel} onnext={next} onreplay={restart}
-      share={isDaily ? share : null} />
+      share={isDaily ? share : null} quote={line?.text ?? null} />
   {/if}
   <p class="visually-hidden" aria-live="polite" data-testid="announcer">{announcement}</p>
 </div>
@@ -332,6 +415,12 @@
   }
   .dot { opacity: 0.6; }
   .best { margin-left: auto; }
+  /* Visual order ≠ tab order: the sky draws above the board but is tabbed after it (QA m7). */
+  header { order: 1; } .score { order: 2; } .sky-wrap { order: 3; } main { order: 4; } .quay-wrap { order: 5; }
+  .shell > :global(*:not(header):not(.score):not(.sky-wrap):not(main):not(.quay-wrap)) { order: 6; }
+  h1:focus { outline: none; }
+  h1:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: 4px; }
   main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 14px 14px; }
   .quay-wrap { padding: 0 14px 10px; }
+  .narrator-space { min-height: 5rem; }
 </style>

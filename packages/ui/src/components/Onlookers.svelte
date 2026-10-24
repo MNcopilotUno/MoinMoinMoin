@@ -96,13 +96,14 @@
   .face { position: absolute; inset: 0; }
   .face :global(svg) { width: 100%; height: 100%; display: block; }
   .cheering, .celebrate .onlooker { animation: hop 0.5s ease-out 2; }
-  .celebrate .onlooker { animation: hop 0.6s ease-out infinite; animation-delay: calc(var(--i) * 0.08s); }
+  .celebrate .onlooker { animation: hop 0.6s ease-out 3; animation-delay: calc(var(--i) * 0.08s); }
   .waving { animation: wave 0.35s ease-in-out 4; }
   .hello {
     position: absolute; left: 50%; top: -18px; transform: translateX(-50%); z-index: 2; white-space: nowrap;
     background: var(--moin, #c8102e); color: #fff8ef; border-radius: 8px; padding: 1px 6px;
     font: italic 700 0.85rem var(--serif); box-shadow: 0 3px 6px rgba(200, 16, 46, 0.35);
   }
+  @media (max-width: 359px) { .onlooker:nth-child(n + 6) { display: none; } }
   .rail {
     position: absolute; left: 10px; right: 10px; bottom: 30px; height: 5px; border-radius: 3px;
     background: #7a5634; box-shadow: 0 9px 0 -1px #7a5634; opacity: 0.85; pointer-events: none;

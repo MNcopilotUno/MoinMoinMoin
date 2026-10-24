@@ -16,21 +16,22 @@
   <path d="M41 80 V90 M52 80 V90" stroke="#d99a4a" stroke-width="3" stroke-linecap="round" />
   <circle cx="66" cy="40" r="14" fill="#f7f5f0" />
   <path d="M78 39 L96 43 L78 48Z" fill="#e8a447" />
-  <circle cx="84" cy="44.5" r="1.8" fill="#c8102e" />
+  <circle cx="84" cy="44.5" r="1.8" fill="#b5651d" />
   <circle cx="69" cy="37" r="2.8" fill="#1b2236" />
   <circle cx="70" cy="36" r="0.9" fill="#fff" />
   <path d="M61 30 L75 33" stroke="#1b2236" stroke-width="2.6" stroke-linecap="round" />
   {#if holding}
     <g class="loot">
-      <rect x="72" y="8" width="28" height="17" rx="5" fill="#c8102e" stroke="#8e0a20" stroke-width="1.5" />
-      <path d="M80 25 L82 32 L87 25 Z" fill="#c8102e" />
+      <rect x="64" y="-6" width="40" height="26" rx="7" fill="#c8102e" stroke="#8e0a20" stroke-width="1.5" />
+      <path d="M76 20 L79 30 L86 20 Z" fill="#c8102e" />
+      <text x="84" y="14" text-anchor="middle" fill="#fff8ef" font-family="'Cormorant Garamond', Georgia, serif" font-style="italic" font-weight="700" font-size="18">M</text>
     </g>
   {/if}
 </svg>
 
 <style>
   .gull { display: block; width: 100%; height: 100%; overflow: visible; }
-  .holding { animation: cackle 0.35s ease-in-out 2; }
-  @keyframes cackle { 50% { transform: rotate(-8deg); } }
+  .holding { animation: cackle 0.18s ease-out 2; transform-origin: 50% 90%; }
+  @keyframes cackle { 50% { transform: translateY(-8%) rotate(-6deg); } }
   @media (prefers-reduced-motion: reduce) { .holding { animation: none; } }
 </style>

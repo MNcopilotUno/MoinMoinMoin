@@ -167,7 +167,7 @@ export function portrait({ role = 'fisherman', mood = 'grumpy', facing = 'E', to
   // pips for the captain
   if (captain && pips) {
     const n = smile ? 2 : half ? 1 : 0;
-    for (let i = 0; i < 2; i++) g.push(`<circle cx="${18 + i * 20}" cy="18" r="7" fill="${i < n ? '#C8102E' : '#FBF6EA'}" stroke="#2B3A5C" stroke-width="2"/>`);
+    for (let i = 0; i < 2; i++) g.push(`<circle class="pip${i < n ? ' filled' : ''}${i === n - 1 ? ' newest' : ''}" cx="${18 + i * 20}" cy="18" r="7" fill="${i < n ? '#C8102E' : '#FBF6EA'}" stroke="#2B3A5C" stroke-width="2"/>`);
   }
   s.push(`<g filter="url(#${id}-wob)">${g.join('')}</g>`);
   s.push(`<rect width="200" height="220" fill="#000" filter="url(#${id}-grain)" opacity="0.5" clip-path="url(#${id}-head)"/>`);

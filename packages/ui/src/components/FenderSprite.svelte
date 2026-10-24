@@ -21,7 +21,7 @@
 
 <style>
   .fender { display: block; width: 100%; height: 100%; overflow: visible; }
-  .hit { animation: thud 0.25s ease-out; }
-  @keyframes thud { 50% { transform: scale(0.88); } }
+  .hit { animation: thud 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
+  @keyframes thud { 50% { transform: scale(0.8) rotate(8deg); } }
   @media (prefers-reduced-motion: reduce) { .hit { animation: none; } }
 </style>

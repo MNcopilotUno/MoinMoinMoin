@@ -37,6 +37,7 @@ export const copy = {
   levelsTitle: 'The town',
   close: 'Close',
   daily: 'Daily Moin',
+  todaysHarbour: "Today's harbour",
   dailyHint: (day: string) => `Today's harbour, ${day}`,
   dailyUnavailable: 'No daily Moin today — the fog is too thick.',
   copyResult: 'Copy result',
@@ -53,6 +54,7 @@ export const copy = {
   narratorDismiss: 'Dismiss',
   updateReady: 'A new version of the harbour is ready.',
   reload: 'Reload',
+  later: 'Later',
   offlineReady: 'Ready to play offline.',
 
   announce: {

@@ -70,8 +70,8 @@ test('the narrator never blocks play and can be tapped away', async ({ page }) =
   await expect(line).toBeVisible();
   await person(page, 0, 1).click();
   await expect(page.getByRole('heading', { name: 'Everyone is smiling!' })).toBeVisible();
-  await page.getByRole('button', { name: /not a word wasted|impressed/ }).click();
-  await expect(page.getByRole('button', { name: /not a word wasted|impressed/ })).toBeHidden();
+  // On a win the narrator's line moves into the win card (it never sits under it).
+  await expect(page.locator('section.win .quote')).toHaveText(/not a word wasted|impressed/);
 });
 
 test('a tap during the animation is never ignored', async ({ page }) => {
@@ -94,7 +94,7 @@ test('all thirty levels can be solved at par through the interface; stars are ke
     const par = await solveCurrent(page, i);
     await expect(page.getByTestId('score')).toContainText(`${par} tap`);
     await expect(page.locator('section.win').getByRole('img', { name: '3 of 3 stars' })).toBeVisible();
-    if (i === 9) await expect(page.getByRole('button', { name: /The harbour is awake/ })).toBeVisible();
+    if (i === 9) await expect(page.locator('section.win .quote')).toHaveText(/The harbour is awake/);
     await page.getByRole('button', { name: i === levels.length - 1 ? 'Back to the first level' : 'Next level' }).click();
   }
   await expect(page.locator('h1')).toHaveText(levels[0]!.title);
@@ -229,4 +229,48 @@ test('no sideways scrolling on a phone', async ({ page }) => {
   await page.goto('./');
   await page.waitForTimeout(500);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(await page.evaluate(() => innerWidth));
+});
+
+test('QA B1: a solve is saved even when the solver double-taps during the animation', async ({ page }) => {
+  await page.goto('./');
+  await person(page, 0, 1).click();
+  await person(page, 0, 1).click();
+  await expect(page.getByRole('heading', { name: 'Everyone is smiling!' })).toBeVisible();
+  await page.reload();
+  await expect(page.locator('h1')).toHaveText(levels[1]!.title);
+});
+
+test('QA M4: the level menu is modal and gives focus back', async ({ page }) => {
+  await page.goto('./');
+  const opener = page.getByRole('button', { name: 'Levels' });
+  await opener.click();
+  const dialog = page.getByRole('dialog');
+  for (let i = 0; i < 45; i++) await page.keyboard.press('Tab');
+  expect(await dialog.evaluate((d) => d.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+});
+
+test('QA M5: every person button is at least 44 px on a small phone, even on 7 × 7', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ viewport: { width: 320, height: 568 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const page = await context.newPage();
+  try {
+    await page.goto(baseURL!);
+    await openLevel(page, sets[2]!.levels[9]!.title);
+    for (const b of await page.locator('button[data-x]').all()) {
+      const box = (await b.boundingBox())!;
+      expect(Math.min(box.width, box.height)).toBeGreaterThanOrEqual(44);
+    }
+  } finally {
+    await context.close();
+  }
+});
+
+test('QA M6: at night the level menu shows the moonlit paintings', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Levels' }).click();
+  const banner = page.locator('.banner').first();
+  expect(await banner.evaluate((el) => getComputedStyle(el).getPropertyValue('--painting'))).toMatch(/night/);
 });

@@ -44,7 +44,7 @@ export const lines: readonly Line[] = [
   { id: 'intro-market-06', trigger: 'levelStart', levelId: 'market-06', text: 'Somebody has to start talking, and it will not be the captain.' },
   { id: 'intro-market-07', trigger: 'levelStart', levelId: 'market-07', text: 'Round the stalls the long way, like everyone on a Saturday.' },
   { id: 'intro-market-08', trigger: 'levelStart', levelId: 'market-08', text: 'The gull at the bakery has had three buns and wants a Moin for afters.' },
-  { id: 'intro-market-09', trigger: 'levelStart', levelId: 'market-09', text: 'Two chatterboxes in one market is either a blessing or a very long morning.' },
+  { id: 'intro-market-09', trigger: 'levelStart', levelId: 'market-09', text: 'Two captains and one chatterbox — guess who will be doing the talking.' },
   { id: 'intro-market-10', trigger: 'levelStart', levelId: 'market-10', text: 'Market day in full swing, and still half of them are scowling.' },
   { id: 'intro-ferry-01', trigger: 'levelStart', levelId: 'ferry-01', text: 'The fog is off the water and the ferry queue is not amused.' },
   { id: 'intro-ferry-02', trigger: 'levelStart', levelId: 'ferry-02', text: 'On the car deck everyone faces forward, which helps, mostly.' },
@@ -53,7 +53,7 @@ export const lines: readonly Line[] = [
   { id: 'intro-ferry-05', trigger: 'levelStart', levelId: 'ferry-05', text: 'Bow to stern is a long way for a Moin, so plan the route.' },
   { id: 'intro-ferry-06', trigger: 'levelStart', levelId: 'ferry-06', text: 'Late for the ferry and grumpy about it, all of them.' },
   { id: 'intro-ferry-07', trigger: 'levelStart', levelId: 'ferry-07', text: 'The foghorn says Moin too, but nobody counts it.' },
-  { id: 'intro-ferry-08', trigger: 'levelStart', levelId: 'ferry-08', text: 'Rush hour at the ferry: thirteen grumps and a seagull.' },
+  { id: 'intro-ferry-08', trigger: 'levelStart', levelId: 'ferry-08', text: 'Rush hour at the ferry: thirteen grumps, three of them captains.' },
   { id: 'intro-ferry-09', trigger: 'levelStart', levelId: 'ferry-09', text: 'Halfway across, the captain finally looks up.' },
   { id: 'intro-ferry-10', trigger: 'levelStart', levelId: 'ferry-10', text: 'Last crossing of the morning, and the whole town on board.' },
 
