@@ -1,0 +1,13 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "market-01",
+  "title": "Moin moin",
+  "width": 4,
+  "height": 2,
+  "cells": [
+    {"x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1, "chatterbox": true, "role": "market"},
+    {"x": 3, "y": 0, "kind": "person", "facing": "S", "needs": 2, "role": "captain"},
+    {"x": 3, "y": 1, "kind": "person", "facing": "W", "needs": 1, "role": "market"}
+  ],
+  "par": 1
+}

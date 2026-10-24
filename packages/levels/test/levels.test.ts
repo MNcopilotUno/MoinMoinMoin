@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { createGame, initialState, isSolved, tap } from '@moin/core';
-import { levels, toBoard, TUTORIAL_LEVELS } from '../src/index.js';
+import { levels, sets, toBoard, TUTORIAL_IDS } from '../src/index.js';
 import { checkFixtures, checkLevels } from '../src/check-all.js';
 import { validateLevel } from '../src/validate.js';
 import { generate } from '../scripts/gen-types.js';
@@ -12,10 +12,18 @@ import { generate } from '../scripts/gen-types.js';
 describe('real levels', () => {
   const { results, problems } = checkLevels();
 
-  it('ten levels in play order, each file listed once under its own id', () => {
-    expect(levels).toHaveLength(10);
-    expect(results).toHaveLength(10);
+  it('thirty levels in three sets of ten, each file listed once under its own id', () => {
+    expect(sets.map((s) => [s.id, s.levels.length])).toEqual([['harbour', 10], ['market', 10], ['ferry', 10]]);
+    expect(levels).toHaveLength(30);
+    expect(results).toHaveLength(30);
     expect(problems).toEqual([]);
+    for (const set of sets) for (const l of set.levels) expect(l.id.startsWith(`${set.id}-`)).toBe(true);
+  });
+
+  it('the market set is where the chatterbox lives: every market level has one', () => {
+    const market = sets.find((s) => s.id === 'market')!;
+    for (const l of market.levels) expect(l.cells.some((c) => c.kind === 'person' && c.chatterbox === true), l.id).toBe(true);
+    expect(levels.slice(0, 10).some((l) => l.cells.some((c) => c.kind === 'person' && c.chatterbox))).toBe(false);
   });
 
   it.each(results.map((r) => [r.file, r.report] as const))('%s passes schema and solver', (_, report) => {
@@ -24,7 +32,7 @@ describe('real levels', () => {
   });
 
   it('levels after the tutorial raise no R10 / random-tapping warnings', () => {
-    const after = levels.slice(TUTORIAL_LEVELS).map((l) => validateLevel(l));
+    const after = levels.filter((l) => !TUTORIAL_IDS.has(l.id)).map((l) => validateLevel(l));
     expect(after.flatMap((r) => r.warnings)).toEqual([]);
   });
 

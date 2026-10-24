@@ -13,3 +13,8 @@
 - **Drafting tool:** levels were drafted as ASCII in `.agents/features/levels-harbour-drafts.txt`
   (tokens `E1`, `N2`, `g`, `/`, `\`; suffix `k` kid, `m` market woman) and par was always taken
   from the solver.
+- **Random placement makes dead boards.** The first generator dropped people, gulls and fenders
+  on random squares: 489 idle fenders and 257 idle gulls in 400 candidates, and no candidate
+  passed. Growing chains along lines of flight fixed it. Then most passing boards were "tap
+  whoever nobody faces" (every par tap forced): `assess` now demands at least one par tap on a
+  person a Moin *could* reach.

@@ -1,0 +1,17 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "market-02",
+  "title": "Twice in one breath",
+  "width": 4,
+  "height": 4,
+  "cells": [
+    {"x": 1, "y": 0, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 3, "y": 0, "kind": "fender", "slant": "falling"},
+    {"x": 2, "y": 2, "kind": "person", "facing": "S", "needs": 1, "chatterbox": true, "role": "market"},
+    {"x": 3, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
+    {"x": 0, "y": 3, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 1, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "market"},
+    {"x": 2, "y": 3, "kind": "person", "facing": "N", "needs": 2, "role": "captain"}
+  ],
+  "par": 2
+}

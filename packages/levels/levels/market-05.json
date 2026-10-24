@@ -1,0 +1,19 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "market-05",
+  "title": "Gossip",
+  "width": 5,
+  "height": 5,
+  "cells": [
+    {"x": 1, "y": 0, "kind": "fender", "slant": "rising"},
+    {"x": 3, "y": 0, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 4, "y": 0, "kind": "person", "facing": "S", "needs": 2, "chatterbox": true, "role": "captain"},
+    {"x": 0, "y": 1, "kind": "fender", "slant": "rising"},
+    {"x": 1, "y": 1, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
+    {"x": 4, "y": 1, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 0, "y": 3, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 0, "y": 4, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 1, "y": 4, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"}
+  ],
+  "par": 3
+}

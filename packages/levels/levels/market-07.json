@@ -1,0 +1,19 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "market-07",
+  "title": "Round the stalls",
+  "width": 6,
+  "height": 3,
+  "cells": [
+    {"x": 3, "y": 0, "kind": "person", "facing": "S", "needs": 2, "chatterbox": true, "role": "captain"},
+    {"x": 4, "y": 0, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 5, "y": 0, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"},
+    {"x": 0, "y": 1, "kind": "fender", "slant": "rising"},
+    {"x": 2, "y": 1, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
+    {"x": 3, "y": 1, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 5, "y": 1, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 0, "y": 2, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 5, "y": 2, "kind": "fender", "slant": "rising"}
+  ],
+  "par": 3
+}
