@@ -18,3 +18,12 @@
   passed. Growing chains along lines of flight fixed it. Then most passing boards were "tap
   whoever nobody faces" (every par tap forced): `assess` now demands at least one par tap on a
   person a Moin *could* reach.
+- **A curve is a test, not a feeling.** "Make them bigger and progressive" became two assertions
+  (from harbour-06 on: cells and par never go down; the finale is 7 × 7 at par ≥ 7) and a
+  schedule the generator fills. Hand-made levels jumped around in size because each was made
+  for its idea, not its place in the line.
+- **"First taps to par" is weak on big boards.** With many forced taps any of them can come
+  first, so the ratio tends to par/people (often exactly 50 %). It flags rings and toys on small
+  boards; on big ones read minimum solutions and `minChoices` instead.
+- **Keep what the intro promises.** Regenerating a level keeps its title and intro, so the
+  schedule enforces what they say (13 people, 3 captains, a gull at the bakery).

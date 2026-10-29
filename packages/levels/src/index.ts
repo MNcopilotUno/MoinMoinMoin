@@ -53,6 +53,15 @@ export const sets: readonly LevelSet[] = [
 export const levels: readonly Level[] = sets.flatMap((s) => s.levels);
 
 /**
+ * Each level's board revision (levels-progression.md). The 24 non-lesson levels were regenerated
+ * bigger and on a curve (revision 2); a saved best from another revision is not shown as stars.
+ */
+const LESSONS = new Set(['harbour-01', 'harbour-02', 'harbour-03', 'harbour-04', 'harbour-05', 'market-01']);
+export function levelRevision(id: string): number {
+  return levels.some((l) => l.id === id) && !LESSONS.has(id) ? 2 : 1;
+}
+
+/**
  * Tutorial levels introduce one idea each and may have many minimum solutions or many par-first
  * taps (R10 warnings do not apply): the first three of the harbour and the chatterbox's debut.
  */

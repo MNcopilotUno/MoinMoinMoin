@@ -2,18 +2,19 @@
   "formatVersion": "1.1.0",
   "id": "market-04",
   "title": "Captain's corner",
-  "width": 5,
-  "height": 4,
+  "width": 7,
+  "height": 6,
   "cells": [
-    {"x": 0, "y": 0, "kind": "fender", "slant": "rising"},
-    {"x": 1, "y": 0, "kind": "person", "facing": "W", "needs": 1, "role": "market"},
-    {"x": 4, "y": 0, "kind": "person", "facing": "S", "needs": 2, "chatterbox": true, "role": "captain"},
-    {"x": 4, "y": 1, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
-    {"x": 0, "y": 2, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
-    {"x": 3, "y": 2, "kind": "fender", "slant": "falling"},
-    {"x": 0, "y": 3, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
-    {"x": 1, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "market"},
-    {"x": 3, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"}
+    {"x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 3, "y": 0, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 6, "y": 0, "kind": "person", "facing": "S", "needs": 2, "role": "captain"},
+    {"x": 0, "y": 1, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
+    {"x": 3, "y": 1, "kind": "person", "facing": "W", "needs": 1, "role": "market"},
+    {"x": 6, "y": 2, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 0, "y": 4, "kind": "person", "facing": "E", "needs": 1, "chatterbox": true, "role": "market"},
+    {"x": 1, "y": 4, "kind": "person", "facing": "W", "needs": 2, "role": "captain"},
+    {"x": 6, "y": 4, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"},
+    {"x": 6, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "kid"}
   ],
-  "par": 3
+  "par": 4
 }
