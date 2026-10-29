@@ -44,5 +44,6 @@
     animation: drift 0.35s ease-out;
   }
   @keyframes drift { from { opacity: 0; transform: translateY(6px); } }
-  @media (prefers-reduced-motion: reduce) { .line { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .line { animation: none; }
 </style>

@@ -11,13 +11,14 @@
   import Icons from './components/Icons.svelte';
   import LevelSelect from './components/LevelSelect.svelte';
   import Narrator from './components/Narrator.svelte';
+  import SettingsSheet from './components/SettingsSheet.svelte';
   import UpdateToast from './components/UpdateToast.svelte';
   import WinCard from './components/WinCard.svelte';
-  import { buzz, sayAmbient, sayUndo, sayWin, scheduleChain, setMuted, unlockAudio } from './lib/audio';
+  import { buzz, sayAmbient, sayUndo, sayWin, scheduleChain, setHaptics, setMuted, setVolume, unlockAudio } from './lib/audio';
   import type { ChainSound } from './lib/audio';
-  import { applyTheme, effectiveTheme, watchSystemTheme } from './lib/theme';
-  import { loadProgress, saveMuted, saveSolved, saveTheme } from './lib/progress';
-  import type { LevelProgress, ThemeSetting } from './lib/progress';
+  import { applyCalm, applyTheme, effectiveCalm, effectiveTheme, watchSystemMotion, watchSystemTheme } from './lib/theme';
+  import { clearLevels, defaultSettings, loadProgress, saveSetting, saveSolved } from './lib/progress';
+  import type { LevelProgress, Progress, Settings, ThemeSetting } from './lib/progress';
   import { startServiceWorker } from './lib/sw';
 
   interface Playback {
@@ -45,9 +46,18 @@
   let best = $state.raw<Record<string, LevelProgress>>({});
   let muted = $state<boolean | null>(null);
   let themeSetting = $state<ThemeSetting>('auto');
+  let volume = $state(defaultSettings.volume);
+  let haptics = $state(defaultSettings.haptics);
+  let narratorOn = $state(defaultSettings.narrator);
+  let calmSetting = $state<boolean | null>(null);
   let systemTick = $state(0);
+  let motionTick = $state(0);
   const theme = $derived((void systemTick, effectiveTheme(themeSetting)));
+  const calm = $derived((void motionTick, effectiveCalm(calmSetting)));
   $effect(() => applyTheme(theme));
+  $effect(() => applyCalm(calm));
+  let settingsOpen = $state(false);
+  let settingsButton = $state<HTMLButtonElement | null>(null);
   /** Bumped once per smile as the animation reaches it: the crowd on the quay cheers. */
   let cheer = $state(0);
   /** The win moment (board wave, bells) and, 600 ms later, the card (QA feel H1, H2). */
@@ -227,7 +237,7 @@
     const smiles = result.events.filter((e) => e.type === 'smiled');
     const winTick = nowSolved ? (smiles[smiles.length - 1]?.t ?? 0) : null;
     chainSound = scheduleChain(result.events, (t) => msAt(result.events, t));
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (calm) {
       cheer += smiles.length;
       if (nowSolved) celebrateNow(300);
       afterTap(result.events);
@@ -262,17 +272,60 @@
     say({ trigger: 'restart' });
   }
 
-  function toggleMute() {
+  // The settings sheet (.agents/features/settings.md); each change is saved at once.
+  function setSound(on: boolean) {
     unlockAudio();
-    muted = !(muted ?? false);
+    muted = !on;
     setMuted(muted);
-    void saveMuted(muted);
+    void saveSetting('muted', muted);
   }
 
   function setTheme(next: ThemeSetting) {
     themeSetting = next;
-    void saveTheme(next);
+    void saveSetting('theme', next);
   }
+
+  function changeVolume(percent: number) {
+    volume = percent;
+    setVolume(percent);
+    void saveSetting('volume', percent);
+  }
+
+  function changeHaptics(on: boolean) {
+    haptics = on;
+    setHaptics(on);
+    if (on) buzz(12);
+    void saveSetting('haptics', on);
+  }
+
+  function changeNarrator(on: boolean) {
+    narratorOn = on;
+    void saveSetting('narrator', on);
+  }
+
+  function changeCalm(on: boolean) {
+    calmSetting = on;
+    void saveSetting('calm', on);
+  }
+
+  function openSettings() {
+    settingsOpen = true;
+  }
+
+  function closeSettings() {
+    settingsOpen = false;
+    void nextDom().then(() => settingsButton?.focus());
+  }
+
+  /** Start over: forget every solve on this phone and wake level 1 grumpy again. */
+  function startOver() {
+    void clearLevels();
+    best = {};
+    settingsOpen = false;
+    startLevel(0, true);
+  }
+
+  const totalStars = $derived(levels.reduce((n, l) => n + (best[l.id] ? stars(best[l.id]!.bestTaps, l.par) : 0), 0));
 
   function poke(kind: 'squawk' | 'horn' | 'moin', pitch = 0) {
     unlockAudio();
@@ -286,8 +339,9 @@
 
   const nextLabel = $derived(isDaily ? copy.backToStory : levelIndex === levels.length - 1 ? copy.fromTheTop : copy.next);
 
-  async function share(): Promise<string | null> {
+  async function share(options: { copy: boolean } = { copy: true }): Promise<string | null> {
     const text = shareText(dayId(today), toBoard(level), current.taps, level.par, stars(current.taps, level.par));
+    if (!options.copy) return text;
     try {
       await navigator.clipboard.writeText(text);
       return null;
@@ -300,36 +354,44 @@
     startServiceWorker((apply) => (applyUpdate = apply));
     let settled = false;
     const stopWatching = watchSystemTheme(() => (systemTick += 1));
+    const stopWatchingMotion = watchSystemMotion(() => (motionTick += 1));
     // Create the AudioContext on the very first touch, before click handlers run (QA feel M7).
     document.addEventListener('pointerdown', unlockAudio, { capture: true, once: true });
-    const begin = (progress: { levels: Record<string, LevelProgress>; muted: boolean | null; theme: ThemeSetting }) => {
+    const applySettings = (p: Settings) => {
+      themeSetting = p.theme;
+      volume = p.volume;
+      setVolume(p.volume);
+      haptics = p.haptics;
+      setHaptics(p.haptics);
+      narratorOn = p.narrator;
+      calmSetting = p.calm;
+    };
+    const begin = (progress: Progress) => {
       if (settled) {
+        // Late storage (QA m3): merge, never undo what the player already did.
         best = { ...progress.levels, ...best };
         muted = muted ?? progress.muted;
         setMuted(muted === true);
-        themeSetting = progress.theme;
+        applySettings(progress);
         return;
       }
       settled = true;
-      best = progress.levels;
+      best = { ...progress.levels };
       muted = progress.muted;
       setMuted(progress.muted === true);
-      themeSetting = progress.theme;
+      applySettings(progress);
       startLevel(firstUnsolved(progress.levels));
       ready = true;
     };
     // Cold open must not wait on storage: play level 1 if IndexedDB is slow.
-    const fallback = setTimeout(() => begin({ levels: {}, muted: null, theme: 'auto' }), 600);
+    const fallback = setTimeout(() => begin({ levels: {}, ...defaultSettings }), 600);
     void loadProgress().then((p) => {
       clearTimeout(fallback);
-      if (settled) {
-        begin({ levels: { ...p.levels }, muted: p.muted, theme: p.theme });
-        return;
-      }
-      begin({ levels: { ...p.levels }, muted: p.muted, theme: p.theme });
+      begin(p);
     });
     return () => {
       stopWatching();
+      stopWatchingMotion();
       finishPlayback(false);
     };
   });
@@ -340,10 +402,16 @@
 {#if picking}
   <LevelSelect {sets} {best} daily={daily ? { day: dayId(today), level: daily } : null}
     current={level.id} onpick={(i) => startLevel(i, true)} ondaily={startDaily} onclose={closeLevels}
-    theme={themeSetting} ontheme={setTheme} night={theme === 'dark'} />
+    night={theme === 'dark'} />
+{/if}
+{#if settingsOpen}
+  <SettingsSheet sound={muted !== true} {volume} {haptics} theme={themeSetting} narrator={narratorOn} {calm}
+    stars={totalStars} maxStars={levels.length * 3} solved={levels.filter((l) => best[l.id]).length}
+    onsound={setSound} onvolume={changeVolume} onhaptics={changeHaptics} ontheme={setTheme}
+    onnarrator={changeNarrator} oncalm={changeCalm} onreset={startOver} onclose={closeSettings} />
 {/if}
 
-<div class="shell" class:ready inert={picking}>
+<div class="shell" class:ready inert={picking || settingsOpen}>
   <header>
     <div class="topline">
       <p class="level-no">
@@ -353,9 +421,7 @@
       <IconButton label={copy.levels} onclick={openLevels} bind:element={levelsButton}><Icons name="levels" /></IconButton>
       <IconButton label={copy.undo} onclick={undo} disabled={history.length === 0}><Icons name="undo" /></IconButton>
       <IconButton label={copy.restart} onclick={restart} disabled={history.length === 0}><Icons name="restart" /></IconButton>
-      <IconButton label={copy.mute} onclick={toggleMute} pressed={muted === true}>
-        <Icons name={muted === true ? 'muted' : 'sound'} />
-      </IconButton>
+      <IconButton label={copy.settings.open} onclick={openSettings} bind:element={settingsButton}><Icons name="settings" /></IconButton>
     </div>
     </div>
     <h1 tabindex="-1" bind:this={titleEl}>{level.title}</h1>
@@ -381,11 +447,11 @@
   </div>
 
   <!-- On a win the line moves into the card; its space is kept so the board never shifts. -->
-  {#if !showWin}<Narrator {line} key={lineKey} />{:else}<div class="narrator-space" aria-hidden="true"></div>{/if}
+  {#if !showWin}{#if narratorOn}<Narrator {line} key={lineKey} />{/if}{:else}<div class="narrator-space" aria-hidden="true"></div>{/if}
   {#if showWin && solved}
-    <WinCard autofocus={!picking} stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
+    <WinCard autofocus={!picking && !settingsOpen} stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
       last={!isDaily && levelIndex === levels.length - 1} {nextLabel} onnext={next} onreplay={restart}
-      share={isDaily ? share : null} quote={line?.text ?? null} />
+      share={isDaily ? share : null} quote={narratorOn ? (line?.text ?? null) : null} />
   {/if}
   <p class="visually-hidden" aria-live="polite" data-testid="announcer">{announcement}</p>
 </div>

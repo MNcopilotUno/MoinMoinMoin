@@ -18,3 +18,21 @@ export function watchSystemTheme(onchange: () => void): () => void {
   query?.addEventListener('change', onchange);
   return () => query?.removeEventListener('change', onchange);
 }
+
+const motion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+
+/** Calm motion as shown: the player's choice, or the phone's reduce-motion setting until then. */
+export function effectiveCalm(setting: boolean | null): boolean {
+  return setting ?? motion?.matches ?? false;
+}
+
+/** Put calm motion on <html>: every reduced-motion rule keys off `data-calm` (settings.md). */
+export function applyCalm(calm: boolean): void {
+  document.documentElement.toggleAttribute('data-calm', calm);
+}
+
+/** Call `onchange` when the phone's reduce-motion setting changes. Returns an unsubscribe. */
+export function watchSystemMotion(onchange: () => void): () => void {
+  motion?.addEventListener('change', onchange);
+  return () => motion?.removeEventListener('change', onchange);
+}

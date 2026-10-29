@@ -120,5 +120,6 @@
   @keyframes idle { 50% { transform: translateY(-1.5px) rotate(0.6deg); } }
   @keyframes hop { 40% { transform: translateY(-10px); } }
   @keyframes wave { 25% { transform: rotate(-6deg); } 75% { transform: rotate(6deg); } }
-  @media (prefers-reduced-motion: reduce) { .onlooker, .cheering, .waving, .celebrate .onlooker { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .onlooker, :global(:root[data-calm]) .cheering, :global(:root[data-calm]) .waving, :global(:root[data-calm]) .celebrate .onlooker { animation: none; }
 </style>

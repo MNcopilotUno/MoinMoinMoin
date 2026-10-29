@@ -35,5 +35,6 @@
   @keyframes harrumph { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
   .sprite :global(.pip.newest) { transform-box: fill-box; transform-origin: center; animation: pip 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
   @keyframes pip { from { transform: scale(0); } 60% { transform: scale(1.4); } }
-  @media (prefers-reduced-motion: reduce) { .smiling, .half, .sprite :global(.pip.newest) { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .smiling, :global(:root[data-calm]) .half, :global(:root[data-calm]) .sprite :global(.pip.newest) { animation: none; }
 </style>

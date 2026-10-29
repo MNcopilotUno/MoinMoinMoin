@@ -27,5 +27,6 @@
   .flag { animation: sway 4s ease-in-out infinite; animation-delay: calc(var(--i) * -0.3s); }
   .bulb { fill: var(--glow, transparent); filter: drop-shadow(0 0 3px var(--glow, transparent)); }
   @keyframes sway { 50% { transform: rotate(7deg); } }
-  @media (prefers-reduced-motion: reduce) { .flag { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .flag { animation: none; }
 </style>

@@ -10,6 +10,11 @@ import { noteFor } from '@moin/ui';
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let muted = false;
+/** Master level 0–1 from the volume setting (squared: closer to how loud it sounds). */
+let level = 1;
+let haptics = true;
+
+const target = () => (muted ? 0 : level);
 
 export function unlockAudio(): void {
   try {
@@ -23,7 +28,7 @@ export function unlockAudio(): void {
       comp.attack.value = 0.005;
       comp.release.value = 0.15;
       master = ctx.createGain();
-      master.gain.value = muted ? 0 : 1;
+      master.gain.value = target();
       master.connect(comp).connect(ctx.destination);
     }
     if (ctx.state === 'suspended') void ctx.resume();
@@ -38,7 +43,18 @@ function ready(): (AudioContext & { state: 'running' }) | null {
 
 export function setMuted(value: boolean): void {
   muted = value;
-  if (ctx && master) master.gain.setTargetAtTime(value ? 0 : 1, ctx.currentTime, 0.02);
+  if (ctx && master) master.gain.setTargetAtTime(target(), ctx.currentTime, 0.02);
+}
+
+/** Volume setting, 0–100. */
+export function setVolume(percent: number): void {
+  level = (Math.max(0, Math.min(100, percent)) / 100) ** 2;
+  if (ctx && master) master.gain.setTargetAtTime(target(), ctx.currentTime, 0.02);
+}
+
+/** Haptics setting, independent of sound (settings.md). */
+export function setHaptics(on: boolean): void {
+  haptics = on;
 }
 
 export interface ChainSound {
@@ -117,9 +133,9 @@ export function sayUndo(): void {
   if (c && master && !muted) playUndo(c, { destination: master });
 }
 
-/** Light haptics on Android (iOS ignores them); quiet when the game is muted. */
+/** Light haptics on Android (iOS ignores them); off with the haptics setting. */
 export function buzz(pattern: number | number[]): void {
-  if (muted) return;
+  if (!haptics) return;
   try {
     navigator.vibrate?.(pattern);
   } catch {

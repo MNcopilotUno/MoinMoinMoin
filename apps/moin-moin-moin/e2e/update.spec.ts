@@ -16,17 +16,18 @@ test('a new deploy shows "reload to update", and reloading activates it', async 
   try {
     await page.goto(server.url);
     await page.waitForFunction(async () => (await navigator.serviceWorker.ready).active?.state === 'activated');
-    await expect(page.getByText('A new version of the harbour is ready.')).toHaveCount(0);
+    await expect(page.getByText('A fresh harbour is ready.')).toHaveCount(0);
 
     // "Deploy": the worker script's own bytes change (as a real rebuild changes precache revisions).
     const sw = join(dir, 'sw.js');
     writeFileSync(sw, `${readFileSync(sw, 'utf8')}\n// deploy 2\n`);
     await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.update());
 
-    const toast = page.getByRole('status').filter({ hasText: 'A new version of the harbour is ready.' });
+    const toast = page.getByRole('status').filter({ hasText: 'A fresh harbour is ready.' });
     await expect(toast).toBeVisible({ timeout: 15_000 });
+    await expect(toast).toContainText('Your stars and best taps stay');
     await Promise.all([page.waitForEvent('load'), toast.getByRole('button', { name: 'Reload' }).click()]);
-    await expect(page.getByText('A new version of the harbour is ready.')).toHaveCount(0);
+    await expect(page.getByText('A fresh harbour is ready.')).toHaveCount(0);
     expect(await page.evaluate(async () => (await navigator.serviceWorker.getRegistration())?.waiting ?? null)).toBeNull();
   } finally {
     await server.close();

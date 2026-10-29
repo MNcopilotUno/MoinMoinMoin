@@ -35,5 +35,6 @@
   .fender { display: block; width: 100%; height: 100%; overflow: visible; }
   .hit { animation: thud 0.22s cubic-bezier(0.3, 1.6, 0.5, 1); }
   @keyframes thud { 50% { transform: scale(0.8) rotate(8deg); } }
-  @media (prefers-reduced-motion: reduce) { .hit { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .hit { animation: none; }
 </style>

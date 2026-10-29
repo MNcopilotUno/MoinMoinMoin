@@ -152,7 +152,8 @@
   @keyframes wiggle { 33% { transform: rotate(-3deg); } 66% { transform: rotate(3deg); } }
   @keyframes cheer { 50% { transform: scale(1.1); } }
   @keyframes board-in { from { opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .board, .person.struck, .person.wiggle, .person.cheer { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .board, :global(:root[data-calm]) .person.struck, :global(:root[data-calm]) .person.wiggle, :global(:root[data-calm]) .person.cheer { animation: none; }
   .person:focus-visible { outline: 3px solid var(--ink, #1e2b4c); outline-offset: 2px; }
   .person.smiling { cursor: default; }
   /* Facing: a paper chip at the edge the person faces (readable on every coat and tile). */
@@ -166,7 +167,8 @@
     border: 2px solid rgba(255, 255, 255, 0.75); animation: ripple 0.85s ease-out forwards;
   }
   @keyframes ripple { to { transform: scale(5); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) { .ripple { animation-duration: 0.01s; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .ripple { animation-duration: 0.01s; }
   :global([data-theme='dark']) .person { box-shadow: 0 3px 0 rgba(60, 40, 20, 0.6), 0 0 14px rgba(255, 196, 110, 0.35), 0 6px 10px rgba(0, 0, 0, 0.4); }
   .moin {
     position: absolute;
