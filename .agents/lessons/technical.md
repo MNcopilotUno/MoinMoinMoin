@@ -22,3 +22,9 @@
   loss at phone size. Measure the `dist/assets/*.jpg` total against the previous build.
 - **Svelte adds scope classes**, so a test asserting `class="post"` in rendered HTML fails;
   query with `container.querySelector('.post')` instead.
+- **Look at the screens nobody tests.** Every e2e ran at phone portrait; a landscape phone could
+  not see the board, and a desktop showed a blurry crop. One screenshot per screen shape found
+  both. `screens.spec.ts` now keeps landscape, desktop and 320 px honest.
+- **Not every asset belongs in the precache.** Images only some screens use (wide paintings) go
+  to `globIgnores` plus a CacheFirst route, with a precached fallback layered underneath, so
+  phones never pay for desktop art and desktops still work offline.

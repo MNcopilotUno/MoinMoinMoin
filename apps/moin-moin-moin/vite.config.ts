@@ -41,6 +41,10 @@ export default defineConfig({
         // CLAUDE.md §8 (stale service worker): workbox revisions change with content; the cache
         // name stays stable; the new worker waits until the player chooses to reload.
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2,webmanifest}'],
+        // Wide paintings are for desktops and tablets only (screens.md): cached on first use, so
+        // phones never download them; offline, the portrait painting underneath still shows.
+        globIgnores: ['**/*-wide-*.jpg'],
+        runtimeCaching: [{ urlPattern: /-wide-[\w-]+\.jpg$/, handler: 'CacheFirst', options: { cacheName: 'moin-wide-paintings' } }],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         clientsClaim: true,

@@ -258,7 +258,7 @@ const SCENES = {
     sky(ctx, w, hy, P, r, sun);
     farShore(ctx, w, hy, P, r, s, { cranes: [[0.9, 40, -24]], michel: 0.82 });
     // the fish auction hall: brick nave, great arched window, copper roof and dome
-    const hx0 = w * 0.06, hw = w * 0.62, hb = hy + 4 * s, ht = 70 * s;
+    const hw = Math.min(w * 0.62, 250 * s), hx0 = Math.max(w * 0.06, w * 0.36 - hw / 2), hb = hy + 4 * s, ht = 70 * s;
     ctx.fillStyle = grad(ctx, 0, hb - ht, 0, hb, [mix(P.brick[1], P.night ? '#000000' : '#F3C9A6', 0.15), P.brick[0], mix(P.brick[2], P.brickShade, 0.3)]);
     ctx.fillRect(hx0, hb - ht, hw, ht);
     ctx.fillStyle = P.copper; ctx.beginPath(); ctx.moveTo(hx0 - 4 * s, hb - ht); ctx.lineTo(hx0 + hw * 0.5, hb - ht - 26 * s); ctx.lineTo(hx0 + hw + 4 * s, hb - ht); ctx.fill();
