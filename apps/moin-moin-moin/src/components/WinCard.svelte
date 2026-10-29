@@ -104,6 +104,15 @@
   button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
   .primary { background: var(--ink); color: var(--paper); }
   .secondary { background: var(--paper); color: var(--ink); }
+  /* Landscape phones (screens.md): the card sits in the left column, beside the solved board. */
+  @media (orientation: landscape) and (max-height: 560px) {
+    .win {
+      left: max(10px, env(safe-area-inset-left)); transform: none; width: min(calc(40vw - 20px), 24rem);
+      max-height: calc(100dvh - 20px); bottom: max(10px, env(safe-area-inset-bottom));
+      animation-name: rise-side;
+    }
+    @keyframes rise-side { from { transform: translateY(110%); opacity: 0; } 38% { opacity: 1; } to { transform: none; } }
+  }
   /* Short phones: a compact sheet, so the smiling board stays the picture (QA feel H1). */
   @media (max-height: 740px) {
     .win { padding: 0.7rem 0.9rem 0.8rem; }

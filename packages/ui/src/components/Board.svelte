@@ -113,7 +113,8 @@
 
 <style>
   .board {
-    --cell: min(calc((100vw - 28px) / var(--w)), calc((100dvh - 500px) / var(--h)), 72px);
+    /* Room for the board; the app narrows it in its landscape layout (screens.md). */
+    --cell: min(calc((var(--board-room-w, 100vw) - 28px) / var(--w)), calc((100dvh - var(--board-reserve, 500px)) / var(--h)), 72px);
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--w), max(48px, var(--cell)));

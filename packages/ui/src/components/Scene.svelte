@@ -5,6 +5,13 @@
   import harbourNightUrl from '@moin/assets/art/harbour-night.jpg';
   import marketNightUrl from '@moin/assets/art/market-night.jpg';
   import ferryNightUrl from '@moin/assets/art/ferry-night.jpg';
+  // Wide windows get landscape paintings (screens.md); not precached, cached on first use.
+  import harbourWideUrl from '@moin/assets/art/harbour-wide.jpg';
+  import marketWideUrl from '@moin/assets/art/market-wide.jpg';
+  import ferryWideUrl from '@moin/assets/art/ferry-wide.jpg';
+  import harbourNightWideUrl from '@moin/assets/art/harbour-night-wide.jpg';
+  import marketNightWideUrl from '@moin/assets/art/market-night-wide.jpg';
+  import ferryNightWideUrl from '@moin/assets/art/ferry-night-wide.jpg';
 
   interface Props {
     /** Which part of town is waking up. */
@@ -18,9 +25,11 @@
 
   const paintings = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl, daily: harbourUrl } as const;
   const nocturnes = { harbour: harbourNightUrl, market: marketNightUrl, ferry: ferryNightUrl, daily: harbourNightUrl } as const;
+  const wide = { harbour: harbourWideUrl, market: marketWideUrl, ferry: ferryWideUrl, daily: harbourWideUrl } as const;
+  const wideNight = { harbour: harbourNightWideUrl, market: marketNightWideUrl, ferry: ferryNightWideUrl, daily: harbourNightWideUrl } as const;
 </script>
 
-<div class="scene" class:night aria-hidden="true" data-painting={night ? 'night' : 'day'} style:--painting={`url(${(night ? nocturnes : paintings)[place]})`}>
+<div class="scene" class:night aria-hidden="true" data-painting={night ? 'night' : 'day'} style:--painting={`url(${(night ? nocturnes : paintings)[place]})`} style:--painting-wide={`url(${(night ? wideNight : wide)[place]})`}>
   <div class="fog" style:opacity={Math.min(0.85, Math.max(0, fog))}></div>
 </div>
 
@@ -28,6 +37,10 @@
   .scene {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background: var(--painting) center top / cover no-repeat, var(--fog, #f6f1e7);
+  }
+  /* Wider than tall: the landscape painting, with the portrait one underneath for offline. */
+  @media (min-aspect-ratio: 1 / 1) {
+    .scene { background: var(--painting-wide) center 40% / cover no-repeat, var(--painting) center top / cover no-repeat, var(--fog, #f6f1e7); }
   }
   .fog {
     position: absolute; inset: 0;

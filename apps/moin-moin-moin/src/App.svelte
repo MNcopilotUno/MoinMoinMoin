@@ -489,4 +489,27 @@
   main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 6px 14px 14px; }
   .quay-wrap { padding: 0 14px 10px; }
   .narrator-space { min-height: 5rem; }
+
+  /* Small phones (QA p3): kicker in tighter caps, the title scales with the width. */
+  @media (max-width: 359px) {
+    .level-no { font-size: 0.62rem; letter-spacing: 0.08em; max-width: none; }
+    h1 { font-size: clamp(1.9rem, 9vw, 2.5rem); margin-top: 0.6rem; }
+  }
+
+  /* Landscape phones (screens.md, QA m6): two columns, the board fills the height on the right.
+     The sky band and the quay are decoration only and stay out of this layout. */
+  @media (orientation: landscape) and (max-height: 560px) {
+    .shell {
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto 1fr;
+      max-width: none; column-gap: 8px; height: 100dvh; min-height: 0;
+      padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+      --board-room-w: 60vw; --board-reserve: 40px;
+    }
+    header { grid-column: 1; grid-row: 1; }
+    .score { grid-column: 1; grid-row: 2; }
+    main { grid-column: 2; grid-row: 1 / span 3; padding: 0; }
+    .sky-wrap, .quay-wrap { display: none; }
+    .shell > :global(.narrator), .narrator-space { grid-column: 1; grid-row: 3; align-self: end; }
+    h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); margin-top: 0.4rem; }
+  }
 </style>
