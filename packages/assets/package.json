@@ -13,7 +13,8 @@
   "scripts": {
     "typecheck": "tsc -p .",
     "icons": "tsx scripts/render-icons.ts",
-    "art": "node scripts/render-art.mjs"
+    "art": "node scripts/render-art.mjs",
+    "social": "node scripts/render-social.mjs"
   },
   "devDependencies": {
     "@types/node": "22",

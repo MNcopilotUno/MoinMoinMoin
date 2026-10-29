@@ -14,3 +14,6 @@ test-results/
 *.als
 *.aup3
 *.rpp
+
+# agent worktrees (Claude Code isolation)
+.claude/worktrees/

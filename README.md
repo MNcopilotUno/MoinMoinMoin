@@ -1,5 +1,7 @@
 # Moin
 
+![Moin Moin Moin: a painted Hamburg harbour at dawn, with the title and a red Moin speech bubble](packages/assets/icons/og.jpg)
+
 Two tiny games around the northern German greeting *Moin*. **Moin Moin Moin** — a harbour puzzle
 PWA: tap a grumpy person, watch the *Moin* fly, bounce off fenders, get nicked by seagulls, until
 everyone smiles. **Moin Domi** — Phase 3, not started.

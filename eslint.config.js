@@ -5,7 +5,7 @@ const transcendental = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 's
   'exp', 'expm1', 'log', 'log1p', 'log2', 'log10', 'pow', 'sqrt', 'cbrt', 'hypot', 'random'];
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/dev-dist/**', '**/node_modules/**', '**/*.svelte', '**/*.generated.ts', '**/playwright-report/**', '**/test-results/**'] },
+  { ignores: ['**/.claude/**', '**/dist/**', '**/dev-dist/**', '**/node_modules/**', '**/*.svelte', '**/*.generated.ts', '**/playwright-report/**', '**/test-results/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

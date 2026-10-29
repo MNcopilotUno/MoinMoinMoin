@@ -17,6 +17,7 @@ waits for the owner's own roadmap for it — see `docs/ROADMAP.md` Phase 3. Live
 | Art | Impressionist direction (2026-10-24): generated Monet-like paintings per part of town, gouache portraits, Cormorant Garamond + Figtree self-hosted. Sketch: Claude Design canvas (private to the owner) |
 | Crowd and night | Onlookers on the quay cheer each smile and celebrate a solve; gulls, boat, bunting and water ripples react to taps (never moves); dark mode = moonlit nocturnes, Auto/Day/Night in the menu |
 | North German art | Paintings of the Speicherstadt, the fish auction hall and the dyke (underpainting + brush pass), northern dress, herring gull, rope fender — `.agents/features/north-german-art.md` |
+| Link card and install sheet | `og.jpg` link card with Open Graph/Twitter tags, manifest screenshots (narrow + wide), README picture — none precached — `.agents/features/store-presence.md` |
 | Bigger, progressive levels | 24 levels regenerated on a tested curve: harbour to 6×6 par 4, market 6×6→7×7 par 4→6, ferry 7×7 par 6→8 with up to 16 people; old bests from replaced boards dropped — `.agents/features/levels-progression.md` |
 | Canvas parity | Facing chips, captain pips on the tile, chatterbox ×2 badge, narrator bell, win card as drawn — `.agents/features/canvas-parity.md` |
 | Every screen | Landscape phones: two columns, board fills the height; desktop/tablet: wide North German paintings (cached on first use, not precached); 320 px header fits — `.agents/features/screens.md` |
@@ -24,7 +25,7 @@ waits for the owner's own roadmap for it — see `docs/ROADMAP.md` Phase 3. Live
 | QA pass | Two QA agents (function/a11y, feel/sound); findings and outcomes in `.agents/reviews/qa-polish.md` |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 68, narration 48, ui 59; e2e 40 on Chromium; `validate:levels` 30
+Test counts: core 60, levels 68, narration 48, ui 59; e2e 43 on Chromium; `validate:levels` 30
 levels ok, 14 fixtures fail as expected.
 
 ## Next
