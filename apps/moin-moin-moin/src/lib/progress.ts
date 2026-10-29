@@ -3,12 +3,16 @@
  * localStorage, no cookies). If IndexedDB is unavailable (some private modes) progress lives in
  * memory for the session and play continues.
  */
+import { levelRevision } from '@moin/levels';
+
 const DB_NAME = 'moin';
 const STORE = 'kv';
 const VERSION = 1;
 
 export interface LevelProgress {
   readonly bestTaps: number;
+  /** The board revision the best was set on (levels-progression.md); missing means 1. */
+  readonly rev?: number;
 }
 
 export type ThemeSetting = 'auto' | 'light' | 'dark';
@@ -76,6 +80,13 @@ async function set(key: string, value: unknown): Promise<void> {
 
 const bool = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null);
 
+/** Keep only bests set on the board as it is now: a level regenerated since shows no stars. */
+function current(levels: Record<string, LevelProgress> | undefined): Record<string, LevelProgress> {
+  const kept: Record<string, LevelProgress> = {};
+  for (const [id, p] of Object.entries(levels ?? {})) if ((p.rev ?? 1) === levelRevision(id)) kept[id] = p;
+  return kept;
+}
+
 export async function loadProgress(): Promise<Progress> {
   const [levels, muted, theme, volume, haptics, narrator, calm] = await Promise.all([
     get<Record<string, LevelProgress>>('levels'),
@@ -87,7 +98,7 @@ export async function loadProgress(): Promise<Progress> {
     get<unknown>('calm'),
   ]);
   return {
-    levels: levels ?? {},
+    levels: current(levels),
     muted: bool(muted),
     theme: theme === 'light' || theme === 'dark' ? theme : 'auto',
     volume: typeof volume === 'number' && volume >= 0 && volume <= 100 ? Math.round(volume) : defaultSettings.volume,
@@ -99,9 +110,9 @@ export async function loadProgress(): Promise<Progress> {
 
 /** Record a solve; keeps the best tap count. Returns the updated record. */
 export async function saveSolved(id: string, taps: number): Promise<Record<string, LevelProgress>> {
-  const levels = { ...((await get<Record<string, LevelProgress>>('levels')) ?? {}) };
+  const levels = current(await get<Record<string, LevelProgress>>('levels'));
   const best = levels[id]?.bestTaps;
-  levels[id] = { bestTaps: best === undefined ? taps : Math.min(best, taps) };
+  levels[id] = { bestTaps: best === undefined ? taps : Math.min(best, taps), rev: levelRevision(id) };
   await set('levels', levels);
   return levels;
 }

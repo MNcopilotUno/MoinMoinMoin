@@ -210,7 +210,14 @@ export function candidate(seed: number, recipe: Recipe): Cell[] {
 export function generate(seed: number, recipe: Recipe, attempts = 400): { cells: Cell[]; solution: Solution; attempt: number } | null {
   for (let attempt = 0; attempt < attempts; attempt++) {
     const cells = candidate(mix(seed, attempt), recipe);
-    const game = createGame({ width: recipe.width, height: recipe.height, cells });
+    // A candidate can overshoot the people cap by one (chains end after placing); at 16 that is
+    // not a board at all (§6), so skip it rather than throw (levels-progression.md).
+    let game: Game;
+    try {
+      game = createGame({ width: recipe.width, height: recipe.height, cells });
+    } catch {
+      continue;
+    }
     const q = assess(game, recipe);
     if (q.ok && q.solution) return { cells, solution: q.solution, attempt };
   }

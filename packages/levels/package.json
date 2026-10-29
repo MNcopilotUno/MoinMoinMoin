@@ -8,7 +8,8 @@
     "test": "vitest run",
     "typecheck": "tsc -p .",
     "validate": "tsx scripts/validate.ts",
-    "gen:types": "tsx scripts/gen-types.ts"
+    "gen:types": "tsx scripts/gen-types.ts",
+    "grow": "tsx scripts/grow.ts"
   },
   "dependencies": {
     "@moin/core": "workspace:*",

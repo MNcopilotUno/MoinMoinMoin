@@ -2,22 +2,23 @@
   "formatVersion": "1.1.0",
   "id": "ferry-02",
   "title": "Car deck",
-  "width": 6,
-  "height": 6,
+  "width": 7,
+  "height": 7,
   "cells": [
-    {"x": 0, "y": 0, "kind": "person", "facing": "S", "needs": 1, "role": "fisherman"},
-    {"x": 1, "y": 0, "kind": "fender", "slant": "falling"},
-    {"x": 2, "y": 0, "kind": "fender", "slant": "rising"},
-    {"x": 5, "y": 0, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
-    {"x": 1, "y": 1, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
-    {"x": 0, "y": 2, "kind": "person", "facing": "S", "needs": 1, "chatterbox": true, "role": "market"},
-    {"x": 2, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
-    {"x": 0, "y": 3, "kind": "person", "facing": "S", "needs": 2, "role": "captain"},
-    {"x": 2, "y": 3, "kind": "person", "facing": "E", "needs": 2, "role": "captain"},
-    {"x": 3, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
+    {"x": 0, "y": 0, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 6, "y": 0, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
+    {"x": 2, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 5, "y": 3, "kind": "person", "facing": "E", "needs": 1, "role": "market"},
+    {"x": 6, "y": 3, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 5, "y": 4, "kind": "person", "facing": "E", "needs": 1, "role": "market"},
+    {"x": 6, "y": 4, "kind": "person", "facing": "S", "needs": 1, "role": "fisherman"},
     {"x": 0, "y": 5, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
-    {"x": 4, "y": 5, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
-    {"x": 5, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "kid"}
+    {"x": 1, "y": 5, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 2, "y": 5, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 3, "y": 5, "kind": "person", "facing": "S", "needs": 1, "role": "fisherman"},
+    {"x": 6, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 0, "y": 6, "kind": "fender", "slant": "falling"},
+    {"x": 3, "y": 6, "kind": "person", "facing": "W", "needs": 1, "role": "kid"}
   ],
-  "par": 3
+  "par": 6
 }

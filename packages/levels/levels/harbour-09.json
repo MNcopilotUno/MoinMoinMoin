@@ -1,17 +1,19 @@
 {
-  "formatVersion": "1.0.0",
+  "formatVersion": "1.1.0",
   "id": "harbour-09",
   "title": "Two for the captain",
-  "width": 5,
-  "height": 5,
+  "width": 6,
+  "height": 6,
   "cells": [
-    {"x": 0, "y": 0, "kind": "person", "facing": "E", "needs": 1},
-    {"x": 3, "y": 0, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
-    {"x": 1, "y": 2, "kind": "seagull"},
-    {"x": 3, "y": 2, "kind": "person", "facing": "W", "needs": 2, "role": "captain"},
-    {"x": 0, "y": 4, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
-    {"x": 3, "y": 4, "kind": "fender", "slant": "falling"},
-    {"x": 4, "y": 4, "kind": "person", "facing": "W", "needs": 1}
+    {"x": 0, "y": 2, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 4, "y": 2, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
+    {"x": 4, "y": 3, "kind": "person", "facing": "E", "needs": 2, "role": "captain"},
+    {"x": 5, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"},
+    {"x": 4, "y": 4, "kind": "person", "facing": "N", "needs": 1, "role": "fisherman"},
+    {"x": 0, "y": 5, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 3, "y": 5, "kind": "seagull"},
+    {"x": 4, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 5, "y": 5, "kind": "person", "facing": "W", "needs": 1, "role": "kid"}
   ],
-  "par": 2
+  "par": 3
 }
