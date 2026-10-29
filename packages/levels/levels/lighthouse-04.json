@@ -1,0 +1,28 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "lighthouse-04",
+  "title": "Spiral stairs",
+  "width": 7,
+  "height": 7,
+  "cells": [
+    {"x": 2, "y": 0, "kind": "seagull"},
+    {"x": 4, "y": 0, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"},
+    {"x": 1, "y": 1, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 2, "y": 1, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
+    {"x": 4, "y": 1, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 5, "y": 1, "kind": "person", "facing": "S", "needs": 2, "role": "captain"},
+    {"x": 0, "y": 2, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 1, "y": 2, "kind": "person", "facing": "S", "needs": 1, "role": "fisherman"},
+    {"x": 2, "y": 2, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 3, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 4, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 5, "y": 2, "kind": "person", "facing": "N", "needs": 2, "chatterbox": true, "role": "captain"},
+    {"x": 6, "y": 2, "kind": "person", "facing": "S", "needs": 2, "role": "captain"},
+    {"x": 0, "y": 3, "kind": "fender", "slant": "falling"},
+    {"x": 1, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"},
+    {"x": 3, "y": 3, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 6, "y": 3, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 3, "y": 6, "kind": "person", "facing": "N", "needs": 1, "role": "market"}
+  ],
+  "par": 8
+}

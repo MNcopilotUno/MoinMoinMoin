@@ -28,7 +28,7 @@ export const copy = {
     taps <= par ? `${taps} ${taps === 1 ? 'tap' : 'taps'} — that is par.` : `${taps} taps. Par is ${par}.`,
   next: 'Next level',
   replay: 'Play again',
-  allDone: 'The whole harbour is awake. More harbour soon.',
+  allDone: 'The whole town is awake, from the quay to the lamp room.',
   fromTheTop: 'Back to the first level',
 
   levels: 'Levels',

@@ -16,6 +16,7 @@ const jobs = {
   harbour: { scene: 'harbour', ...PHONE, seed: 11, o: { ...harbour, gulls: 6 }, paint: { ...brush, waterY: 0.33 } },
   market: { scene: 'market', ...PHONE, seed: 23, o: { s: 1, horizon: 0.3, sunX: 0.8, sunY: 0.09, gulls: 5 }, paint: { ...brush, waterY: 0.33 } },
   ferry: { scene: 'ferry', ...PHONE, seed: 37, o: { s: 1, horizon: 0.3, sunX: 0.82, sunY: 0.1, gulls: 5 }, paint: { ...brush, waterY: 0.34 } },
+  lighthouse: { scene: 'lighthouse', ...PHONE, seed: 43, o: { s: 1, horizon: 0.3, sunX: 0.22, sunY: 0.1, gulls: 5, towerX: 0.68, towerBase: 22, cottage: 84, moleNear: 78, sailX: 0.9, sailY: 64 }, paint: { ...brush, waterY: 0.33 } },
   water: { scene: 'water', w: 340, h: 230, scale: 2, seed: 5, o: {}, paint: { ...brush, radii: [10, 5, 2.5], waterY: 0 } },
 };
 // Wide windows (desktop, tablet landscape): the same parts of town composed for 1600 × 1000.
@@ -25,7 +26,8 @@ const wideBrush = { ...brush, radii: [16, 8, 4, 2.2] };
 jobs['harbour-wide'] = { scene: 'harbour', ...WIDE, seed: 7, o: { s: 2.1, horizon: 0.46, sunX: 0.74, sunY: 0.16, rowEnd: 0.42, rowScale: 1.05, cutterX: 0.74, cutterY: 70, cutterS: 1.15, gulls: 9 }, paint: { ...wideBrush, waterY: 0.5 } };
 jobs['market-wide'] = { scene: 'market', ...WIDE, seed: 23, o: { s: 2.1, horizon: 0.46, sunX: 0.8, sunY: 0.15, gulls: 8 }, paint: { ...wideBrush, waterY: 0.5 } };
 jobs['ferry-wide'] = { scene: 'ferry', ...WIDE, seed: 37, o: { s: 2.1, horizon: 0.46, sunX: 0.82, sunY: 0.15, gulls: 8 }, paint: { ...wideBrush, waterY: 0.5 } };
-for (const name of ['harbour', 'market', 'ferry', 'water', 'harbour-wide', 'market-wide', 'ferry-wide']) {
+jobs['lighthouse-wide'] = { scene: 'lighthouse', ...WIDE, seed: 43, o: { s: 2.1, horizon: 0.46, sunX: 0.2, sunY: 0.15, gulls: 8, towerX: 0.76, towerBase: 22, cottage: 84, moleNear: 70, sailX: 0.93, sailY: 60 }, paint: { ...wideBrush, waterY: 0.5 } };
+for (const name of ['harbour', 'market', 'ferry', 'lighthouse', 'water', 'harbour-wide', 'market-wide', 'ferry-wide', 'lighthouse-wide']) {
   jobs[name.replace(/(-wide)?$/, '-night$1')] = { ...jobs[name], night: true, o: { ...jobs[name].o, gulls: 2 } };
 }
 

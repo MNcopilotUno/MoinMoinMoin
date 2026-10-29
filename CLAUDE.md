@@ -186,7 +186,8 @@ Adding a rule without its fixture is a review **blocker**.
 - **Copy** lives in `packages/ui/src/copy/`. Interface in plain English; *Moin* stays *Moin*.
 - **Look:** a touch of Monet on the North German coast — generated paintings behind the play
   (`packages/assets/scripts/paint.browser.js`: a composed underpainting of Speicherstadt gables,
-  the fish auction hall or the dyke, then seeded brush strokes that follow its edges) and small
+  the fish auction hall, the dyke or the lighthouse on its mole, then seeded brush strokes that
+  follow its edges) and small
   gouache portraits with real faces in northern dress (`packages/ui/src/portrait.ts`); the smile
   is still the reward you see. Palette: lilac, dawn
   peach, harbour water and sage, harbour ink for lines and text. **Red means *Moin*** (speech

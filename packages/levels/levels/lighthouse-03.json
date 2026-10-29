@@ -1,0 +1,29 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "lighthouse-03",
+  "title": "Breakwater",
+  "width": 7,
+  "height": 7,
+  "cells": [
+    {"x": 1, "y": 0, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 2, "y": 0, "kind": "person", "facing": "W", "needs": 2, "role": "captain"},
+    {"x": 1, "y": 1, "kind": "person", "facing": "E", "needs": 1, "role": "kid"},
+    {"x": 5, "y": 1, "kind": "fender", "slant": "falling"},
+    {"x": 5, "y": 2, "kind": "person", "facing": "E", "needs": 1, "role": "market"},
+    {"x": 6, "y": 2, "kind": "seagull"},
+    {"x": 0, "y": 3, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 1, "y": 3, "kind": "fender", "slant": "rising"},
+    {"x": 2, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "market"},
+    {"x": 3, "y": 3, "kind": "person", "facing": "S", "needs": 1, "role": "fisherman"},
+    {"x": 4, "y": 3, "kind": "person", "facing": "W", "needs": 1, "role": "market"},
+    {"x": 5, "y": 3, "kind": "person", "facing": "S", "needs": 1, "role": "kid"},
+    {"x": 1, "y": 4, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 5, "y": 4, "kind": "person", "facing": "W", "needs": 2, "role": "captain"},
+    {"x": 2, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 3, "y": 5, "kind": "person", "facing": "W", "needs": 1, "role": "kid"},
+    {"x": 5, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 2, "y": 6, "kind": "person", "facing": "N", "needs": 2, "role": "captain"},
+    {"x": 3, "y": 6, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"}
+  ],
+  "par": 8
+}

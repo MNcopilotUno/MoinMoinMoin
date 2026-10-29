@@ -12,10 +12,10 @@ import { generate } from '../scripts/gen-types.js';
 describe('real levels', () => {
   const { results, problems } = checkLevels();
 
-  it('thirty levels in three sets of ten, each file listed once under its own id', () => {
-    expect(sets.map((s) => [s.id, s.levels.length])).toEqual([['harbour', 10], ['market', 10], ['ferry', 10]]);
-    expect(levels).toHaveLength(30);
-    expect(results).toHaveLength(30);
+  it('forty levels in four sets of ten, each file listed once under its own id', () => {
+    expect(sets.map((s) => [s.id, s.levels.length])).toEqual([['harbour', 10], ['market', 10], ['ferry', 10], ['lighthouse', 10]]);
+    expect(levels).toHaveLength(40);
+    expect(results).toHaveLength(40);
     expect(problems).toEqual([]);
     for (const set of sets) for (const l of set.levels) expect(l.id.startsWith(`${set.id}-`)).toBe(true);
   });

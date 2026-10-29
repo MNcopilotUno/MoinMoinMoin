@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { generate, levelRevision, levels, sets } from '../src/index.js';
+import { createGame, solve } from '@moin/core';
+import { generate, levelRevision, levels, sets, toBoard } from '../src/index.js';
 
 // .agents/features/levels-progression.md — bigger and progressive.
 const LESSONS = new Set(['harbour-01', 'harbour-02', 'harbour-03', 'harbour-04', 'harbour-05', 'market-01']);
@@ -25,9 +26,15 @@ describe('the curve', () => {
 
   it('the finale uses the whole board', () => {
     const last = levels[levels.length - 1]!;
+    expect(last.id).toBe('lighthouse-10');
     expect([last.width, last.height]).toEqual([7, 7]);
-    expect(last.par).toBeGreaterThanOrEqual(7);
+    expect(last.par).toBeGreaterThanOrEqual(9);
     expect(last.cells.filter((c) => c.kind === 'person').length).toBeGreaterThanOrEqual(15);
+  });
+
+  it('the finale has one answer only', () => {
+    const last = levels[levels.length - 1]!;
+    expect(solve(createGame(toBoard(last)), 5)?.minimumSolutions).toBe(1);
   });
 
   it('the ferry has gulls again', () => {
@@ -36,12 +43,35 @@ describe('the curve', () => {
   });
 });
 
+// .agents/features/lighthouse.md — the fourth part of town continues the curve after the ferry.
+describe('the lighthouse', () => {
+  const lighthouse = sets.find((s) => s.id === 'lighthouse')!;
+  const ferry = sets.find((s) => s.id === 'ferry')!;
+
+  it('comes after the ferry and starts no easier than the ferry ends', () => {
+    expect(sets.map((s) => s.id)).toEqual(['harbour', 'market', 'ferry', 'lighthouse']);
+    const [ferryEnd, first] = [ferry.levels[ferry.levels.length - 1]!, lighthouse.levels[0]!];
+    expect(first.par).toBeGreaterThanOrEqual(Math.max(8, ferryEnd.par));
+    expect(cells(first)).toBeGreaterThanOrEqual(cells(ferryEnd));
+  });
+
+  it('every board is the whole 7 × 7 harbour with at least three captains and a gull or a fender', () => {
+    for (const l of lighthouse.levels) {
+      expect([l.width, l.height], l.id).toEqual([7, 7]);
+      expect(l.cells.filter((c) => c.kind === 'person' && c.needs === 2).length, l.id).toBeGreaterThanOrEqual(3);
+      expect(l.cells.some((c) => c.kind === 'seagull' || c.kind === 'fender'), l.id).toBe(true);
+    }
+  });
+});
+
 describe('revisions', () => {
-  it('regenerated boards are revision 2, lessons revision 1', () => {
+  it('regenerated boards are revision 2; lessons and new levels revision 1', () => {
     expect(levelRevision('harbour-01')).toBe(1);
     expect(levelRevision('market-01')).toBe(1);
     expect(levelRevision('harbour-06')).toBe(2);
     expect(levelRevision('ferry-10')).toBe(2);
+    expect(levelRevision('lighthouse-01')).toBe(1);
+    expect(levelRevision('lighthouse-10')).toBe(1);
     expect(levelRevision('daily-2026-10-24')).toBe(1);
   });
 });
