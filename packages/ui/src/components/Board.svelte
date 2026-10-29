@@ -85,7 +85,7 @@
           onpointerdown={() => press(key)} onclick={() => tapPerson(cell.x, cell.y, g >= cell.needs)}>
           <PersonSprite role={roleOf(cell)} facing={cell.facing} needs={cell.needs} greetings={g}
             chatterbox={cell.chatterbox === true} variant={cell.x * 3 + cell.y} uid={`p${cell.x}-${cell.y}`} />
-          <span class={`facing facing-${cell.facing}`} aria-hidden="true"></span>
+          <span class={`facing facing-${cell.facing}`} aria-hidden="true"><svg viewBox="0 0 12 8"><path d="M1.5 7 6 1.5 10.5 7" /></svg></span>
         </button>
       {:else if cell.kind === 'seagull'}
         {@const holding = thief?.x === cell.x && thief?.y === cell.y}
@@ -157,12 +157,16 @@
   :global(:root[data-calm]) .board, :global(:root[data-calm]) .person.struck, :global(:root[data-calm]) .person.wiggle, :global(:root[data-calm]) .person.cheer { animation: none; }
   .person:focus-visible { outline: 3px solid var(--ink, #1e2b4c); outline-offset: 2px; }
   .person.smiling { cursor: default; }
-  /* Facing: a paper chip at the edge the person faces (readable on every coat and tile). */
-  .facing { position: absolute; width: 0; height: 0; filter: drop-shadow(0 0 1px #1e2b4c) drop-shadow(0 0 1px #1e2b4c); }
-  .facing-N { top: -7px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top: 0; border-bottom: 8px solid #fbf6ea; }
-  .facing-S { bottom: -7px; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-bottom: 0; border-top: 8px solid #fbf6ea; }
-  .facing-E { right: -7px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-right: 0; border-left: 8px solid #fbf6ea; }
-  .facing-W { left: -7px; top: 50%; transform: translateY(-50%); border: 6px solid transparent; border-left: 0; border-right: 8px solid #fbf6ea; }
+  /* Facing: a paper chip with an ink chevron on the edge the person faces (canvas-parity.md). */
+  .facing {
+    position: absolute; width: 20px; height: 14px; display: grid; place-items: center; pointer-events: none;
+    border-radius: 7px; background: #fbf6ea; box-shadow: 0 1px 3px rgba(30, 43, 76, 0.45);
+  }
+  .facing svg { width: 12px; height: 8px; fill: none; stroke: #1e2b4c; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .facing-N { top: -8px; left: 50%; transform: translateX(-50%); }
+  .facing-S { bottom: -8px; left: 50%; transform: translateX(-50%) rotate(180deg); }
+  .facing-E { right: -11px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+  .facing-W { left: -11px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
   .ripple {
     position: absolute; width: 14px; height: 6px; margin: -3px 0 0 -7px; border-radius: 50%; pointer-events: none; z-index: 1;
     border: 2px solid rgba(255, 255, 255, 0.75); animation: ripple 0.85s ease-out forwards;

@@ -48,10 +48,13 @@
 </script>
 
 <section class="win" aria-labelledby="win-title">
-  <h2 id="win-title">{copy.solvedTitle}</h2>
+  <!-- The canvas layout (canvas-parity.md): title and stars on one row, stats, the quote. -->
+  <div class="head">
+    <h2 id="win-title">{copy.solvedTitle}</h2>
+    <Stars count={stars} size="1.6rem" />
+  </div>
+  <p class="stats">{copy.solvedBody(taps, par)}</p>
   {#if quote}<p class="quote">{quote}</p>{/if}
-  <Stars count={stars} />
-  <p>{copy.solvedBody(taps, par)}</p>
   {#if last}<p class="done">{copy.allDone}</p>{/if}
   {#if share}
     <div class="share">
@@ -81,21 +84,30 @@
     background: var(--card-strong); border: 0; border-radius: 24px;
     -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
     box-shadow: 0 14px 34px var(--shadow);
-    padding: 1rem 1rem 1.1rem; text-align: center;
+    padding: 1.1rem 1.2rem 1.1rem; text-align: left;
     animation: rise 0.42s cubic-bezier(0.2, 0.9, 0.3, 1.15);
   }
   @keyframes rise { from { transform: translate(-50%, 110%); opacity: 0; } 38% { opacity: 1; } to { transform: translate(-50%, 0); } }
   /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
   :global(:root[data-calm]) .win { animation: none; }
-  h2 { margin: 0 0 0.5rem; font-family: var(--serif); font-weight: 700; font-size: 2rem; line-height: 1.05; color: var(--ink); }
+  .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 0.75rem; }
+  .head :global(.stars) { flex: none; }
+  h2 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: clamp(1.5rem, 6.5vw, 2rem); line-height: 1.05; color: var(--ink); }
   p { margin: 0.5rem 0 0; }
-  .quote { font-family: var(--serif); font-style: italic; font-size: 1.15rem; line-height: 1.25; color: var(--ink-soft); margin: 0 0 0.4rem; }
+  .stats { font-weight: 700; color: var(--ink-soft); }
+  .quote {
+    margin: 0.7rem 0 0; padding: 0.65rem 0.9rem; border-radius: 16px;
+    background: color-mix(in srgb, var(--ink) 7%, var(--paper));
+    font-family: var(--serif); font-style: italic; font-weight: 600; font-size: 1.15rem; line-height: 1.25; color: var(--ink);
+  }
   .done { font-family: var(--serif); font-style: italic; font-size: 1.2rem; color: var(--ink-soft); }
   .share { margin-top: 0.8rem; }
   .share-actions { display: flex; gap: 0.6rem; justify-content: center; }
   .share p { font-size: 0.9rem; color: var(--ink-soft); }
   textarea { width: 100%; margin-top: 0.4rem; font: inherit; font-size: 0.9rem; border: 2px solid var(--stone); border-radius: 8px; padding: 0.4rem; }
-  .actions { display: flex; gap: 0.6rem; justify-content: center; margin-top: 0.9rem; }
+  .actions { display: flex; gap: 0.6rem; margin-top: 0.9rem; }
+  .actions button { flex: 1; }
+  .actions .primary { flex: 1.4; }
   button {
     min-height: 48px; padding: 0 1rem; border-radius: 999px; white-space: nowrap; font: inherit; font-weight: 800; cursor: pointer;
     border: 1.5px solid var(--ink); box-shadow: 0 4px 12px var(--shadow);
@@ -116,11 +128,11 @@
   /* Short phones: a compact sheet, so the smiling board stays the picture (QA feel H1). */
   @media (max-height: 740px) {
     .win { padding: 0.7rem 0.9rem 0.8rem; }
-    h2 { font-size: 1.55rem; margin-bottom: 0.25rem; }
+    h2 { font-size: min(1.55rem, 6.5vw); }
     .quote { font-size: 1rem; margin-bottom: 0.2rem; }
     p { margin-top: 0.3rem; }
     .done { font-size: 1rem; }
     .actions { margin-top: 0.6rem; }
-    .win :global(.stars) { --size: 1.9rem !important; }
+    .win :global(.stars) { --size: 1.5rem !important; }
   }
 </style>
