@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       BASE_PATH: /${{ github.event.repository.name }}/
+      # Absolute URL for the link card (store-presence.md); the host GitHub Pages serves from.
+      SITE_URL: https://${{ github.repository_owner }}.github.io
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v5

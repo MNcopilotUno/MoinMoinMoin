@@ -12,6 +12,8 @@ export default defineConfig({
   publicDir: fileURLToPath(new URL('../../packages/assets/icons', import.meta.url)),
   plugins: [
     svelte(),
+    // The link card needs an absolute URL (store-presence.md): SITE_URL + base, or base alone.
+    { name: 'moin-site-url', transformIndexHtml: { order: 'pre', handler: (html: string) => html.replaceAll('%SITE%', `${process.env.SITE_URL ?? ''}${base}`) } },
     VitePWA({
       registerType: 'prompt',
       injectRegister: null,
@@ -30,6 +32,11 @@ export default defineConfig({
         orientation: 'portrait',
         theme_color: '#1e2b4c',
         background_color: '#f6f1e7',
+        // Chrome's richer install sheet (store-presence.md); taken from the built app.
+        screenshots: [
+          { src: 'screenshots/narrow.jpg', sizes: '780x1688', type: 'image/jpeg', form_factor: 'narrow', label: 'A grumpy harbour on a phone: tap a face and pass the Moin along the quay.' },
+          { src: 'screenshots/wide.jpg', sizes: '1440x900', type: 'image/jpeg', form_factor: 'wide', label: 'The Speicherstadt harbour at dawn, with a puzzle of fishermen, a captain and a gull.' },
+        ],
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
@@ -43,7 +50,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,woff2,webmanifest}'],
         // Wide paintings are for desktops and tablets only (screens.md): cached on first use, so
         // phones never download them; offline, the portrait painting underneath still shows.
-        globIgnores: ['**/*-wide-*.jpg'],
+        // The link card and install screenshots are for other apps, never for play.
+        globIgnores: ['**/*-wide-*.jpg', 'og.jpg', 'screenshots/**'],
         runtimeCaching: [{ urlPattern: /-wide-[\w-]+\.jpg$/, handler: 'CacheFirst', options: { cacheName: 'moin-wide-paintings' } }],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
