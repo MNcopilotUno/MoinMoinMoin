@@ -3,7 +3,7 @@
   import { stars as starsFor } from '@moin/core';
   import type { Level, LevelSet } from '@moin/levels';
   import { copy, Stars } from '@moin/ui';
-  import type { LevelProgress, ThemeSetting } from '../lib/progress';
+  import type { LevelProgress } from '../lib/progress';
   import harbourUrl from '@moin/assets/art/harbour.jpg';
   import marketUrl from '@moin/assets/art/market.jpg';
   import ferryUrl from '@moin/assets/art/ferry.jpg';
@@ -23,13 +23,10 @@
     onpick: (index: number) => void;
     ondaily: () => void;
     onclose: () => void;
-    theme: ThemeSetting;
-    ontheme: (theme: ThemeSetting) => void;
     /** Night theme: the banners show the moonlit paintings (QA M6). */
     night?: boolean;
   }
-  let { sets, best, daily, current, onpick, ondaily, onclose, theme, ontheme, night = false }: Props = $props();
-  const themes: ThemeSetting[] = ['light', 'auto', 'dark'];
+  let { sets, best, daily, current, onpick, ondaily, onclose, night = false }: Props = $props();
   const paintings = $derived(night ? nights : days);
 
   const starsOf = (l: Level): 0 | 1 | 2 | 3 => (best[l.id] ? starsFor(best[l.id]!.bestTaps, l.par) : 0);
@@ -63,15 +60,6 @@
     <button type="button" class="close" onclick={onclose} aria-label={copy.close}>✕</button>
   </header>
 
-  <fieldset class="theme">
-    <legend>{copy.theme}</legend>
-    {#each themes as t (t)}
-      <label class:on={theme === t}>
-        <input type="radio" name="theme" value={t} checked={theme === t} onchange={() => ontheme(t)} />
-        {copy.themes[t]}
-      </label>
-    {/each}
-  </fieldset>
 
   {#if daily}
     <button type="button" class="daily" onclick={ondaily}>
@@ -129,15 +117,6 @@
   .daily strong { font-family: var(--serif); font-size: 1.45rem; font-weight: 700; }
   .daily span { opacity: 0.9; font-size: 0.9rem; }
   .note { color: var(--ink-soft); font-style: italic; }
-  .theme { margin: 0.8rem 0 0; padding: 0; border: 0; min-width: 0; display: flex; align-items: center; gap: 0.35rem; }
-  .theme legend { float: left; margin-right: 0.4rem; font-size: 0.78rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
-  .theme label {
-    flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 999px;
-    border: 1.5px solid var(--line); cursor: pointer; font-weight: 700; font-size: 0.9rem; color: var(--ink);
-  }
-  .theme label.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .theme input { position: absolute; opacity: 0; width: 1px; height: 1px; }
-  .theme label:focus-within { outline: 3px solid var(--ink); outline-offset: 2px; }
   .banner {
     position: relative; margin: 1rem 0 0.5rem; height: 68px; border-radius: 16px; overflow: hidden;
     background: var(--painting) center 30% / cover;

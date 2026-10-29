@@ -86,5 +86,8 @@
   @keyframes bob { 50% { transform: translateY(-3px) rotate(-2deg); } }
   @keyframes toot { 50% { transform: translateY(-2px) rotate(4deg); } }
   /* Without motion each gull rests in its own place, so none covers another's tap target. */
-  @media (prefers-reduced-motion: reduce) { .lane, .wings, .boat, .startled, .tooting { animation: none; } .lane { transform: translateX(var(--rest)); } .startled { opacity: 0.35; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .lane, :global(:root[data-calm]) .wings, :global(:root[data-calm]) .boat, :global(:root[data-calm]) .startled, :global(:root[data-calm]) .tooting { animation: none; }
+  :global(:root[data-calm]) .lane { transform: translateX(var(--rest)); }
+  :global(:root[data-calm]) .startled { opacity: 0.35; }
 </style>

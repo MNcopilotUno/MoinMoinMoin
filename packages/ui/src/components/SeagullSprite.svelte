@@ -43,5 +43,6 @@
   .gull { display: block; width: 100%; height: 100%; overflow: visible; }
   .holding { animation: cackle 0.18s ease-out 2; transform-origin: 50% 90%; }
   @keyframes cackle { 50% { transform: translateY(-8%) rotate(-6deg); } }
-  @media (prefers-reduced-motion: reduce) { .holding { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .holding { animation: none; }
 </style>

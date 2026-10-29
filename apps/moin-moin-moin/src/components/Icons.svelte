@@ -1,5 +1,5 @@
 <script lang="ts">
-  interface Props { name: 'undo' | 'restart' | 'sound' | 'muted' | 'levels' }
+  interface Props { name: 'undo' | 'restart' | 'sound' | 'muted' | 'levels' | 'settings' | 'back' | 'close' }
   let { name }: Props = $props();
 </script>
 
@@ -7,6 +7,13 @@
   {#if name === 'levels'}
     <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
     <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+  {:else if name === 'settings'}
+    <!-- A ship's wheel: the harbour's own settings gear. -->
+    <circle cx="12" cy="12" r="7" stroke-width="2" /><circle cx="12" cy="12" r="2.2" stroke-width="2" /><path d="M14.22 12.92L21.70 16.02 M12.92 14.22L16.02 21.70 M11.08 14.22L7.98 21.70 M9.78 12.92L2.30 16.02 M9.78 11.08L2.30 7.98 M11.08 9.78L7.98 2.30 M12.92 9.78L16.02 2.30 M14.22 11.08L21.70 7.98" stroke-width="2" />
+  {:else if name === 'back'}
+    <path d="M15 5l-7 7 7 7" />
+  {:else if name === 'close'}
+    <path d="M6 6l12 12M18 6 6 18" />
   {:else if name === 'undo'}
     <path d="M9 7 4 12l5 5" /><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)" />
   {:else if name === 'restart'}

@@ -187,21 +187,21 @@ test('the daily Moin: same puzzle as the generator, solvable at par, result copi
   await expect(page.locator('h1')).toHaveText(levels[0]!.title);
 });
 
-test('night harbour: follows the phone, can be switched in the menu, and is remembered', async ({ page }) => {
+test('night harbour: follows the phone, can be switched in settings, and is remembered', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('./');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await expect(page.locator('.scene')).toHaveAttribute('data-painting', 'night');
   const bg = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--paper').trim());
   expect(bg).toBe('#1a2142');
-  await page.getByRole('button', { name: 'Levels' }).click();
-  await page.getByText('Day', { exact: true }).click();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('radio', { name: 'Morning' }).check();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await expect(page.locator('.scene')).toHaveAttribute('data-painting', 'day');
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await page.getByRole('button', { name: 'Levels' }).click();
-  await page.getByText('Night', { exact: true }).click();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('radio', { name: 'Night' }).check();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 });
 

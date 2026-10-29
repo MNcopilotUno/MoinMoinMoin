@@ -20,5 +20,6 @@
   svg { width: var(--size); height: var(--size); }
   .on { animation: pop 0.4s ease-out both; }
   @keyframes pop { 0% { transform: scale(0.4); } 70% { transform: scale(1.15); } }
-  @media (prefers-reduced-motion: reduce) { .on { animation: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .on { animation: none; }
 </style>

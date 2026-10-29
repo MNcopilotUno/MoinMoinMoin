@@ -41,5 +41,6 @@
       radial-gradient(ellipse 80% 40% at 50% 38%, rgba(26, 33, 66, 0.85), rgba(26, 33, 66, 0) 70%),
       linear-gradient(180deg, rgba(16, 22, 44, 0.85), rgba(22, 28, 56, 0.7) 45%, rgba(16, 22, 44, 0.55));
   }
-  @media (prefers-reduced-motion: reduce) { .fog { transition: none; } }
+  /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
+  :global(:root[data-calm]) .fog { transition: none; }
 </style>

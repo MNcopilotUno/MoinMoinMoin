@@ -13,12 +13,24 @@ export interface LevelProgress {
 
 export type ThemeSetting = 'auto' | 'light' | 'dark';
 
-export interface Progress {
-  readonly levels: Readonly<Record<string, LevelProgress>>;
-  /** `null` until the player touches the mute toggle (sound starts after the first tap). */
+/** The settings sheet (.agents/features/settings.md); one IndexedDB key each. */
+export interface Settings {
+  /** `null` until the player touches the sound switch (sound starts after the first tap). */
   readonly muted: boolean | null;
-  /** Day, night, or follow the phone. */
+  /** Morning, night, or follow the phone. */
   readonly theme: ThemeSetting;
+  /** Master volume, 0–100. */
+  readonly volume: number;
+  readonly haptics: boolean;
+  readonly narrator: boolean;
+  /** `null` follows the phone's reduce-motion setting until the player switches it. */
+  readonly calm: boolean | null;
+}
+
+export const defaultSettings: Settings = { muted: null, theme: 'auto', volume: 100, haptics: true, narrator: true, calm: null };
+
+export interface Progress extends Settings {
+  readonly levels: Readonly<Record<string, LevelProgress>>;
 }
 
 const memory = new Map<string, unknown>();
@@ -62,13 +74,27 @@ async function set(key: string, value: unknown): Promise<void> {
   });
 }
 
+const bool = (v: unknown): boolean | null => (typeof v === 'boolean' ? v : null);
+
 export async function loadProgress(): Promise<Progress> {
-  const [levels, muted, theme] = await Promise.all([
+  const [levels, muted, theme, volume, haptics, narrator, calm] = await Promise.all([
     get<Record<string, LevelProgress>>('levels'),
-    get<boolean>('muted'),
-    get<ThemeSetting>('theme'),
+    get<unknown>('muted'),
+    get<unknown>('theme'),
+    get<unknown>('volume'),
+    get<unknown>('haptics'),
+    get<unknown>('narrator'),
+    get<unknown>('calm'),
   ]);
-  return { levels: levels ?? {}, muted: muted ?? null, theme: theme === 'light' || theme === 'dark' ? theme : 'auto' };
+  return {
+    levels: levels ?? {},
+    muted: bool(muted),
+    theme: theme === 'light' || theme === 'dark' ? theme : 'auto',
+    volume: typeof volume === 'number' && volume >= 0 && volume <= 100 ? Math.round(volume) : defaultSettings.volume,
+    haptics: bool(haptics) ?? defaultSettings.haptics,
+    narrator: bool(narrator) ?? defaultSettings.narrator,
+    calm: bool(calm),
+  };
 }
 
 /** Record a solve; keeps the best tap count. Returns the updated record. */
@@ -80,10 +106,11 @@ export async function saveSolved(id: string, taps: number): Promise<Record<strin
   return levels;
 }
 
-export async function saveMuted(muted: boolean): Promise<void> {
-  await set('muted', muted);
+export async function saveSetting<K extends keyof Settings>(key: K, value: Settings[K]): Promise<void> {
+  await set(key, value);
 }
 
-export async function saveTheme(theme: ThemeSetting): Promise<void> {
-  await set('theme', theme);
+/** Start over: forget every solved level and best tap count. Settings stay. */
+export async function clearLevels(): Promise<void> {
+  await set('levels', {});
 }
