@@ -26,6 +26,7 @@
 <div class="narrator" aria-live="polite">
   {#if visible && line}
     <button type="button" class="line" onclick={() => (visible = false)} title={copy.narratorDismiss}>
+      <svg class="bell" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M7 17v-6a5 5 0 0 1 10 0v6l2 2H5z" /><path d="M10 21h4" /></svg>
       <span class="text">{line.text}</span>
     </button>
   {/if}
@@ -39,10 +40,12 @@
     background: var(--card); color: var(--ink);
     -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
     padding: 0.8rem 1.1rem; text-align: left; cursor: pointer;
+    display: flex; align-items: center; gap: 0.75rem;
     font-family: var(--serif); font-style: italic; font-weight: 500; font-size: 1.3rem; line-height: 1.25;
     box-shadow: 0 8px 20px var(--shadow);
     animation: drift 0.35s ease-out;
   }
+  .bell { width: 24px; height: 24px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: 0.8; }
   @keyframes drift { from { opacity: 0; transform: translateY(6px); } }
   /* Calm motion: the setting, or the phone's reduce-motion (settings.md). */
   :global(:root[data-calm]) .line { animation: none; }
