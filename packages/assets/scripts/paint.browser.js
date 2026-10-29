@@ -207,6 +207,123 @@ function ferry(ctx, x, wl, s, P) {
   ctx.restore();
 }
 
+/**
+ * The lighthouse on the mole (lighthouse.md): a tall North Sea tower, white with ink bands —
+ * never red, red means Moin — gallery and railing, a glazed lantern, an ink dome. At night the
+ * lamp is lit. Light comes from the left, so the right flank is in lilac shade.
+ */
+function tower(ctx, x, base, s, P) {
+  const H = 150 * s, bw = 15 * s, tw = 10 * s, top = base - H;
+  const ink = P.night ? '#1B1F40' : '#2B3860', inkShade = P.night ? '#12152E' : '#1E2848';
+  // plinth
+  ctx.fillStyle = P.stone; ctx.fillRect(x - bw - 5 * s, base - 9 * s, (bw + 5 * s) * 2, 10 * s);
+  ctx.fillStyle = P.quayTop; ctx.fillRect(x - bw - 5 * s, base - 10 * s, (bw + 5 * s) * 2, 2.5 * s);
+  // the body, rounded by a gradient, banded in ink
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(x - bw, base - 9 * s); ctx.lineTo(x - tw, top); ctx.lineTo(x + tw, top); ctx.lineTo(x + bw, base - 9 * s); ctx.closePath(); ctx.clip();
+  ctx.fillStyle = grad(ctx, x - bw, 0, x + bw, 0, P.night ? ['#8E90B4', '#7A7CA2', '#5A5C84', '#3E4068'] : ['#FFFBF3', '#F7F2E8', '#E2DCE6', '#BDB6CF']);
+  ctx.fillRect(x - bw, top, bw * 2, H);
+  for (const [a, b] of [[0.1, 0.22], [0.38, 0.5], [0.66, 0.78]]) {
+    ctx.fillStyle = grad(ctx, x - bw, 0, x + bw, 0, [ink, ink, inkShade]);
+    ctx.fillRect(x - bw, base - 9 * s - (H - 9 * s) * b, bw * 2, (H - 9 * s) * (b - a));
+  }
+  ctx.restore();
+  // door and a stair of small windows (lit at night)
+  ctx.fillStyle = ink; ctx.beginPath(); ctx.moveTo(x - 4 * s, base - 9 * s); ctx.lineTo(x - 4 * s, base - 19 * s); ctx.quadraticCurveTo(x, base - 24 * s, x + 4 * s, base - 19 * s); ctx.lineTo(x + 4 * s, base - 9 * s); ctx.fill();
+  for (const [t, dx] of [[0.31, -3], [0.59, 2], [0.87, -1]]) {
+    ctx.fillStyle = P.night ? '#FFD27A' : '#46557C';
+    ctx.fillRect(x + dx * s - 1.6 * s, base - 9 * s - (H - 9 * s) * t - 3 * s, 3.2 * s, 5.5 * s);
+  }
+  // gallery deck and railing
+  ctx.fillStyle = ink; ctx.fillRect(x - tw - 5 * s, top - 3 * s, (tw + 5 * s) * 2, 4 * s);
+  ctx.strokeStyle = ink; ctx.lineWidth = 0.9 * s;
+  ctx.beginPath(); ctx.moveTo(x - tw - 5 * s, top - 10 * s); ctx.lineTo(x + tw + 5 * s, top - 10 * s);
+  for (let k = 0; k <= 8; k++) { const px = x - tw - 5 * s + k * ((tw + 5 * s) * 2) / 8; ctx.moveTo(px, top - 3 * s); ctx.lineTo(px, top - 10 * s); }
+  ctx.stroke();
+  // lantern room: glass between ink bars, then the dome, vent ball and rod
+  const lw = 7.5 * s, lh = 17 * s, lt = top - 3 * s - lh;
+  ctx.fillStyle = ink; ctx.fillRect(x - lw - 1 * s, top - 6 * s, (lw + 1 * s) * 2, 3 * s);
+  ctx.fillStyle = P.night ? '#FFF1C2' : grad(ctx, x - lw, 0, x + lw, 0, ['#E9EEF6', '#C4D0E2', '#9FAFCB']);
+  ctx.fillRect(x - lw, lt, lw * 2, lh - 3 * s);
+  ctx.fillStyle = ink; for (const dx of [-lw, -lw / 3, lw / 3, lw - 1.2 * s]) ctx.fillRect(x + dx, lt, 1.2 * s, lh - 3 * s);
+  ctx.beginPath(); ctx.moveTo(x - lw - 2 * s, lt); ctx.quadraticCurveTo(x, lt - 16 * s, x + lw + 2 * s, lt); ctx.fill();
+  ctx.beginPath(); ctx.arc(x, lt - 9.5 * s, 2.2 * s, 0, Math.PI * 2); ctx.fill();
+  ctx.lineWidth = 0.8 * s; ctx.beginPath(); ctx.moveTo(x, lt - 11 * s); ctx.lineTo(x, lt - 19 * s); ctx.stroke();
+  return { lampX: x, lampY: lt + (lh - 3 * s) / 2 };
+}
+
+/** The lamp at night: a halo and two pale beams across the sky (warm light, never red). */
+function beams(ctx, x, y, w, s) {
+  for (const [dir, spread, a] of [[-1, 0.16, 0.34], [1, 0.1, 0.22]]) {
+    const len = w * 0.95, g = ctx.createLinearGradient(x, y, x + dir * len, y);
+    g.addColorStop(0, `rgba(255,236,176,${a})`); g.addColorStop(1, 'rgba(255,236,176,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x, y - 2 * s); ctx.lineTo(x + dir * len, y - len * spread * 0.9); ctx.lineTo(x + dir * len, y + len * spread * 0.35); ctx.lineTo(x, y + 2 * s); ctx.fill();
+  }
+  const g = ctx.createRadialGradient(x, y, 0, x, y, 70 * s); g.addColorStop(0, 'rgba(255,236,176,.75)'); g.addColorStop(0.25, 'rgba(255,226,150,.3)'); g.addColorStop(1, 'rgba(255,226,150,0)');
+  ctx.fillStyle = g; ctx.fillRect(x - 70 * s, y - 70 * s, 140 * s, 140 * s);
+}
+
+/** The keeper's cottage: whitewashed, a slate hip roof, sage shutters, a chimney. */
+function cottage(ctx, x, base, s, P) {
+  const cw = 54 * s, ch = 22 * s;
+  ctx.fillStyle = grad(ctx, x, 0, x + cw, 0, P.night ? ['#6E7096', '#55577E'] : ['#F6F0E4', '#DCD4DC']); ctx.fillRect(x, base - ch, cw, ch);
+  ctx.fillStyle = P.night ? '#202445' : '#4A5578';
+  ctx.beginPath(); ctx.moveTo(x - 4 * s, base - ch); ctx.lineTo(x + 10 * s, base - ch - 18 * s); ctx.lineTo(x + cw - 10 * s, base - ch - 18 * s); ctx.lineTo(x + cw + 4 * s, base - ch); ctx.fill();
+  ctx.fillRect(x + cw - 16 * s, base - ch - 26 * s, 6 * s, 12 * s);
+  for (let j = 0; j < 3; j++) {
+    const wx = x + (7 + j * 16) * s;
+    ctx.fillStyle = P.night ? '#2E4252' : '#8FAE8A'; ctx.fillRect(wx - 3 * s, base - ch + 5 * s, 3 * s, 9 * s); ctx.fillRect(wx + 7 * s, base - ch + 5 * s, 3 * s, 9 * s);
+    ctx.fillStyle = P.frame; ctx.fillRect(wx, base - ch + 5 * s, 7 * s, 9 * s);
+    ctx.fillStyle = P.night ? '#FFD27A' : P.glass; ctx.fillRect(wx + 1 * s, base - ch + 6 * s, 5 * s, 7 * s);
+  }
+  ctx.fillStyle = P.night ? '#1E2246' : '#2F4A7A'; ctx.fillRect(x + cw - 9 * s, base - 13 * s, 6 * s, 13 * s);
+  // a wisp of peat smoke
+  ctx.save(); ctx.filter = `blur(${Math.max(1, 2 * s)}px)`; ctx.fillStyle = alpha(P.night ? '#8E8AA8' : '#E8E2EE', 0.6);
+  for (let k = 0; k < 5; k++) { ctx.beginPath(); ctx.ellipse(x + cw - 13 * s + k * 5 * s, base - ch - 30 * s - k * 6 * s, (4 + k) * s, (2.5 + k * 0.5) * s, 0, 0, Math.PI * 2); ctx.fill(); }
+  ctx.restore();
+}
+
+/** The mole: a granite pier running out from the near left to the tower, rocks heaped in front. */
+function mole(ctx, x0, y0, x1, y1, s, P, r) {
+  // it slopes towards us, then runs flat for its head, where the tower and the cottage stand
+  const HEAD = 0.6, u = (t) => Math.min(1, t / HEAD);
+  const face = (t) => (24 - 14 * u(t)) * s, yAt = (t) => y0 + (y1 - y0) * u(t), xAt = (t) => x0 + (x1 - x0) * t;
+  const edge = (f) => { ctx.moveTo(x0, y0 + face(0) * f); ctx.lineTo(xAt(HEAD), y1 + face(1) * f); ctx.lineTo(x1, y1 + face(1) * f); };
+  // top surface and front face, blocks drawn as courses that thin with distance
+  ctx.fillStyle = P.quayTop; ctx.beginPath(); ctx.moveTo(x0, y0 - 6 * s); ctx.lineTo(xAt(HEAD), y1 - 3 * s); ctx.lineTo(x1, y1 - 3 * s); ctx.lineTo(x1, y1); ctx.lineTo(xAt(HEAD), y1); ctx.lineTo(x0, y0); ctx.fill();
+  ctx.fillStyle = grad(ctx, 0, y1, 0, y0 + face(0), [mix(P.stone, P.night ? '#000000' : '#FFFFFF', 0.12), P.stone]);
+  ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(xAt(HEAD), y1); ctx.lineTo(x1, y1); ctx.lineTo(x1, y1 + face(1)); ctx.lineTo(xAt(HEAD), y1 + face(1)); ctx.lineTo(x0, y0 + face(0)); ctx.fill();
+  ctx.strokeStyle = alpha(P.night ? '#0E1226' : '#55536E', 0.55); ctx.lineWidth = 0.8 * s;
+  for (const f of [0.35, 0.7]) { ctx.beginPath(); edge(f); ctx.stroke(); }
+  for (let t = 0; t < 1; t += 0.025 + 0.02 * u(t)) { const bx = xAt(t), by = yAt(t); ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + face(t)); ctx.stroke(); }
+  // bollards along the edge
+  ctx.fillStyle = P.night ? '#141830' : '#3A3F5C';
+  for (const t of [0.12, 0.38]) { const bx = xAt(t), by = yAt(t), k = 1 - 0.45 * u(t); ctx.fillRect(bx, by - 6 * s * k, 4 * s * k, 6 * s * k); ctx.fillRect(bx - 1.2 * s * k, by - 7 * s * k, 6.4 * s * k, 1.8 * s * k); }
+  // the breakwater: granite boulders, bigger near us
+  const rocks = [];
+  for (let i = 0; i < 90; i++) {
+    const t = r(), k = 1.3 - 0.8 * u(t), bx = x0 + (x1 + 18 * s - x0) * t, by = yAt(t) + face(t) * (0.55 + r() * 0.5) + (r() * 7 - 1) * s * k;
+    rocks.push([by, bx, (6 + r() * 9) * s * k, 0.5 + r() * 0.3, r(), (r() - 0.5) * 0.7]);
+  }
+  rocks.sort((a, b) => a[0] - b[0]);
+  for (const [by, bx, rx, flat, tone, rot] of rocks) {
+    const ry = rx * flat;
+    ctx.fillStyle = alpha(P.night ? '#080B1C' : '#3E3A56', 0.55); ctx.beginPath(); ctx.ellipse(bx + rx * 0.12, by + ry * 0.25, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = P.night ? mix('#262846', '#4E5074', tone) : mix('#6F6A84', '#BDB4C4', tone);
+    ctx.beginPath(); ctx.ellipse(bx, by, rx, ry, rot, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = alpha(P.night ? '#9A98BC' : '#F6EEE8', P.night ? 0.3 : 0.5); ctx.beginPath(); ctx.ellipse(bx - rx * 0.3, by - ry * 0.4, rx * 0.5, ry * 0.32, rot, 0, Math.PI * 2); ctx.fill();
+  }
+  return { top: yAt, x: xAt, foamY: (t) => yAt(t) + face(t) + 7 * s * (1.25 - 0.75 * u(t)) };
+}
+
+/** A herring gull standing on the mole (white, grey back, a yellow bill — no red). */
+function perched(ctx, x, y, s, P) {
+  ctx.fillStyle = P.night ? '#B8B6D2' : '#FBF9F4'; ctx.beginPath(); ctx.ellipse(x, y - 4 * s, 5 * s, 3 * s, -0.15, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x + 4.5 * s, y - 7.5 * s, 2.2 * s, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = P.night ? '#6E6C92' : '#9BA3BC'; ctx.beginPath(); ctx.ellipse(x - 1 * s, y - 5 * s, 4 * s, 1.8 * s, -0.15, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = P.night ? '#B8A060' : '#F0C64A'; ctx.fillRect(x + 6.2 * s, y - 8 * s, 2.6 * s, 1 * s);
+}
+
 function water(ctx, w, hy, h, P, r, sun, reflectFrom) {
   ctx.fillStyle = grad(ctx, 0, hy, 0, h, P.water); ctx.fillRect(0, hy, w, h - hy);
   const src = reflectFrom, k = src.width / w, band = Math.min(hy, h - hy);
@@ -304,6 +421,41 @@ const SCENES = {
     const above = document.createElement('canvas'); above.width = ctx.canvas.width; above.height = ctx.canvas.height; above.getContext('2d').drawImage(ctx.canvas, 0, 0);
     water(ctx, w, hy + 20 * s, h, P, r, sun, above);
     ferry(ctx, w * 0.32, hy + 46 * s, s * 0.85, P);
+  },
+  lighthouse(ctx, w, h, P, r, o) {
+    const s = o.s, hy = h * o.horizon, sun = { x: w * o.sunX, y: h * o.sunY, r: 14 * s };
+    sky(ctx, w, hy, P, r, sun);
+    // the open North Sea: a low island of dunes far off, a coaster on the horizon
+    ctx.fillStyle = P.haze; ctx.beginPath(); ctx.moveTo(w * 0.62, hy);
+    for (let x = w * 0.62; x <= w; x += 5 * s) ctx.lineTo(x, hy - (3 + 4 * Math.abs(Math.sin(x / (29 * s))) + r() * 1.5) * s);
+    ctx.lineTo(w, hy); ctx.fill();
+    ctx.fillStyle = P.hazeDark; ctx.fillRect(w * 0.08, hy - 7 * s, 46 * s, 5 * s); ctx.fillRect(w * 0.08 + 34 * s, hy - 13 * s, 8 * s, 6 * s);
+    const tx = w * o.towerX, tb = hy + o.towerBase * s;
+    const lamp = { lampX: tx, lampY: tb - 163 * s };
+    if (P.night) beams(ctx, lamp.lampX, lamp.lampY, w, s);
+    const land = () => { cottage(ctx, tx - o.cottage * s, tb - 2 * s, s * 0.95, P); tower(ctx, tx, tb, s, P); };
+    land();
+    gulls(ctx, w, hy, s, r, o.gulls, P);
+    const above = document.createElement('canvas'); above.width = ctx.canvas.width; above.height = ctx.canvas.height; above.getContext('2d').drawImage(ctx.canvas, 0, 0);
+    water(ctx, w, hy + 1 * s, h, P, r, sun, above);
+    // the mole runs from the near left out to the tower; the tower and cottage stand on it
+    const x0 = -20 * s, y0 = hy + o.moleNear * s, x1 = tx + 34 * s, y1 = tb + 1 * s;
+    const pier = mole(ctx, x0, y0, x1, y1, s, P, r);
+    if (P.night) { const g = ctx.createRadialGradient(lamp.lampX, lamp.lampY, 0, lamp.lampX, lamp.lampY, 40 * s); g.addColorStop(0, 'rgba(255,236,176,.45)'); g.addColorStop(1, 'rgba(255,236,176,0)'); ctx.fillStyle = g; ctx.fillRect(lamp.lampX - 40 * s, lamp.lampY - 40 * s, 80 * s, 80 * s); }
+    land();
+    perched(ctx, pier.x(0.12) + 2 * s, pier.top(0.12) - 6 * s, s * 1.15, P);
+    perched(ctx, pier.x(0.38) + 1.5 * s, pier.top(0.38) - 5 * s, s * 0.95, P);
+    // surf where the sea meets the boulders
+    for (let i = 0; i < 160; i++) {
+      const t = r() * 1.05, k = 1.25 - 0.75 * Math.min(1, t / 0.6), fx = x0 + (x1 + 18 * s - x0) * t, fy = pier.foamY(Math.min(1, t)) + (r() * 5 - 1) * s * k;
+      ctx.fillStyle = alpha(P.night ? '#A9A7CC' : '#FFFFFF', P.night ? 0.12 + r() * 0.28 : 0.35 + r() * 0.45);
+      ctx.beginPath(); ctx.ellipse(fx, fy, (3 + r() * 9) * s * k, (1 + r() * 1.6) * s * k, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    // a sail coming home on the right
+    const bx = w * o.sailX, by = hy + o.sailY * s;
+    ctx.fillStyle = P.night ? '#141830' : '#2B3860'; ctx.beginPath(); ctx.moveTo(bx - 14 * s, by); ctx.lineTo(bx + 16 * s, by); ctx.lineTo(bx + 11 * s, by + 5 * s); ctx.lineTo(bx - 11 * s, by + 5 * s); ctx.fill();
+    ctx.fillStyle = P.night ? '#8E8CB0' : '#F7F2E8'; ctx.beginPath(); ctx.moveTo(bx, by - 2 * s); ctx.lineTo(bx, by - 34 * s); ctx.lineTo(bx + 14 * s, by - 3 * s); ctx.fill();
+    ctx.fillStyle = P.night ? '#6E6C92' : '#E4DCEA'; ctx.beginPath(); ctx.moveTo(bx - 1.5 * s, by - 4 * s); ctx.lineTo(bx - 1.5 * s, by - 26 * s); ctx.lineTo(bx - 12 * s, by - 4 * s); ctx.fill();
   },
 };
 

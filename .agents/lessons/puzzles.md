@@ -27,3 +27,14 @@
   boards; on big ones read minimum solutions and `minChoices` instead.
 - **Keep what the intro promises.** Regenerating a level keeps its title and intro, so the
   schedule enforces what they say (13 people, 3 captains, a gull at the bakery).
+- **The quality bar caps par on a fixed board.** At 7 × 7 with ≤ 16 people, par 10 never passed
+  the random-tapping rule (first taps to par ≤ half the people): 0 of ~12 000 par-10 candidates,
+  ~97 % failing exactly that. Par 9 passes about 1 in 900. With size and crowd at the contract's
+  ceiling, "harder" has to come from other axes — more captains, more taps that need thought
+  (`minChoices`), a unique answer — or from a new mechanic, not from loosening the bar.
+- **Measure before promising a curve.** "Aim for 8 → 10" was a sampling question; a 20-line
+  script over the generator answered it in a minute (par distribution and failure reasons per
+  recipe) and turned a hope into the documented ceiling in `lighthouse.md`.
+- **Promise what you name, for new sets too.** The lighthouse's titles and intros ("Four
+  captains", "Gulls on the gallery", a *Moin moin* at tea) are enforced by the schedule, and the
+  narration test now also checks captains ("four captains" → at least four).

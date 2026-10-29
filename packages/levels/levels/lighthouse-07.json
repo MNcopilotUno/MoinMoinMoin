@@ -1,0 +1,30 @@
+{
+  "formatVersion": "1.1.0",
+  "id": "lighthouse-07",
+  "title": "Tea with the keeper",
+  "width": 7,
+  "height": 7,
+  "cells": [
+    {"x": 1, "y": 0, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 5, "y": 0, "kind": "person", "facing": "S", "needs": 1, "role": "kid"},
+    {"x": 6, "y": 0, "kind": "person", "facing": "W", "needs": 2, "role": "captain"},
+    {"x": 2, "y": 1, "kind": "person", "facing": "E", "needs": 2, "chatterbox": true, "role": "captain"},
+    {"x": 3, "y": 1, "kind": "person", "facing": "W", "needs": 2, "role": "captain"},
+    {"x": 4, "y": 1, "kind": "person", "facing": "E", "needs": 1, "role": "fisherman"},
+    {"x": 5, "y": 1, "kind": "fender", "slant": "falling"},
+    {"x": 0, "y": 2, "kind": "person", "facing": "S", "needs": 1, "role": "market"},
+    {"x": 1, "y": 2, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 2, "y": 2, "kind": "fender", "slant": "falling"},
+    {"x": 5, "y": 3, "kind": "person", "facing": "S", "needs": 1, "role": "kid"},
+    {"x": 6, "y": 3, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 0, "y": 4, "kind": "person", "facing": "S", "needs": 1, "role": "fisherman"},
+    {"x": 2, "y": 4, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 0, "y": 5, "kind": "seagull"},
+    {"x": 2, "y": 5, "kind": "person", "facing": "N", "needs": 1, "role": "market"},
+    {"x": 5, "y": 5, "kind": "fender", "slant": "rising"},
+    {"x": 0, "y": 6, "kind": "person", "facing": "N", "needs": 1, "role": "kid"},
+    {"x": 5, "y": 6, "kind": "person", "facing": "E", "needs": 2, "role": "captain"},
+    {"x": 6, "y": 6, "kind": "person", "facing": "W", "needs": 1, "role": "fisherman"}
+  ],
+  "par": 9
+}

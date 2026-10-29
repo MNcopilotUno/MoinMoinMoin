@@ -18,5 +18,5 @@ test('a saved best from an older revision of a level is dropped', async ({ page 
   await page.getByRole('button', { name: 'Levels' }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('button', { name: /^Level 1, First Moin, 3 of 3 stars/ })).toBeVisible();
-  await expect(dialog.getByTestId('star-total')).toContainText('3 of 90');
+  await expect(dialog.getByTestId('star-total')).toContainText('3 of 120');
 });

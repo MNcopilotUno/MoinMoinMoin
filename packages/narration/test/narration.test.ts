@@ -20,14 +20,14 @@ const firstTap = (tokens: string) => {
 };
 
 describe('lines (data)', () => {
-  it('one intro per level for all thirty, plus the reactions', () => {
-    expect(lines.filter((l) => l.trigger === 'levelStart')).toHaveLength(30);
-    expect(new Set(lines.filter((l) => l.trigger === 'levelStart').map((l) => l.levelId)).size).toBe(30);
+  it('one intro per level for all forty, plus the reactions', () => {
+    expect(lines.filter((l) => l.trigger === 'levelStart')).toHaveLength(40);
+    expect(new Set(lines.filter((l) => l.trigger === 'levelStart').map((l) => l.levelId)).size).toBe(40);
     expect(lines.filter((l) => l.trigger !== 'levelStart' && l.trigger !== 'setComplete').length).toBeGreaterThanOrEqual(18);
   });
 
   it('the story: each part of town gets a line when it wakes up', () => {
-    for (const set of ['harbour', 'market', 'ferry']) {
+    for (const set of ['harbour', 'market', 'ferry', 'lighthouse']) {
       expect(pickLine({ trigger: 'setComplete', levelId: set }, freshMemory).line?.id).toBe(`set-${set}`);
     }
   });
@@ -118,5 +118,16 @@ describe('QA m4: intros never contradict their boards', () => {
     if (/\bfenders?\b/i.test(text)) expect(fenders, 'mentions a fender').toBeGreaterThan(0);
     if (/two chatterboxes/i.test(text)) expect(chatty).toBeGreaterThanOrEqual(2);
     if (/chatterbox|moin moin/i.test(text)) expect(chatty, 'mentions a chatterbox').toBeGreaterThan(0);
+    const captains = cells.filter((c) => c.kind === 'person' && c.needs === 2).length;
+    if (/\bcaptains?\b/i.test(text)) expect(captains, 'mentions a captain').toBeGreaterThan(0);
+    const counted = /\b(two|three|four|five) captains\b/i.exec(text)?.[1]?.toLowerCase();
+    if (counted) expect(captains, `mentions ${counted} captains`).toBeGreaterThanOrEqual(['two', 'three', 'four', 'five'].indexOf(counted) + 2);
+  });
+
+  it('the story ends at the lighthouse, and the ferry no longer claims the whole town', () => {
+    const beat = (set: string) => lines.find((l) => l.id === `set-${set}`)!.text;
+    expect(beat('ferry')).toMatch(/lighthouse/i);
+    expect(beat('ferry')).not.toMatch(/whole town/i);
+    expect(beat('lighthouse')).toMatch(/town/i);
   });
 });

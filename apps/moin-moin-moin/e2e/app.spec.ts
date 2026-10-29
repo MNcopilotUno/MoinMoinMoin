@@ -85,8 +85,8 @@ test('a tap during the animation is never ignored', async ({ page }) => {
   await expect(page.getByTestId('score')).toContainText('2 taps');
 });
 
-test('all thirty levels can be solved at par through the interface; stars are kept; the story is told', async ({ page }) => {
-  test.setTimeout(180_000);
+test('all forty levels can be solved at par through the interface; stars are kept; the story is told', async ({ page }) => {
+  test.setTimeout(300_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('./');
   for (let i = 0; i < levels.length; i++) {
@@ -95,6 +95,8 @@ test('all thirty levels can be solved at par through the interface; stars are ke
     await expect(page.getByTestId('score')).toContainText(`${par} tap`);
     await expect(page.locator('section.win').getByRole('img', { name: '3 of 3 stars' })).toBeVisible();
     if (i === 9) await expect(page.locator('section.win .quote')).toHaveText(/The harbour is awake/);
+    if (i === 29) await expect(page.locator('section.win .quote')).toHaveText(/lighthouse/);
+    if (i === levels.length - 1) await expect(page.locator('section.win .quote')).toHaveText(/whole town/);
     await page.getByRole('button', { name: i === levels.length - 1 ? 'Back to the first level' : 'Next level' }).click();
   }
   await expect(page.locator('h1')).toHaveText(levels[0]!.title);
@@ -133,18 +135,21 @@ test('the web manifest names the game from core and uses the palette', async ({ 
   expect(html).toContain(`content="${palette.ink}"`);
 });
 
-test('level select: three parts of town, star totals, pick any level, Escape closes', async ({ page }) => {
+test('level select: four parts of town, star totals, pick any level, Escape closes', async ({ page }) => {
   await page.goto('./');
   await solveCurrent(page, 0);
   await page.getByRole('button', { name: 'Levels' }).click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByRole('heading', { level: 3 })).toHaveText([/The harbour/, /The market/, /The ferry/]);
-  await expect(dialog.getByTestId('star-total')).toContainText('3 of 90 stars');
+  await expect(dialog.getByRole('heading', { level: 3 })).toHaveText([/The harbour/, /The market/, /The ferry/, /The lighthouse/]);
+  await expect(dialog.getByTestId('star-total')).toContainText('3 of 120 stars');
   await expect(dialog.getByRole('button', { name: /^Level 1, First Moin, 3 of 3 stars$/ })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();
   await openLevel(page, sets[2]!.levels[4]!.title);
   await expect(page.locator('.level-no')).toHaveText(/The ferry\s*level 5 of 10/);
+  await openLevel(page, sets[3]!.levels[9]!.title);
+  await expect(page.locator('.level-no')).toHaveText(/The lighthouse\s*level 10 of 10/);
+  expect(await page.locator('.scene').evaluate((el) => (el as HTMLElement).style.getPropertyValue('--painting'))).toMatch(/lighthouse-[A-Za-z0-9_-]+\.jpg/);
 });
 
 test('the fog over the town lifts as its levels are solved', async ({ page }) => {

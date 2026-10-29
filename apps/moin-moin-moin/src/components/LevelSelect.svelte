@@ -7,12 +7,16 @@
   import harbourUrl from '@moin/assets/art/harbour.jpg';
   import marketUrl from '@moin/assets/art/market.jpg';
   import ferryUrl from '@moin/assets/art/ferry.jpg';
+  import lighthouseUrl from '@moin/assets/art/lighthouse.jpg';
   import harbourNightUrl from '@moin/assets/art/harbour-night.jpg';
   import marketNightUrl from '@moin/assets/art/market-night.jpg';
   import ferryNightUrl from '@moin/assets/art/ferry-night.jpg';
+  import lighthouseNightUrl from '@moin/assets/art/lighthouse-night.jpg';
 
-  const days: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl };
-  const nights: Record<string, string> = { harbour: harbourNightUrl, market: marketNightUrl, ferry: ferryNightUrl };
+  const days: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl, lighthouse: lighthouseUrl };
+  const nights: Record<string, string> = { harbour: harbourNightUrl, market: marketNightUrl, ferry: ferryNightUrl, lighthouse: lighthouseNightUrl };
+  /** Where the banner looks into its painting: the lighthouse's lantern sits high (lighthouse.md). */
+  const focus: Record<string, string> = { lighthouse: '13%' };
 
   interface Props {
     sets: readonly LevelSet[];
@@ -73,7 +77,7 @@
 
   {#each sets as set, s (set.id)}
     {@const got = set.levels.reduce((n, l) => n + starsOf(l), 0)}
-    <div class="banner" style:--painting={`url(${paintings[set.id] ?? harbourUrl})`}
+    <div class="banner" style:--painting={`url(${paintings[set.id] ?? harbourUrl})`} style:--focus={focus[set.id]}
       style:--mist={1 - got / (set.levels.length * 3)}>
       <h3>{set.title} <span>{copy.starTotal(got, set.levels.length * 3)}</span></h3>
     </div>
@@ -119,7 +123,7 @@
   .note { color: var(--ink-soft); font-style: italic; }
   .banner {
     position: relative; margin: 1rem 0 0.5rem; height: 68px; border-radius: 16px; overflow: hidden;
-    background: var(--painting) center 30% / cover;
+    background: var(--painting) center var(--focus, 30%) / cover;
     display: flex; align-items: flex-end; padding: 0 0.8rem 0.45rem;
   }
   .banner::before {

@@ -25,3 +25,8 @@
   The owner's word was "realistic": realism came from the composition, the brush only styles it.
 - **Regional detail lives in the art, not the copy.** Sou'wester, Elbsegler, Kopftuch, stepped
   gables, Strandkörbe make it northern; the interface stays in plain English (CLAUDE.md §7).
+- **A tall subject needs placing per screen.** The lighthouse is the first painting whose hero is
+  vertical: in the wide painting it first stood right behind the board, and the level-menu
+  banner (which looks in at 30 % height) showed only the tower's foot. Screenshots at 390 × 844
+  and 1440 × 900 found both; the tower moved to 76 % of the width and the banner got a per-set
+  focus (13 %).

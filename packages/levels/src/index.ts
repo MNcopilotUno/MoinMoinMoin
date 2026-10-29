@@ -30,35 +30,51 @@ import ferry07 from '../levels/ferry-07.json' with { type: 'json' };
 import ferry08 from '../levels/ferry-08.json' with { type: 'json' };
 import ferry09 from '../levels/ferry-09.json' with { type: 'json' };
 import ferry10 from '../levels/ferry-10.json' with { type: 'json' };
+import lighthouse01 from '../levels/lighthouse-01.json' with { type: 'json' };
+import lighthouse02 from '../levels/lighthouse-02.json' with { type: 'json' };
+import lighthouse03 from '../levels/lighthouse-03.json' with { type: 'json' };
+import lighthouse04 from '../levels/lighthouse-04.json' with { type: 'json' };
+import lighthouse05 from '../levels/lighthouse-05.json' with { type: 'json' };
+import lighthouse06 from '../levels/lighthouse-06.json' with { type: 'json' };
+import lighthouse07 from '../levels/lighthouse-07.json' with { type: 'json' };
+import lighthouse08 from '../levels/lighthouse-08.json' with { type: 'json' };
+import lighthouse09 from '../levels/lighthouse-09.json' with { type: 'json' };
+import lighthouse10 from '../levels/lighthouse-10.json' with { type: 'json' };
 
 export type { Cell, FenderCell, Level, PersonCell, SeagullCell } from './level.generated.js';
 
 export interface LevelSet {
-  readonly id: 'harbour' | 'market' | 'ferry';
+  readonly id: 'harbour' | 'market' | 'ferry' | 'lighthouse';
   /** One part of town, woken up level by level (ROADMAP Phase 2, the story). */
   readonly title: string;
   readonly levels: readonly Level[];
 }
 
 /**
- * Play order, in three sets. Validated by `pnpm validate:levels` (schema + solver), so the app
+ * Play order, in four sets. Validated by `pnpm validate:levels` (schema + solver), so the app
  * may trust it.
  */
 export const sets: readonly LevelSet[] = [
   { id: 'harbour', title: 'The harbour', levels: [harbour01, harbour02, harbour03, harbour04, harbour05, harbour06, harbour07, harbour08, harbour09, harbour10] as Level[] },
   { id: 'market', title: 'The market', levels: [market01, market02, market03, market04, market05, market06, market07, market08, market09, market10] as Level[] },
   { id: 'ferry', title: 'The ferry', levels: [ferry01, ferry02, ferry03, ferry04, ferry05, ferry06, ferry07, ferry08, ferry09, ferry10] as Level[] },
+  { id: 'lighthouse', title: 'The lighthouse', levels: [lighthouse01, lighthouse02, lighthouse03, lighthouse04, lighthouse05, lighthouse06, lighthouse07, lighthouse08, lighthouse09, lighthouse10] as Level[] },
 ];
 
 export const levels: readonly Level[] = sets.flatMap((s) => s.levels);
 
 /**
- * Each level's board revision (levels-progression.md). The 24 non-lesson levels were regenerated
- * bigger and on a curve (revision 2); a saved best from another revision is not shown as stars.
+ * Each level's board revision (levels-progression.md). The 24 non-lesson levels of the first
+ * three sets were regenerated bigger and on a curve (revision 2); a saved best from another
+ * revision is not shown as stars. Levels born later (the lighthouse) start at revision 1; the
+ * next regeneration of any level needs an explicit per-level map here.
  */
 const LESSONS = new Set(['harbour-01', 'harbour-02', 'harbour-03', 'harbour-04', 'harbour-05', 'market-01']);
+const REGENERATED: ReadonlySet<string> = new Set(
+  sets.filter((s) => s.id === 'harbour' || s.id === 'market' || s.id === 'ferry').flatMap((s) => s.levels.map((l) => l.id)).filter((id) => !LESSONS.has(id)),
+);
 export function levelRevision(id: string): number {
-  return levels.some((l) => l.id === id) && !LESSONS.has(id) ? 2 : 1;
+  return REGENERATED.has(id) ? 2 : 1;
 }
 
 /**
