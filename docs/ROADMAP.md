@@ -73,6 +73,9 @@ done as a toy — ship what exists and stop.
 
 ## Phase 3 — Moin Domi · ~2–3 weeks
 
+> **Draft roadmap for this phase:** [`DOMI_ROADMAP.md`](DOMI_ROADMAP.md) (2026-10-30), awaiting the
+> owner's approval and the decisions listed in its §5.
+
 A real *Moin* passed between real people via a link. Design starts here, conversationally, not
 before — nothing in the repo anticipates it except the shared assets and UI packages.
 
