@@ -22,8 +22,8 @@ art and the shared *Moin* sound.
   waking up. A level is solved when everyone is smiling. Fewer moves, more stars.
   **This is built first.**
 - **Moin Domi** — a real *Moin* passed between real people via a link, in the Domi ecosystem.
-  **Not started.** Phase 3 in the roadmap; nothing in this repository may anticipate its design
-  beyond the shared packages.
+  **Started (Phase 3, D0)** under its own roadmap, `docs/DOMI_ROADMAP.md`; the link format is
+  normative in `docs/DOMI_FORMAT.md`. Domi never adds a network call to the puzzle.
 
 Properties that are not negotiable:
 
@@ -55,12 +55,15 @@ packages/
   narration/     # the narrator's lines (data) + pure selection of which line plays when
   assets/        # shared sprites, the Moin sound(s), palette tokens
   ui/            # shared Svelte components (crowd grid, person sprite, buttons). No rules.
+  domi-link/     # Moin Domi's link: encode, lock, unlock, pass on — pure, randomness injected
 apps/
   moin-moin-moin/   # the puzzle PWA (Svelte 5 + Vite + workbox)
-  moin-domi/        # empty placeholder until Phase 3 — do not add code here before then
+  moin-domi/        # Moin Domi (Svelte 5 + Vite), deployed beside the puzzle at <base>/domi/
 docs/
   ROADMAP.md
   GAME_RULES.md     # the normative rules, mirrored by core's tests
+  DOMI_ROADMAP.md   # Moin Domi's phases D0–D3 and gates
+  DOMI_FORMAT.md    # the normative Moin link format, mirrored by domi-link's tests
 .agents/            # feature analyses, reviews, lessons
 ```
 
@@ -79,14 +82,14 @@ The name *Moin Moin Moin* appears in source only in `packages/core/src/constants
 pnpm install --frozen-lockfile
 pnpm --filter @moin/moin-moin-moin dev     # 127.0.0.1:5173 — never --host
 pnpm build
-pnpm test                                  # vitest: core, levels, narration, ui
+pnpm test                                  # vitest: core, levels, narration, ui, domi-link
 pnpm test:e2e                              # Playwright against the BUILT app, never the dev server
 pnpm test:offline                          # load once, cut the network, solve a level, reload, progress survives
 pnpm validate:levels                       # schema + solver on every level; negative fixtures must FAIL
 ```
 
-> **Exit code 0 is not green.** Quote the test count per package. Four packages have tests
-> (`core`, `levels`, `narration`, `ui`); a run that names fewer has told you nothing.
+> **Exit code 0 is not green.** Quote the test count per package. Five packages have tests
+> (`core`, `levels`, `narration`, `ui`, `domi-link`); a run that names fewer has told you nothing.
 
 ---
 
@@ -216,7 +219,7 @@ Adding a rule without its fixture is a review **blocker**.
 | **Playwright against the dev server** | It doesn't run the service worker. E2E and offline suites run against `pnpm build` output only. |
 | **Physics that drifts between devices** *(predicted)* | JavaScript's `Math.sin`, `Math.cos` and similar are allowed to differ slightly between engines, and a variable frame rate changes every collision. Either is enough to make a level solvable on one phone and not another. Simulate on a fixed step with no transcendental functions in the hot path (lookup tables or fixed-point), render by interpolation, and keep a replay test that runs a recorded solution on Chromium, Firefox and WebKit and asserts identical events. |
 | **A narrator who blocks play** | Text that must be read before tapping kills the ten-second rule on the first level and gets skipped by everyone on the tenth. Lines appear beside the play, auto-dismiss, and never gate input. |
-| **Scope creep into Moin Domi** | Any networking, identity or sharing code before Phase 3 is out of scope, however small. |
+| **Scope creep into Moin Domi** | Domi is a link, not a platform: replies, threads, profiles, feeds or accounts are out of every phase (`DOMI_ROADMAP.md` §6). The puzzle makes no network call for Domi until "Pass a real Moin" is pressed (D3). |
 
 ---
 

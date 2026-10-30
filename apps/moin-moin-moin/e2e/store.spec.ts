@@ -41,3 +41,8 @@ test('the card and screenshots are not precached: players never download them', 
   expect(sw).not.toMatch(/og\.jpg/);
   expect(sw).not.toMatch(/screenshots\//);
 });
+
+test('the puzzle never answers for Moin Domi at /domi/ (DOMI_ROADMAP D0)', async () => {
+  const sw = readFileSync(new URL('../dist/sw.js', import.meta.url), 'utf8');
+  expect(sw).toMatch(/denylist:\[\/\\\/domi\\\/\/\]/);
+});

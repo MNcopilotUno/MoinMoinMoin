@@ -28,3 +28,10 @@
 - **Not every asset belongs in the precache.** Images only some screens use (wide paintings) go
   to `globIgnores` plus a CacheFirst route, with a precached fallback layered underneath, so
   phones never pay for desktop art and desktops still work offline.
+- **Two apps on one origin share a service worker scope.** The puzzle's worker controls
+  `/MoinMoinMoin/`, so without `navigateFallbackDenylist` it would answer `/MoinMoinMoin/domi/`
+  with the puzzle's shell. Build the second app separately, copy it in after the first app's
+  precache manifest is written, and keep its path out of the first worker's fallback.
+- **Inject randomness, even into crypto code.** `lock(m, password, random)` takes the byte source
+  as an argument, so fixtures and golden links are exact, and the app passes
+  `crypto.getRandomValues`.

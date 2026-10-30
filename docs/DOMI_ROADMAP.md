@@ -1,9 +1,9 @@
-# Moin Domi — roadmap (DRAFT, for the owner's approval)
+# Moin Domi — roadmap
 
-> **Status: draft, 2026-10-30.** Written from the owner's direction (2026-10-24, recorded in
+> **Status: approved by the owner on 2026-10-30, "as proposed"** — every decision in §5 takes
+> its proposal. D0 started the same day. Written from the owner's direction (2026-10-24,
 > `ROADMAP.md` Phase 3) and the Domi screens on the design canvas
-> (<https://claude.ai/artifact/EbSkyzcZ7eJpSconQFaAzL>, row "Moin Domi"). Nothing is built until
-> the owner approves this file; the decisions marked **▶ Owner** are theirs to make.
+> (<https://claude.ai/artifact/EbSkyzcZ7eJpSconQFaAzL>, row "Moin Domi").
 > Companion to `CLAUDE.md` (which governs the repository) and `ROADMAP.md` (Phases 0–4).
 
 ---
@@ -72,7 +72,7 @@ is designed from day one so both tiers read the same Moin.
 
 ## 4. Phases and gates
 
-### D0 — Format and foundations · ~1 week
+### D0 — Format and foundations · ~1 week — **built 2026-10-30**
 - `docs/DOMI_FORMAT.md` (the normative format, like `GAME_RULES.md`) and an analysis in
   `.agents/features/domi-format.md`.
 - `packages/domi-link`: encode, decode, lock, unlock, add a hop — pure, typed, tested.
@@ -119,7 +119,7 @@ reading the store); a deleted Moin is gone; the puzzle still makes no network ca
 reason offline (the canvas has that screen), and **no network call from the puzzle until it is
 pressed**.
 
-## 5. Decisions for the owner
+## 5. Decisions (approved as proposed, 2026-10-30)
 
 | # | Question | Proposal |
 |:--|:--|:--|
