@@ -35,5 +35,5 @@ levels ok, 14 fixtures fail as expected.
    then hand them the market set. Does anyone ask for more?
 2. **Phase 2 gate:** a month from now, do you still open it for fun?
 3. Real-device checks still **predicted**: iOS silent switch and Web Audio; install banner on Android.
-4. Phase 3 (Moin Domi): gate waived; **wait for the owner's Moin Domi roadmap** before any code in
-   `apps/moin-domi`. Direction so far is recorded in `docs/ROADMAP.md` Phase 3.
+4. Phase 3 (Moin Domi): gate waived; a **draft roadmap** is in `docs/DOMI_ROADMAP.md` —
+   no code in `apps/moin-domi` until the owner approves it and answers its §5 decisions.
