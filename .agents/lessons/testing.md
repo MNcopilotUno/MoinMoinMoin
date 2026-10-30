@@ -10,3 +10,6 @@
   without motion (it found gulls covering each other).
 - **Run the e2e suite on its own.** Started alongside vitest it failed to load specs (*predicted*
   cause: the two runs contending for the same transform cache); alone it passed. Confirm or strike.
+- **Size assertions need a precision.** A 44 px button measured 43.99999 px in CI (float layout
+  at a 2× device scale) and passed locally. Compare rounded to the hundredth; the rule (≥ 44 px)
+  stays exact, the measurement gets a stated precision.

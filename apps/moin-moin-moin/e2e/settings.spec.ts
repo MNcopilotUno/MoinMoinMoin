@@ -107,7 +107,8 @@ test('every control in the sheet is at least 44 px on a small phone', async ({ b
     const sheet = page.getByRole('dialog', { name: 'Settings' });
     for (const control of await sheet.locator('button, label:has(input[type=radio]), input[type=range]').all()) {
       const box = (await control.boundingBox())!;
-      expect(box.height, await control.evaluate((el) => el.outerHTML.slice(0, 80))).toBeGreaterThanOrEqual(44);
+      // Layout can land on 43.99999 px (float error, seen in CI); measure to the hundredth.
+      expect(Math.round(box.height * 100) / 100, await control.evaluate((el) => el.outerHTML.slice(0, 80))).toBeGreaterThanOrEqual(44);
     }
   } finally {
     await context.close();
