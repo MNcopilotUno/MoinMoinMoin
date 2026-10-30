@@ -4,7 +4,8 @@
 
 Two tiny games around the northern German greeting *Moin*. **Moin Moin Moin** — a harbour puzzle
 PWA: tap a grumpy person, watch the *Moin* fly, bounce off fenders, get nicked by seagulls, until
-everyone smiles. **Moin Domi** — Phase 3, not started.
+everyone smiles. **Moin Domi** — a real *Moin* passed by a link; Phase 3, D0 (the link format) built —
+[`docs/DOMI_ROADMAP.md`](docs/DOMI_ROADMAP.md).
 
 Play: <https://mncopilotuno.github.io/MoinMoinMoin/>
 

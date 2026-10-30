@@ -26,7 +26,8 @@ waits for the owner's own roadmap for it — see `docs/ROADMAP.md` Phase 3. Live
 | QA pass | Two QA agents (function/a11y, feel/sound); findings and outcomes in `.agents/reviews/qa-polish.md` |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 81, narration 59, ui 59; e2e 43 on Chromium; `validate:levels` 40
+Test counts: core 60, levels 81, narration 59, ui 59, domi-link 39; e2e puzzle 44 + Domi 5 on
+Chromium (Domi's link gate also on Firefox and WebKit in CI); `validate:levels` 40
 levels ok, 14 fixtures fail as expected.
 
 ## Next
@@ -35,5 +36,6 @@ levels ok, 14 fixtures fail as expected.
    then hand them the market set. Does anyone ask for more?
 2. **Phase 2 gate:** a month from now, do you still open it for fun?
 3. Real-device checks still **predicted**: iOS silent switch and Web Audio; install banner on Android.
-4. Phase 3 (Moin Domi): gate waived; a **draft roadmap** is in `docs/DOMI_ROADMAP.md` —
-   no code in `apps/moin-domi` until the owner approves it and answers its §5 decisions.
+4. Phase 3 (Moin Domi): roadmap **approved** (`docs/DOMI_ROADMAP.md`). **D0 built**: link format
+   (`docs/DOMI_FORMAT.md`), `packages/domi-link`, the `/domi/` scaffold. Next: **D1** — compose,
+   share, unlock, receive, pass on, fade; Domi's own IndexedDB name; then the five-people gate.
