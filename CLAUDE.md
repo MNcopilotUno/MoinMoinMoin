@@ -22,8 +22,9 @@ art and the shared *Moin* sound.
   waking up. A level is solved when everyone is smiling. Fewer moves, more stars.
   **This is built first.**
 - **Moin Domi** — a real *Moin* passed between real people via a link, in the Domi ecosystem.
-  **Started (Phase 3, D0)** under its own roadmap, `docs/DOMI_ROADMAP.md`; the link format is
-  normative in `docs/DOMI_FORMAT.md`. Domi never adds a network call to the puzzle.
+  A private Stille Post for memes: specified in `docs/MOIN_DOMI.md` (stages S0–S4, decisions
+  D1–D16, amendments A1–A5). Not built yet beyond an app shell. Domi never adds a network call to
+  the puzzle, and the puzzle keeps working with `services/cursus` deleted.
 
 Properties that are not negotiable:
 
@@ -55,15 +56,13 @@ packages/
   narration/     # the narrator's lines (data) + pure selection of which line plays when
   assets/        # shared sprites, the Moin sound(s), palette tokens
   ui/            # shared Svelte components (crowd grid, person sprite, buttons). No rules.
-  domi-link/     # Moin Domi's link: encode, lock, unlock, pass on — pure, randomness injected
 apps/
   moin-moin-moin/   # the puzzle PWA (Svelte 5 + Vite + workbox)
-  moin-domi/        # Moin Domi (Svelte 5 + Vite), deployed beside the puzzle at <base>/domi/
+  moin-domi/        # Moin Domi app shell (Svelte 5 + Vite); S0 adds packages/tessera, S1 services/cursus
 docs/
   ROADMAP.md
   GAME_RULES.md     # the normative rules, mirrored by core's tests
-  DOMI_ROADMAP.md   # Moin Domi's phases D0–D3 and gates
-  DOMI_FORMAT.md    # the normative Moin link format, mirrored by domi-link's tests
+  MOIN_DOMI.md      # Moin Domi: specification, decisions D1–D16, stages S0–S4
 .agents/            # feature analyses, reviews, lessons
 ```
 
@@ -82,14 +81,14 @@ The name *Moin Moin Moin* appears in source only in `packages/core/src/constants
 pnpm install --frozen-lockfile
 pnpm --filter @moin/moin-moin-moin dev     # 127.0.0.1:5173 — never --host
 pnpm build
-pnpm test                                  # vitest: core, levels, narration, ui, domi-link
+pnpm test                                  # vitest: core, levels, narration, ui
 pnpm test:e2e                              # Playwright against the BUILT app, never the dev server
 pnpm test:offline                          # load once, cut the network, solve a level, reload, progress survives
 pnpm validate:levels                       # schema + solver on every level; negative fixtures must FAIL
 ```
 
-> **Exit code 0 is not green.** Quote the test count per package. Five packages have tests
-> (`core`, `levels`, `narration`, `ui`, `domi-link`); a run that names fewer has told you nothing.
+> **Exit code 0 is not green.** Quote the test count per package. Four packages have tests
+> (`core`, `levels`, `narration`, `ui`); a run that names fewer has told you nothing.
 
 ---
 
@@ -219,7 +218,7 @@ Adding a rule without its fixture is a review **blocker**.
 | **Playwright against the dev server** | It doesn't run the service worker. E2E and offline suites run against `pnpm build` output only. |
 | **Physics that drifts between devices** *(predicted)* | JavaScript's `Math.sin`, `Math.cos` and similar are allowed to differ slightly between engines, and a variable frame rate changes every collision. Either is enough to make a level solvable on one phone and not another. Simulate on a fixed step with no transcendental functions in the hot path (lookup tables or fixed-point), render by interpolation, and keep a replay test that runs a recorded solution on Chromium, Firefox and WebKit and asserts identical events. |
 | **A narrator who blocks play** | Text that must be read before tapping kills the ten-second rule on the first level and gets skipped by everyone on the tenth. Lines appear beside the play, auto-dismiss, and never gate input. |
-| **Scope creep into Moin Domi** | Domi is a link, not a platform: replies, threads, profiles, feeds or accounts are out of every phase (`DOMI_ROADMAP.md` §6). The puzzle makes no network call for Domi until "Pass a real Moin" is pressed (D3). |
+| **Scope creep into Moin Domi** | Domi is a private chain, not a platform: uploads, feeds, discovery, accounts, push and analytics are out of scope (`MOIN_DOMI.md` §8). The puzzle makes no network call for Domi until "start a Moin chain" is pressed (S4). |
 
 ---
 

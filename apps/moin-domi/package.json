@@ -11,8 +11,7 @@
   },
   "dependencies": {
     "@moin/assets": "workspace:*",
-    "@moin/core": "workspace:*",
-    "@moin/domi-link": "workspace:*"
+    "@moin/core": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",

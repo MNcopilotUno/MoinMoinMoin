@@ -54,7 +54,7 @@ export default defineConfig({
         globIgnores: ['**/*-wide-*.jpg', 'og.jpg', 'screenshots/**'],
         runtimeCaching: [{ urlPattern: /-wide-[\w-]+\.jpg$/, handler: 'CacheFirst', options: { cacheName: 'moin-wide-paintings' } }],
         navigateFallback: 'index.html',
-        // Moin Domi lives at <base>/domi/ on the same origin (DOMI_ROADMAP D0): never answer it with the puzzle.
+        // Moin Domi lives at <base>/domi/ on the same origin (docs/MOIN_DOMI.md): never answer it with the puzzle.
         navigateFallbackDenylist: [/\/domi\//],
         cleanupOutdatedCaches: true,
         clientsClaim: true,

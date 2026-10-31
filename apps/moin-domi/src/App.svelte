@@ -2,20 +2,17 @@
   import harbourUrl from '@moin/assets/art/harbour.jpg';
   import { GAME_NAME } from '@moin/core';
 
-  // D0 scaffold (DOMI_ROADMAP): an honest card. D1 builds compose, share, unlock and receive.
-  // A Moin link that arrives early is acknowledged, never read: nothing is decoded yet.
-  const waiting = typeof location !== 'undefined' && /^#m\d/.test(location.hash);
+  // The app shell (docs/MOIN_DOMI.md): an honest card until stage S1 builds create, pass on and
+  // the finale.
 </script>
 
 <main style:--painting={`url(${harbourUrl})`}>
   <section class="card" aria-labelledby="title">
     <p class="kicker">Moin Domi</p>
-    <h1 id="title">A real Moin, passed by a link.</h1>
-    {#if waiting}
-      <p class="waiting" role="status">A Moin is waiting in this link. Keep it — Moin Domi will open it soon.</p>
-    {/if}
-    <p>Being built. Soon you can send a Moin — a wave, a few words, locked with a password if you
-      like — and see how far it travels. No accounts, no tracking: the Moin lives in the link.</p>
+    <h1 id="title">Pass the meme on.</h1>
+    <p>Being built: a private Stille Post for memes. Someone makes a meme from the harbour cast,
+      each friend may change one word and one small touch, and at the last stop everyone sees how
+      far it drifted. No accounts, no feed, no tracking.</p>
     <a class="play" href="../">Play {GAME_NAME} meanwhile</a>
   </section>
 </main>
@@ -34,7 +31,6 @@
   .kicker { margin: 0; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
   h1 { margin: 6px 0 0; font-family: var(--serif); font-weight: 700; font-size: 2.1rem; line-height: 1.02; }
   p { margin: 12px 0 0; line-height: 1.45; color: var(--ink-soft); }
-  .waiting { padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--ink) 8%, var(--paper)); color: var(--ink); font-weight: 600; }
   .play {
     margin-top: 16px; min-height: 48px; display: grid; place-items: center; border-radius: 999px;
     background: var(--ink); color: var(--paper); font-weight: 800; text-decoration: none;

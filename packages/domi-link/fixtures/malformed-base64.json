@@ -1,6 +1,0 @@
-{
-  "link": "#m1.Moin$moin",
-  "code": "malformed",
-  "message": "base64url",
-  "why": "a character that is not base64url"
-}
