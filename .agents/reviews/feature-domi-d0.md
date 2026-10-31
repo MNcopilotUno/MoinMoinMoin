@@ -1,5 +1,8 @@
 # Review — feature/domi-d0 (adversarial)
 
+> **Superseded 2026-10-31.** The owner replaced this design with `docs/MOIN_DOMI.md`; the
+> format, `packages/domi-link` and `DOMI_*` docs were removed. Kept as history.
+
 Scope: Moin Domi D0 — `docs/DOMI_FORMAT.md` (normative), `packages/domi-link` (format v1:
 encode, lock/unlock with PBKDF2 + AES-256-GCM, read with seven error codes, pass on, fading,
 validation), seven negative fixtures, the cross-engine gate, `apps/moin-domi` scaffold, one Pages

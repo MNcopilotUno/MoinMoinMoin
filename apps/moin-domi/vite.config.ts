@@ -1,7 +1,7 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig } from 'vite';
 
-// Moin Domi lives beside the puzzle at <base>/domi/ (DOMI_ROADMAP D0); the workflow sets BASE_PATH.
+// Moin Domi lives beside the puzzle at <base>/domi/ (docs/MOIN_DOMI.md); the workflow sets BASE_PATH.
 const base = `${process.env.BASE_PATH ?? '/'}domi/`;
 
 export default defineConfig({

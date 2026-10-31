@@ -1,5 +1,8 @@
 # Feature: Moin Domi D0 — the link format and foundations
 
+> **Superseded 2026-10-31.** The owner replaced this design with `docs/MOIN_DOMI.md`; the
+> format, `packages/domi-link` and `DOMI_*` docs were removed. Kept as history.
+
 ## Problem
 `DOMI_ROADMAP.md` (approved 2026-10-30) starts with D0: a normative link format, a pure library
 with negative fixtures, and an app scaffold deployed beside the puzzle. Everything Domi does in

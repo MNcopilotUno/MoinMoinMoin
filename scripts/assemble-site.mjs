@@ -1,4 +1,4 @@
-// One GitHub Pages site, two apps (DOMI_ROADMAP D0): the puzzle at <base>/ and Moin Domi at
+// One GitHub Pages site, two apps (docs/MOIN_DOMI.md): the puzzle at <base>/ and Moin Domi at
 // <base>/domi/. Run after both builds (`pnpm build` does): copies Domi's dist into the puzzle's.
 // The puzzle's service worker is told not to answer /domi/ (navigateFallbackDenylist), and Domi's
 // files are copied after the puzzle's precache manifest was written, so they are never precached.

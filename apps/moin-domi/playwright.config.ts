@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const url = `http://127.0.0.1:4174${process.env.BASE_PATH ?? '/'}domi/`;
-// The cross-engine gate (DOMI_ROADMAP D0) runs in Firefox and WebKit where they are installed (CI).
+// Firefox and WebKit run too where they are installed (CI).
 const allBrowsers = process.env.PW_ALL_BROWSERS === '1';
 
 export default defineConfig({
