@@ -3,15 +3,26 @@
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import type { Item } from '../lib/db.js';
-  import { linkFor } from '../lib/flow.js';
+  import { sendLinkFor } from '../lib/flow.js';
 
-  interface Props { item: Item; started: boolean; onback: () => void; ondone: () => void; ontree: () => void }
-  let { item, started, onback, ondone, ontree }: Props = $props();
-  const link = $derived(linkFor(item));
+  interface Props { item: Item; started: boolean; password?: string | null; onback: () => void; ondone: () => void; ontree: () => void }
+  let { item, started, password = null, onback, ondone, ontree }: Props = $props();
+  let pwCopied = $state(false);
+  async function copyPassword() {
+    try {
+      await navigator.clipboard.writeText(password ?? '');
+      pwCopied = true;
+      setTimeout(() => (pwCopied = false), 2400);
+    } catch {
+      pwCopied = false;
+    }
+  }
+  const link = $derived(sendLinkFor(item));
+  const locked = $derived(Boolean(item.lockName));
   const parts = $derived.by(() => {
     const [head = '', key = ''] = link.split('#');
     const at = head.lastIndexOf('/m/');
-    return { id: head.slice(at + 3), key: `#${key}` };
+    return { id: head.slice(at + 3), key: key ? `#${key}` : '' };
   });
   const postcard = $derived(item.kind === 'postcard');
   let copied = $state(false);
@@ -52,8 +63,20 @@
 
   <figure class="panel link" data-link={link}>
     <p class="url" aria-label="The link"><span class="d">…/m/</span>{parts.id}<span class="k">{parts.key}</span></p>
-    <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>The gold part is the key. It stays in the link and never reaches the relay.</span></figcaption>
+    {#if locked}
+      <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>Locked with your password. Send the password another way — say it, or use a different app — never in the same message.</span></figcaption>
+    {:else}
+      <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>The gold part is the key. It stays in the link and never reaches the relay.</span></figcaption>
+    {/if}
   </figure>
+
+  {#if locked && password}
+    <section class="panel pwbox" aria-label="The password">
+      <p class="label">The password — shown only now</p>
+      <p class="pw">{password}</p>
+      <button type="button" class="chip" onclick={copyPassword} aria-live="polite">{pwCopied ? 'Copied' : 'Copy password'}</button>
+    </section>
+  {/if}
 
   <div class="foot">
     <div class="row">
@@ -82,5 +105,7 @@
   .k { color: var(--gold); }
   figcaption { margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.4; color: var(--mist); }
   figcaption :global(svg) { flex: none; margin-top: 1px; }
+  .pwbox { position: relative; margin-top: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+  .pw { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 15px; color: var(--gold); word-break: break-all; }
   .c { text-align: center; }
 </style>

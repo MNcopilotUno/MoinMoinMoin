@@ -1,3 +1,4 @@
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 
 /** §4 of docs/MOIN_DOMI.md — and nothing else. `.agents/features/cursus.md`. */
@@ -14,9 +15,18 @@ const SCHEMA = `
     ciphertext TEXT NOT NULL, wrapKeyByT TEXT, wrapTByKey TEXT, pendingSince INTEGER);
   CREATE INDEX IF NOT EXISTS hops_chain ON hops(chainId);
   CREATE INDEX IF NOT EXISTS hops_parent ON hops(parentId);
+  CREATE TABLE IF NOT EXISTS locks (
+    name TEXT PRIMARY KEY, chainId TEXT NOT NULL REFERENCES chains(id) ON DELETE CASCADE,
+    hopId TEXT NOT NULL, salt TEXT NOT NULL, kdf TEXT NOT NULL, verifier TEXT NOT NULL, wrapped TEXT NOT NULL,
+    failures INTEGER NOT NULL DEFAULT 0, waitUntil INTEGER NOT NULL DEFAULT 0);
+  CREATE INDEX IF NOT EXISTS locks_chain ON locks(chainId);
 `;
 
+/** The slowdown after wrong passwords (password-links.md): 5 free, then 1, 2, 4 … minutes, ≤ 24 h. */
+export const waitAfter = (failures: number): number => (failures < 5 ? 0 : Math.min(2 ** (failures - 5), 1440) * 60_000);
+
 interface ChainRow { id: string; maxStops: number; maxBranches: number; lastHopDay: number; expiresDay: number }
+interface LockRow { name: string; chainId: string; hopId: string; salt: string; kdf: string; verifier: string; wrapped: string; failures: number; waitUntil: number; expiresDay: number }
 interface HopRow { id: string; chainId: string; parentId: string | null; depth: number; day: number; seq: number | null; ciphertext: string; wrapKeyByT: string | null; wrapTByKey: string | null; pendingSince: number | null }
 
 export type Outcome<T> = { ok: true; value: T } | { ok: false; status: 404 | 409 | 422; error?: string };
@@ -41,6 +51,9 @@ export function openStore(path: string) {
     touch: db.prepare('UPDATE chains SET lastHopDay = ?, expiresDay = ? WHERE id = ?'),
     tree: db.prepare('SELECT * FROM hops WHERE chainId = ? AND pendingSince IS NULL ORDER BY seq'),
     deleteChain: db.prepare('DELETE FROM chains WHERE id = ?'),
+    lock: db.prepare('SELECT locks.*, chains.expiresDay FROM locks JOIN chains ON chains.id = locks.chainId WHERE locks.name = ?'),
+    insertLock: db.prepare('INSERT INTO locks (name, chainId, hopId, salt, kdf, verifier, wrapped) VALUES (?, ?, ?, ?, ?, ?, ?)'),
+    lockResult: db.prepare('UPDATE locks SET failures = ?, waitUntil = ? WHERE name = ?'),
     expired: db.prepare('DELETE FROM chains WHERE expiresDay < ?'),
     stale: db.prepare('DELETE FROM hops WHERE pendingSince IS NOT NULL AND pendingSince < ?'),
   };
@@ -122,8 +135,42 @@ export function openStore(path: string) {
       const pending = Number(q.stale.run(now - LIMITS.pendingMs).changes);
       return { chains, pending };
     },
-    /** DSA Art. 6: remove a reported chain, by any of its hop ids or its chain id. */
+    createLock(input: { name: string; hopId: string; salt: string; kdf: string; verifier: string; wrapped: string }, now: number): Outcome<{ day: number }> {
+      return tx(() => {
+        const found = completeHop(input.hopId, dayOf(now));
+        if (!found) return fail(404);
+        if (q.lock.get(input.name)) return fail(409);
+        q.insertLock.run(input.name, found.h.chainId, input.hopId, input.salt, input.kdf, input.verifier, input.wrapped);
+        return ok({ day: dayOf(now) });
+      });
+    },
+    getLock(name: string, now: number): Outcome<{ salt: string; kdf: unknown }> {
+      const l = q.lock.get(name) as LockRow | undefined;
+      if (!l || l.expiresDay < dayOf(now)) return fail(404);
+      return ok({ salt: l.salt, kdf: JSON.parse(l.kdf) as unknown });
+    },
+    /** Constant-time check of SHA-256(authKey); counts failures and applies the slowdown. */
+    openLock(name: string, authKey: string, now: number): { ok: true; value: { hopId: string; wrapped: string } } | { ok: false; status: 401 | 404 | 429; waitUntil: number | null } {
+      return tx(() => {
+        const l = q.lock.get(name) as LockRow | undefined;
+        if (!l || l.expiresDay < dayOf(now)) return { ok: false as const, status: 404 as const, waitUntil: null };
+        if (now < l.waitUntil) return { ok: false as const, status: 429 as const, waitUntil: l.waitUntil };
+        const given = createHash('sha256').update(Buffer.from(authKey, 'base64url')).digest();
+        const stored = Buffer.from(l.verifier, 'base64url');
+        if (stored.length === given.length && timingSafeEqual(stored, given)) {
+          q.lockResult.run(0, 0, name);
+          return { ok: true as const, value: { hopId: l.hopId, wrapped: l.wrapped } };
+        }
+        const failures = l.failures + 1;
+        const wait = waitAfter(failures);
+        q.lockResult.run(failures, wait ? now + wait : 0, name);
+        return { ok: false as const, status: 401 as const, waitUntil: wait ? now + wait : null };
+      });
+    },
+    /** DSA Art. 6: remove a reported chain, by any of its hop ids, a lock name, or its chain id. */
     takedown(id: string): boolean {
+      const lock = q.lock.get(id) as LockRow | undefined;
+      if (lock) return Number(q.deleteChain.run(lock.chainId).changes) > 0;
       const h = q.hop.get(id) as HopRow | undefined;
       return Number(q.deleteChain.run(h ? h.chainId : id).changes) > 0;
     },

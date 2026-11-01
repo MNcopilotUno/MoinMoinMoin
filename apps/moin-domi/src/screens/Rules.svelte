@@ -1,7 +1,9 @@
 <script lang="ts">
   import { NICK_MAX, tidy, type Meme } from '@moin/meme';
   import Icon from '../components/Icon.svelte';
-  import type { Rules } from '../lib/flow.js';
+  import { passwordProblem, slugify, isCustomName } from '@moin/tessera';
+  import type { LinkChoice, Rules } from '../lib/flow.js';
+  import { suggestPassphrase } from '../lib/passphrase.js';
 
   interface Props {
     rules: Rules;
@@ -10,12 +12,24 @@
     blocked: string | null;
     error: string | null;
     offline: boolean;
+    link: LinkChoice;
+    onlink: (l: LinkChoice) => void;
     onrules: (r: Rules) => void;
     ondraft: (m: Meme) => void;
     onback: () => void;
     onmake: () => void;
   }
-  let { rules, draft, busy, blocked, error, offline, onrules, ondraft, onback, onmake }: Props = $props();
+  let { rules, draft, busy, blocked, error, offline, link, onlink, onrules, ondraft, onback, onmake }: Props = $props();
+  const LINKS = [
+    { kind: 'plain', title: 'Private link', hint: 'The key lives only in the link' },
+    { kind: 'password', title: 'With a password', hint: 'For a link that might be forwarded' },
+    { kind: 'custom', title: 'A name you choose', hint: 'Always with a password' },
+  ] as const;
+  const slug = $derived(slugify(link.name));
+  const pwProblem = $derived(link.kind === 'plain' ? null : link.password === '' ? 'empty' : passwordProblem(link.password));
+  const nameProblem = $derived(link.kind !== 'custom' ? null : !isCustomName(slug) ? 'bad' : null);
+  const linkReady = $derived(pwProblem === null && nameProblem === null);
+  const pwHint = $derived(pwProblem === 'common' ? 'Too common — anyone would guess it.' : pwProblem === 'too-short' ? 'Three words, or twelve characters.' : pwProblem === 'empty' ? 'Choose one, or take the suggestion.' : 'Good. Send it another way than the link.');
   const chain = $derived(rules.kind === 'chain');
   const say = (v: number, one: string, many: string) => (v === 1 ? one : `${v} ${many}`);
   const steppers = $derived([
@@ -71,17 +85,35 @@
   <section aria-labelledby="lk" class="links">
     <h2 id="lk" class="label">The link</h2>
     <div role="radiogroup" aria-labelledby="lk">
-      <button type="button" role="radio" aria-checked="true" class="link on"><span class="dot" aria-hidden="true"></span><span class="txt"><strong>Private link</strong><span>The key lives only in the link</span></span></button>
-      <button type="button" role="radio" aria-checked="false" aria-disabled="true" class="link"><span class="dot" aria-hidden="true"></span><span class="txt"><strong>With a password</strong><span>For a link that might be forwarded</span></span><span class="later">Later</span></button>
-      <button type="button" role="radio" aria-checked="false" aria-disabled="true" class="link"><span class="dot" aria-hidden="true"></span><span class="txt"><strong>A name you choose</strong><span>Always with a password</span></span><span class="later">Later</span></button>
+      {#each LINKS as l (l.kind)}
+        <button type="button" role="radio" aria-checked={link.kind === l.kind} class="link" class:on={link.kind === l.kind}
+          onclick={() => onlink({ ...link, kind: l.kind, password: l.kind !== 'plain' && !link.password ? suggestPassphrase() : link.password })}>
+          <span class="dot" aria-hidden="true"></span><span class="txt"><strong>{l.title}</strong><span>{l.hint}</span></span>
+        </button>
+      {/each}
     </div>
+    {#if link.kind === 'custom'}
+      <label class="field lockfield"><span class="soft">Name</span>
+        <input value={link.name} maxlength={40} placeholder="kapitaen-hein" autocomplete="off" autocapitalize="none" spellcheck="false"
+          aria-describedby="name-hint" oninput={(e) => onlink({ ...link, name: e.currentTarget.value })} /></label>
+      <p id="name-hint" class="hint" class:bad={nameProblem && link.name}>{slug ? `…/m/${slug}` : 'Letters, numbers and hyphens, 3 to 32.'}{nameProblem && link.name ? ' — too short or not allowed' : ''}</p>
+    {/if}
+    {#if link.kind !== 'plain'}
+      <div class="field lockfield">
+        <label for="lock-pw" class="soft">Password</label>
+        <input id="lock-pw" value={link.password} autocomplete="new-password" autocapitalize="none" spellcheck="false"
+          aria-describedby="pw-hint" oninput={(e) => onlink({ ...link, password: e.currentTarget.value })} />
+        <button type="button" class="chip suggest" onclick={() => onlink({ ...link, password: suggestPassphrase() })}>New</button>
+      </div>
+      <p id="pw-hint" class="hint" class:bad={pwProblem && pwProblem !== 'empty'} aria-live="polite">{pwHint}</p>
+    {/if}
   </section>
 
   <div class="foot">
     <p class="warn" role={error || blocked ? 'alert' : undefined}>
       {error ?? blocked ?? (offline ? 'You’re offline. It will be locked and sent when you’re back.' : chain ? 'Everyone after you will see your version.' : 'Anyone with the link can open it, for 30 days.')}
     </p>
-    <button type="button" class="primary" disabled={busy || blocked !== null} onclick={onmake}>
+    <button type="button" class="primary" disabled={busy || blocked !== null || !linkReady} onclick={onmake}>
       <Icon name="lock" size={20} />
       {busy ? 'Locking it…' : offline ? 'Send it when I’m back online' : chain ? 'Lock it and make the first link' : 'Lock it and make the link'}
     </button>
@@ -110,13 +142,15 @@
   .sign .soft { font-size: 14px; font-weight: 700; }
   .links { margin-top: 12px; }
   .links h2 { margin: 0 4px 6px; }
-  .links div { display: flex; flex-direction: column; gap: 6px; }
+  .links [role='radiogroup'] { display: flex; flex-direction: column; gap: 6px; }
   .link { min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border: 0; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair); }
-  .link[aria-disabled='true'] { cursor: default; }
-  .link[aria-disabled='true'] .txt strong { color: var(--mist); }
   .link.on { background: var(--raised); box-shadow: inset 0 0 0 2px var(--paper); }
   .dot { flex: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--quiet); }
   .on .dot { border: 6px solid var(--paper); }
-  .later { flex: none; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; color: var(--black); background: var(--lilac); }
+  .lockfield { margin-top: 8px; }
+  .lockfield input { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 15px; }
+  .suggest { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .hint { margin: 6px 6px 0; font-size: 12.5px; line-height: 1.35; color: var(--mist); overflow-wrap: anywhere; }
+  .hint.bad { color: var(--gold); }
   .warn { margin: 0 4px; font-size: 13px; line-height: 1.4; color: var(--lilac); text-align: center; }
 </style>

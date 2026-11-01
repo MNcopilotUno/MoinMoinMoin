@@ -12,7 +12,8 @@ export { ID_CHARS, isId, newId, newSecret, SECRET_CHARS, secretFromText, secretT
 export type { Secret } from './keys.js';
 export { formatLink, parseLink } from './link.js';
 export type { ParsedLink } from './link.js';
-export { httpRelay, RelayRefusal } from './relay.js';
-export type { HopView, NewChain, Refusal, Relay, TreeHop, TreeView } from './relay.js';
+export { httpRelay, LockRefusal, RelayRefusal } from './relay.js';
+export type { HopView, Kdf, NewChain, NewLock, Refusal, Relay, TreeHop, TreeView } from './relay.js';
+export { formatLockLink, isCustomName, isLockName, KDF, KDF_LIMITS, lockAad, lockHop, lockKeys, lockNameIn, passwordProblem, slugify, unlockHop } from './lock.js';
 export { open, placeAad, seal } from './seal.js';
 export type { Place, Purpose } from './seal.js';

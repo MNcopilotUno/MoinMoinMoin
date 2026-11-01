@@ -1,12 +1,16 @@
-import { TesseraError, type HopView, type NewChain, type Relay, type TreeView } from '../src/index.js';
+import { LockRefusal, TesseraError, toBase64url, type HopView, type NewChain, type NewLock, type Relay, type TreeView } from '../src/index.js';
 
 interface Row { hopId: string; chainId: string; parentId: string | null; depth: number; content: string; wrapKeyByT?: string; wrapTByKey?: string; pending: boolean; seq: number }
+
+const fromB64 = (s: string) => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)), (c) => c.charCodeAt(0));
 
 /** An honest in-memory Cursus, plus hooks to make it dishonest. */
 export function fakeRelay() {
   const chains = new Map<string, { maxStops: number; maxBranches: number }>();
   const hops = new Map<string, Row>();
   let seq = 0;
+  let now = 0;
+  const locks = new Map<string, NewLock & { failures: number; waitUntil: number }>();
   const relay: Relay = {
     async createChain(c: NewChain) {
       if (chains.has(c.chainId) || hops.has(c.hopId)) throw new TesseraError('conflict');
@@ -43,6 +47,30 @@ export function fakeRelay() {
           .map((h) => ({ hopId: h.hopId, parentId: h.parentId, depth: h.depth, day: 1, seq: h.seq, content: h.content, wrapKeyByT: h.wrapKeyByT! })),
       };
     },
+    async createLock(lock) {
+      if (locks.has(lock.name)) throw new TesseraError('conflict');
+      locks.set(lock.name, { ...lock, failures: 0, waitUntil: 0 });
+      return { day: 1 };
+    },
+    async getLock(name) {
+      const l = locks.get(name);
+      if (!l) throw new TesseraError('not-found');
+      return { salt: l.salt, kdf: l.kdf };
+    },
+    async openLock(name, authKey) {
+      const l = locks.get(name);
+      if (!l) throw new TesseraError('not-found');
+      if (now < l.waitUntil) throw new LockRefusal('wait', l.waitUntil);
+      const digest = toBase64url(new Uint8Array(await crypto.subtle.digest('SHA-256', fromB64(authKey))));
+      if (digest !== l.verifier) {
+        l.failures += 1;
+        l.waitUntil = l.failures >= 5 ? now + Math.min(2 ** (l.failures - 5), 1440) * 60_000 : 0;
+        throw new LockRefusal('wrong-password', l.waitUntil || null);
+      }
+      l.failures = 0;
+      l.waitUntil = 0;
+      return { hopId: l.hopId, wrapped: l.wrapped };
+    },
   };
-  return { relay, hops };
+  return { relay, hops, locks, tick: (ms: number) => { now += ms; } };
 }

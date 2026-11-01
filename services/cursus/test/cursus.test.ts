@@ -3,7 +3,8 @@ import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { httpRelay, newId, openHop, readTree, RelayRefusal, startChain, takeTurn, TesseraError, type Relay } from '@moin/tessera';
+import { httpRelay, LockRefusal, lockHop, newId, openHop, readTree, RelayRefusal, startChain, takeTurn, TesseraError, unlockHop, type Relay } from '@moin/tessera';
+import { createLimiter } from '../src/limit.ts';
 import { createHandler } from '../src/app.ts';
 import { openStore, type Store } from '../src/store.ts';
 
@@ -210,5 +211,72 @@ describe('a public relay', () => {
     expect(res.status).toBe(507);
     expect((await fetch(`http://127.0.0.1:${port}/v1/health`)).status).toBe(200);
     await new Promise((resolve) => tiny.close(resolve));
+  });
+});
+
+describe('password and custom links (locks, A3)', () => {
+  const PW = 'Möwe Teer Nebel Kutter';
+
+  it('a custom link opens with its password over real HTTP; the relay holds no password', async () => {
+    const { hop } = await startChain(relay, { maxStops: 6, maxBranches: 1 }, bytes('locked meme'));
+    const { name } = await lockHop(relay, hop, PW, 'kapitaen-hein');
+    const meta = await (await fetch(`${base}/v1/locks/kapitaen-hein`)).json();
+    expect(Object.keys(meta).sort()).toEqual(['kdf', 'salt']);
+    const { hopId, secret } = await unlockHop(relay, name, PW);
+    expect(new TextDecoder().decode((await openHop(relay, hopId, secret)).content)).toBe('locked meme');
+    store.db.exec('PRAGMA wal_checkpoint(FULL)');
+    const raw = readFileSync(join(dir, 'db.sqlite')).toString('latin1');
+    for (const w of ['Möwe', 'Teer', 'Nebel', 'Kutter', 'locked meme']) expect(raw).not.toContain(w);
+  });
+
+  it('wrong passwords: five free, then 1 minute (429 while waiting), then 2; right resets', async () => {
+    const { hop } = await startChain(relay, { maxStops: 6, maxBranches: 1 }, bytes('x'));
+    const { name } = await lockHop(relay, hop, PW);
+    for (let i = 0; i < 4; i++) expect(await reason(unlockHop(relay, name, `wrong guess ${i} x`))).toBe('wrong-password');
+    const fifth = await unlockHop(relay, name, 'wrong guess 5 x').catch((e: unknown) => e as LockRefusal);
+    expect((fifth as LockRefusal).waitUntil).toBe(clock + 60_000);
+    expect(await reason(unlockHop(relay, name, PW))).toBe('wait');
+    clock += 60_000;
+    const sixth = await unlockHop(relay, name, 'wrong guess 6 x').catch((e: unknown) => e as LockRefusal);
+    expect((sixth as LockRefusal).waitUntil).toBe(clock + 120_000);
+    clock += 120_000;
+    expect((await unlockHop(relay, name, PW)).hopId).toBe(hop.hopId);
+    expect(await reason(unlockHop(relay, name, 'wrong guess after reset'))).toBe('wrong-password');
+  });
+
+  it('refuses a taken name (409), a lock on an unknown hop (404), a bad name or a heavy kdf (422)', async () => {
+    const { hop } = await startChain(relay, { maxStops: 6, maxBranches: 1 }, bytes('x'));
+    await lockHop(relay, hop, PW, 'moewe');
+    expect(await reason(lockHop(relay, hop, PW, 'moewe'))).toBe('conflict');
+    const good = { name: 'free-name', hopId: hop.hopId, salt: 'A'.repeat(22), kdf: { m: 19456, t: 2, p: 1 }, verifier: 'A'.repeat(43), wrapped: 'A'.repeat(60) };
+    expect((await post('/v1/locks', { ...good, hopId: 'zzzzzzzz' })).status).toBe(404);
+    clock += 60 * 60_000; // refuse-tests spend create tokens too: an hour refills the bucket
+    for (const bad of [{ name: 'admin' }, { name: 'Bad-Names' }, { name: 'x-' }, { kdf: { m: 1 << 20, t: 2, p: 1 } }, { kdf: { m: 19456, t: 2, p: 1, extra: 1 } }, { verifier: 'short' }]) {
+      expect((await post('/v1/locks', { ...good, ...bad })).status, JSON.stringify(bad)).toBe(422);
+    }
+    expect((await post('/v1/locks', good)).status).toBe(201);
+  });
+
+  it('a lock goes with its chain (expiry, takedown by lock name)', async () => {
+    const { hop } = await startChain(relay, { maxStops: 6, maxBranches: 1 }, bytes('x'));
+    await lockHop(relay, hop, PW, 'ebbe');
+    clock += 31 * DAY;
+    expect(await reason(unlockHop(relay, 'ebbe', PW))).toBe('not-found');
+    store.sweep(clock);
+    expect((store.db.prepare('SELECT COUNT(*) AS n FROM locks').get() as { n: number }).n).toBe(0);
+    const again = (await startChain(relay, { maxStops: 6, maxBranches: 1 }, bytes('y'))).hop;
+    await lockHop(relay, again, PW, 'ebbe'); // the name is free again (D13)
+    expect(store.takedown('ebbe')).toBe(true);
+    expect(await reason(openHop(relay, again.hopId, again.secret))).toBe('not-found');
+  });
+
+  it('a rate-limited lock answer is slow-down, not a password wait', async () => {
+    const limited = createServer(createHandler({ store, now: () => clock, limiter: createLimiter({ now: () => clock, rates: { create: { capacity: 5, everyMs: 1 }, write: { capacity: 0, everyMs: 1e9 }, read: { capacity: 50, everyMs: 1 } } }) }));
+    await new Promise<void>((resolve) => limited.listen(0, '127.0.0.1', resolve));
+    const r = httpRelay(`http://127.0.0.1:${(limited.address() as { port: number }).port}`);
+    const { hop } = await startChain(relay, { maxStops: 6, maxBranches: 1 }, bytes('x'));
+    const { name } = await lockHop(relay, hop, PW);
+    expect(await reason(unlockHop(r, name, PW))).toBe('slow-down');
+    await new Promise((resolve) => limited.close(resolve));
   });
 });

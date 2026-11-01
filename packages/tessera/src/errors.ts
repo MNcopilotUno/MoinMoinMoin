@@ -15,6 +15,10 @@ export type TesseraReason =
   | 'conflict'
   | 'rejected'
   | 'slow-down'
+  | 'wrong-password'
+  | 'wait'
+  | 'weak-password'
+  | 'bad-name'
   | 'relay';
 
 export class TesseraError extends Error {

@@ -3,7 +3,7 @@ import { TesseraError } from './errors.js';
 import { SECRET_BYTES, type Secret } from './keys.js';
 
 /** Domain separation: one secret, one derived AES key per purpose (tessera.md, Keys). */
-export type Purpose = 'hop-content' | 'chain-key' | 'hop-key';
+export type Purpose = 'hop-content' | 'chain-key' | 'hop-key' | 'lock-key';
 
 const VERSION = 1;
 const NONCE = 12;

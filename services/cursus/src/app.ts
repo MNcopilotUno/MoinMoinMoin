@@ -4,6 +4,23 @@ import { LIMITS, type Outcome, type Store } from './store.ts';
 
 const ID = /^[A-Za-z0-9_-]{8}$/;
 const BOX = /^[A-Za-z0-9_-]+$/;
+// Lock names (password-links.md): a custom name, or a random 8-character id.
+const LOCK = /^(?:[A-Za-z0-9_-]{8}|[a-z][a-z0-9]*(?:-[a-z0-9]+)*)$/;
+const RESERVED = new Set(['m', 'v1', 'api', 'admin', 'health', 'locks', 'share', 'domi', 'moin', 'help', 'about', 'report']);
+const lockName = (v: unknown): string => {
+  if (typeof v !== 'string' || v.length < 3 || v.length > 32 || !LOCK.test(v) || RESERVED.has(v)) throw new HttpError(422, 'bad-request');
+  return v;
+};
+const KDF = { m: [8192, 65536], t: [1, 10], p: [1, 4] } as const;
+const kdfOf = (v: unknown): string => {
+  const k = v as { m?: unknown; t?: unknown; p?: unknown } | null;
+  if (!k || typeof k !== 'object' || !isInt(k.m, ...KDF.m) || !isInt(k.t, ...KDF.t) || !isInt(k.p, ...KDF.p) || Object.keys(k).length !== 3) throw new HttpError(422, 'bad-request');
+  return JSON.stringify({ m: k.m, t: k.t, p: k.p });
+};
+const fixed = (v: unknown, chars: number): string => {
+  if (typeof v !== 'string' || v.length !== chars || !BOX.test(v)) throw new HttpError(422, 'bad-request');
+  return v;
+};
 const MAX_BODY = 8 * 1024;
 
 export interface Options {
@@ -96,7 +113,7 @@ export function createHandler({ store, now = () => Date.now(), origin = '*', lim
         if (method !== 'GET') throw new HttpError(405);
         return send(200, { ok: true, api: 1 });
       }
-      const kind: Kind = method !== 'POST' ? 'read' : path === '/v1/chains' ? 'create' : 'write';
+      const kind: Kind = method !== 'POST' ? 'read' : path === '/v1/chains' || path === '/v1/locks' ? 'create' : 'write';
       const wait = limiter.take(kind, addressOf(req));
       if (wait > 0) {
         headers['retry-after'] = String(wait);
@@ -126,6 +143,24 @@ export function createHandler({ store, now = () => Date.now(), origin = '*', lim
         const b = await readBody(req);
         if (!isWrap(b.wrapKeyByT) || !isWrap(b.wrapTByKey)) throw new HttpError(422, 'bad-request');
         return send(200, unwrap(store.completeHop(decodeURIComponent(m[1]!), { wrapKeyByT: b.wrapKeyByT, wrapTByKey: b.wrapTByKey }, t)));
+      }
+      if (path === '/v1/locks') {
+        if (method !== 'POST') throw new HttpError(405);
+        const b = await readBody(req);
+        const value = unwrap(store.createLock({ name: lockName(b.name), hopId: id(b.hopId), salt: fixed(b.salt, 22), kdf: kdfOf(b.kdf), verifier: fixed(b.verifier, 43), wrapped: fixed(b.wrapped, 60) }, t));
+        return send(201, value);
+      }
+      if ((m = /^\/v1\/locks\/([^/]+)$/.exec(path))) {
+        if (method !== 'GET') throw new HttpError(405);
+        return send(200, unwrap(store.getLock(decodeURIComponent(m[1]!), t)));
+      }
+      if ((m = /^\/v1\/locks\/([^/]+)\/open$/.exec(path))) {
+        if (method !== 'POST') throw new HttpError(405);
+        const b = await readBody(req);
+        const result = store.openLock(decodeURIComponent(m[1]!), fixed(b.authKey, 43), t);
+        if (result.ok) return send(200, result.value);
+        if (result.status === 404) throw new HttpError(404);
+        return send(result.status, { error: result.status === 401 ? 'wrong' : 'wait', waitUntil: result.waitUntil });
       }
       if ((m = /^\/v1\/chains\/([^/]+)\/tree$/.exec(path))) {
         if (method !== 'GET') throw new HttpError(405);

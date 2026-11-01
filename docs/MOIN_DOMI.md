@@ -207,6 +207,10 @@ Each stage ends in a gate: a question with an observable answer.
 > a deploy kit, the DSA contact/terms/report, and **S4 built ahead of S3** (S3 waits for A2): the
 > puzzle's win card links to a ready meme; gate met by test — no request to `/domi/` until
 > pressed, disabled with its reason offline.
+> **S3 built** on the A2 candidate (`.agents/features/password-links.md`, its defaults; the owner's
+> four questions there are still open): password links and custom names, Argon2id auth/wrap split,
+> a slowdown after five wrong passwords, the `locks` table (A3). Gate (a non-technical person opens
+> a password link first try) not run.
 
 ### S0 — Design and Tessera · ~1–2 weeks
 - Review §3 with a threat model in `.agents/features/tessera.md`; settle Argon2id vs PBKDF2.
