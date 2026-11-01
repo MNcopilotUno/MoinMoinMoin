@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -19,7 +20,8 @@ export default defineConfig(({ mode }) => {
   const relayUrl = process.env.VITE_CURSUS_URL ?? env.VITE_CURSUS_URL;
   return {
     base,
-    publicDir: false,
+    // Domi's own icons (packages/assets/icons/domi, rendered by `pnpm --filter @moin/assets icons`).
+    publicDir: fileURLToPath(new URL('../../packages/assets/icons/domi', import.meta.url)),
     plugins: [
       svelte(),
       relayCsp(relayUrl),
@@ -28,9 +30,33 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'prompt',
         injectRegister: null,
-        manifest: false,
+        // Installable, and a target in the phone's share sheet (.agents/features/domi-install.md):
+        // a Moin Domi link shared from a messenger opens here, read as `?share-text=` / `share-url`.
+        manifest: {
+          name: 'Moin Domi',
+          short_name: 'Moin Domi',
+          description: 'A private Stille Post for memes from the Moin harbour.',
+          lang: 'en',
+          start_url: './',
+          scope: './',
+          display: 'standalone',
+          orientation: 'portrait',
+          background_color: '#000000',
+          theme_color: '#000000',
+          icons: [
+            { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+            { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+            { src: 'maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+            { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml' },
+          ],
+          share_target: {
+            action: './',
+            method: 'GET',
+            params: { title: 'share-title', text: 'share-text', url: 'share-url' },
+          },
+        },
         workbox: {
-          globPatterns: ['**/*.{js,css,html,woff2}', '**/*-night-*.jpg'],
+          globPatterns: ['**/*.{js,css,html,woff2,svg,png,webmanifest}', '**/*-night-*.jpg'],
           globIgnores: ['**/*-wide-*.jpg'],
           navigateFallback: 'index.html',
           cleanupOutdatedCaches: true,

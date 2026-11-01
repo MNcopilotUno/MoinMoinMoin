@@ -202,3 +202,23 @@ test('from the puzzle (S4): a solved market level opens a ready meme from the ma
   await page.goto('./?from=nonsense');
   await expect(page.getByRole('img', { name: /at the harbour.*When the whole harbour/ })).toBeVisible();
 });
+
+test('installable: its own manifest, icons and a share target', async ({ page, request, baseURL }) => {
+  await page.goto('./');
+  const href = await page.locator('link[rel="manifest"]').getAttribute('href');
+  const manifest = await (await request.get(new URL(href!, baseURL).href)).json();
+  expect(manifest).toMatchObject({ name: 'Moin Domi', display: 'standalone', background_color: '#000000', start_url: './', scope: './' });
+  expect(manifest.share_target).toEqual({ action: './', method: 'GET', params: { title: 'share-title', text: 'share-text', url: 'share-url' } });
+  for (const icon of manifest.icons as { src: string }[]) expect((await request.get(new URL(icon.src, baseURL).href)).status(), icon.src).toBe(200);
+  expect((await request.get(new URL('apple-touch-icon.png', baseURL).href)).status()).toBe(200);
+});
+
+test('shared into the app: a Moin link inside a messenger sentence opens the turn', async ({ browser, page }) => {
+  const creator = await person(browser);
+  const link = await makeChain(creator, 3);
+  await page.goto(`./?share-text=${encodeURIComponent(`Look what Hein sent 😂 ${link} — pass it on!`)}`);
+  await expect(page.getByRole('heading', { name: 'Your turn' })).toBeVisible();
+  expect(page.url()).not.toContain('share-text');
+  await page.goto(`./?share-text=${encodeURIComponent('just a sentence, no link')}`);
+  await expect(page.getByRole('heading', { name: 'No Moin in that' })).toBeVisible();
+});
