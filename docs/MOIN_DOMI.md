@@ -16,6 +16,8 @@ Agreed after a review of this file; each overrides the text it names.
 - **A2 — Password and lockout: designed anew.** §3's lockout sentence and D12–D13's mechanics are
   open; the password-link and lockout design will be done completely new (before S3). Nothing in
   this file binds it.
+  A candidate for the owner to accept or replace: `.agents/features/password-links.md` (Argon2id
+  split into an auth key and a wrap key; a slowdown instead of a hard lock; a suggested passphrase).
 - **A3 — One `locks` table** holds every password link, custom slug or not (§4). Its columns
   follow from the new design (A2).
 - **A4 — Pending hops.** A turn's new hop is stored *pending* until its wraps (`Enc_T(K_c)`,
