@@ -203,6 +203,28 @@
     }
   }
   let lockNote = $state<string | null>(null);
+  /** The password of the link just locked: shown once on Ready, never stored. */
+  let shownPassword = $state<string | null>(null);
+
+  /** D12/D13 for any link you hand on — also after a turn — from the Ready screen. */
+  async function addLock(item: Item, started: boolean, password: string, rawName: string): Promise<string | null> {
+    if (!relay) return 'Sending isn’t switched on yet.';
+    const name = rawName.trim() ? slugify(rawName) : undefined;
+    try {
+      if (name) {
+        const taken = await relay.getLock(name).then(() => true, (e: unknown) => ((e as { reason?: string }).reason === 'not-found' ? false : Promise.reject(e)));
+        if (taken) return 'That name is taken while its chain lives. Pick another.';
+      }
+      const locked = await lock(relay, item, password, name);
+      await putItem(locked);
+      await refresh();
+      shownPassword = password;
+      screen = { name: 'ready', item: locked, started };
+      return null;
+    } catch (e) {
+      return errorText(e);
+    }
+  }
 
   async function make() {
     if (!relay || busy) return;
@@ -222,6 +244,7 @@
         }
       }
       lockNote = null;
+      shownPassword = request?.password ?? null;
       const item = await withLock(await start(relay, rules, { ...draft, nick: tidy(draft.nick) }), request);
       await putItem(item);
       await rememberNick(draft.nick);
@@ -401,7 +424,8 @@
 {:else if screen.name === 'ready'}
   {@const s = screen}
   {#if lockNote}<p class="locknote" role="alert">{lockNote}</p>{/if}
-  <Ready item={s.item} started={s.started} password={s.started && s.item.lockName ? link.password : null} onback={() => go({ name: 'home' })} ondone={() => go({ name: 'home' })} ontree={() => openTree(s.item)} />
+  <Ready item={s.item} started={s.started} password={s.item.lockName ? shownPassword : null}
+    canLock={relay !== null && online} onlock={(pw, name) => addLock(s.item, s.started, pw, name)} onback={() => go({ name: 'home' })} ondone={() => go({ name: 'home' })} ontree={() => openTree(s.item)} />
 {:else if screen.name === 'turn'}
   {@const s = screen}
   <Turn item={s.item} nick={settings.rememberNick ? settings.nick : ''} {busy} {error} {blocked} offline={!online} onback={() => go({ name: 'home' })} onpass={(m) => pass(s.item, m)} />

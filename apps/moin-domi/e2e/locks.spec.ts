@@ -95,3 +95,31 @@ test('five wrong passwords: then it asks you to wait, with the time', async ({ b
   await expect(guesser.getByRole('alert')).toHaveText(/Too many tries\. You can try again at \d\d:\d\d\./);
   await expect(guesser.getByRole('button', { name: 'Open' })).toBeDisabled();
 });
+
+test('after a turn, the link you pass on can carry a password too', async ({ browser, page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: /Start a chain/ }).click();
+  await page.getByRole('button', { name: 'Next: how it travels' }).click();
+  await page.getByRole('button', { name: 'Lock it and make the first link' }).click();
+  const first = (await page.locator('[data-link]').getAttribute('data-link'))!;
+
+  const second = await person(browser);
+  await second.goto(first);
+  await second.getByRole('button', { name: 'Pass it on unchanged' }).click();
+  await expect(second.getByRole('heading', { name: 'Passed on' })).toBeVisible();
+  await second.getByRole('button', { name: 'Send it with a password instead' }).click();
+  const password = await second.getByLabel('Password', { exact: true }).inputValue();
+  const name = `zweiter-${test.info().project.name}-${Math.random().toString(36).slice(2, 6)}`;
+  await second.getByLabel('Name').fill(name);
+  await second.getByRole('button', { name: 'Lock it with this password' }).click();
+  await expect(second.getByRole('region', { name: 'The password' })).toContainText(password);
+  const locked = (await second.locator('[data-link]').getAttribute('data-link'))!;
+  expect(locked.endsWith(`/m/${name}`)).toBe(true);
+
+  const third = await person(browser);
+  await third.goto(locked);
+  await third.getByLabel('Password', { exact: true }).fill(password);
+  await third.getByRole('button', { name: 'Open' }).click();
+  await expect(third.getByRole('heading', { name: 'Your turn' })).toBeVisible();
+  await expect(third.getByRole('img', { name: /You are stop 3 of 6/ })).toBeVisible();
+});

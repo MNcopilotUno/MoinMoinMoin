@@ -62,5 +62,6 @@ the quotes above should be checked against it once).
   opens the person's mail app with the exact link (key included), a place for the reason and the
   name, and the good-faith statement (Art. 16(2)(a)–(d)). The person's own address is the
   notifier's e-mail. Takedown: `services/cursus/deploy/README.md`.
-- **Not built**: a confirmation of receipt (Art. 16(4)) and a decision notice (16(5)) — answered
-  by mail, by a person.
+- **Not built**: a confirmation of receipt (Art. 16(4)) and a decision notice (16(5)) by the
+  system — answered by mail, by a person. Since `feature/domi-gaps` the app tells the reporter
+  exactly that, right after *Report this chain*.
