@@ -26,11 +26,21 @@ Agreed after a review of this file; each overrides the text it names.
 - **A5 — A 128-bit link secret** after `#`, expanded to the AES-256 key with HKDF-SHA-256: about
   22 characters, so D11's link stays near its 30–35-character target.
 
-- **A6 — Postcards *(proposal, from the design canvas, 2026-11-01; not yet agreed)*.** *Just
+- **A6 — Postcards *(agreed by the owner, 2026-11-01)*.** *Just
   send*: a chain of **one stop** that nobody can extend — the sharing half of the app. D3's range
   becomes 1–12, where 1 means a postcard; the relay already enforces it (`last-stop`).
 
-Still open from that review: whether a touch may recolour the *Moin* bubble (D4) — the project
+- **A7 — Decided by the owner, 2026-11-01** (accepting the built defaults):
+  - **D4: the Moin bubble is always red.** A touch changes its words (*Moin*, *Moin moin*, none),
+    never its colour — red means Moin. **The face's mood (grumpy/smiling) is a touch** alongside
+    the bubble and the gull.
+  - **Password links (A2) as in `.agents/features/password-links.md`**: Argon2id at OWASP's
+    minimum (19 MiB, t 2, p 1); a slowdown after five wrong passwords (1, 2, 4 … minutes, at most
+    a day), not a hard lock; at least three words or twelve characters, common ones refused; a
+    five-word passphrase suggested by default.
+  - **Cursus runs on the owner's home server** (systemd + Caddy, `docs/HOSTING.md`).
+
+Still open from that review (superseded by A6–A7 where they answer it): whether a touch may recolour the *Moin* bubble (D4) — the project
 rule is that red means *Moin*; hosting and domain for Cursus (needed before S1); the ROADMAP's
 Phase 2 gate was waived by the owner on 2026-10-24/30.
 
