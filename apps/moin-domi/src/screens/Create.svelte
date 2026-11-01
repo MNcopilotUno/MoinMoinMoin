@@ -1,6 +1,6 @@
 <script lang="ts">
   import { CAPTION_MAX, tidy, WHERE, type Meme as MemeValue } from '@moin/meme';
-  import { portrait } from '@moin/ui';
+  import { portrait } from '@moin/ui/portrait';
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import { CAST, PAINTINGS, PLACE_NAMES, portraitOf } from '../lib/look.js';

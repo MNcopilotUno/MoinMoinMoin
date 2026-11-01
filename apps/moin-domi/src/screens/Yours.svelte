@@ -5,11 +5,12 @@
   import { dayLabel, today } from '../lib/config.js';
   import type { Item } from '../lib/db.js';
 
-  interface Props { items: readonly Item[]; onback: () => void; onopen: (item: Item) => void }
-  let { items, onback, onopen }: Props = $props();
+  interface Props { items: readonly Item[]; onback: () => void; onopen: (item: Item) => void; onforget: (item: Item) => void }
+  let { items, onback, onopen, onforget }: Props = $props();
   let show = $state<'all' | 'chain' | 'postcard'>('all');
   const list = $derived(items.filter((i) => show === 'all' || i.kind === show));
   function tag(i: Item): { text: string; tone: 'gold' | 'paper' | 'lilac' | 'quiet' } {
+    if (i.status === 'gone') return { text: 'Gone', tone: 'quiet' };
     if (i.expiresDay - today() <= 3) return { text: 'Ending soon', tone: 'quiet' };
     switch (i.status) {
       case 'your-turn': return { text: 'Your turn', tone: 'gold' };
@@ -21,6 +22,7 @@
     }
   }
   function meta(i: Item): string {
+    if (i.status === 'gone') return 'Gone with the tide · nobody can open it now';
     const until = `gone after ${dayLabel(i.expiresDay)}`;
     if (i.kind === 'postcard') return `${i.mine ? 'You sent it' : i.meme.nick ? `From ${i.meme.nick}` : 'Sent to you'} · ${until}`;
     if (i.status === 'your-turn') return `Stop ${i.depth + 1} of ${i.maxStops} · ${until}`;
@@ -54,6 +56,7 @@
             </span>
             <Icon name="chevron" size={18} color="#7D7894" />
           </button>
+          {#if i.status === 'gone'}<button type="button" class="chip forget" onclick={() => onforget(i)}>Remove from this phone</button>{/if}
         </li>
       {/each}
     </ul>
@@ -76,6 +79,7 @@
   .paper { background: var(--paper); color: var(--black); }
   .lilac { background: var(--lilac); color: var(--black); }
   .quiet { background: #24242b; color: var(--lilac); }
+  .forget { margin: 6px 0 0 auto; display: block; }
   .empty { padding: 24px 6px; font-size: 15px; line-height: 1.45; color: var(--mist); }
   .c { text-align: center; }
 </style>

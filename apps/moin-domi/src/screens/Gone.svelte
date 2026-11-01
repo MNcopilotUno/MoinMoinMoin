@@ -1,6 +1,6 @@
 <script lang="ts">
   import lighthouse from '@moin/assets/art/lighthouse-night.jpg';
-  import { SeagullSprite } from '@moin/ui';
+  import SeagullSprite from '@moin/ui/SeagullSprite.svelte';
 
   interface Props { title: string; text: string; onnew: () => void; onhome: () => void }
   let { title, text, onnew, onhome }: Props = $props();
