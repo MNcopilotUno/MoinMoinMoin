@@ -3,6 +3,9 @@
 Cursus is the Moin Domi relay (`docs/MOIN_DOMI.md` D16, `.agents/features/cursus.md`). It needs
 Node 22.18 or newer and nothing else: no build, no `npm install` at run time.
 
+**The owner's home server: follow [`docs/HOSTING.md`](../../../docs/HOSTING.md)** — the whole
+procedure, step by step. The rest of this page is the reference.
+
 ## Choose one
 - **A small VPS or the home server, with systemd + Caddy:** copy the repository to `/opt/moin`,
   install `cursus.service` and a Caddy site from `Caddyfile` (change the host name), point a DNS
