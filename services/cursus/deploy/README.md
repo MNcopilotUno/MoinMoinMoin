@@ -18,6 +18,7 @@ Node 22.18 or newer and nothing else: no build, no `npm install` at run time.
 | `CURSUS_ORIGIN` | `*` | the app's origin for CORS, e.g. `https://mncopilotuno.github.io` |
 | `CURSUS_TRUST_PROXY` | off | `1` behind a reverse proxy: rate limits use `X-Forwarded-For` |
 | `CURSUS_MAX_MB` | `512` | refuse new chains (507) above this database size |
+| `CURSUS_RATE_SCALE` | `1` | multiplies every rate-limit burst; leave at 1 (the e2e relay uses 100) |
 
 ## Then point the app at it
 In the GitHub repository: **Settings → Secrets and variables → Actions → Variables → New

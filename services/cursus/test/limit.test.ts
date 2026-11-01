@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createLimiter } from '../src/limit.ts';
+import { createLimiter, RATES, scaled } from '../src/limit.ts';
 
 describe('the rate limiter', () => {
   const rates = { create: { capacity: 2, everyMs: 1000 }, write: { capacity: 1, everyMs: 1000 }, read: { capacity: 1, everyMs: 1000 } };
@@ -39,5 +39,14 @@ describe('the rate limiter', () => {
     for (const a of ['a', 'b', 'c', 'd']) l.take('read', a);
     expect(l.size()).toBe(3);
     expect(l.take('read', 'a')).toBe(0); // forgotten, so full again
+  });
+});
+
+describe('scaling the limits (CURSUS_RATE_SCALE)', () => {
+  it('1 is production; 100 is a hundred times the burst; nonsense falls back to 1', () => {
+    expect(scaled(1)).toEqual(RATES);
+    expect(scaled(100).create).toEqual({ capacity: 1000, everyMs: RATES.create.everyMs / 100 });
+    expect(scaled(Number('nope'))).toEqual(RATES);
+    expect(scaled(-3)).toEqual(RATES);
   });
 });

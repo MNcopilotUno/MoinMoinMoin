@@ -14,6 +14,13 @@ export const RATES: Readonly<Record<Kind, Rate>> = {
   read: { capacity: 120, everyMs: 500 },
 };
 
+/** `CURSUS_RATE_SCALE` multiplies every burst (and divides the wait): 1 in production. */
+export function scaled(scale: number): Readonly<Record<Kind, Rate>> {
+  const s = Number.isFinite(scale) && scale > 0 ? scale : 1;
+  const one = (r: Rate): Rate => ({ capacity: Math.round(r.capacity * s), everyMs: r.everyMs / s });
+  return { create: one(RATES.create), write: one(RATES.write), read: one(RATES.read) };
+}
+
 interface Bucket { tokens: number; at: number }
 
 export function createLimiter({ now = () => Date.now(), rates = RATES, salt = randomBytes(32), maxEntries = 10_000 }: {
