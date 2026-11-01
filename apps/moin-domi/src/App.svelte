@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { FIRST_MEME, tidy, type Meme } from '@moin/meme';
+  import { FIRST_MEME, tidy, WHERE, type Meme, type Where } from '@moin/meme';
   import { playMoin } from '@moin/assets';
   import { tick } from 'svelte';
   import { relay } from './lib/config.js';
@@ -224,12 +224,24 @@
     }
   }
 
+  /** S4, the bridge: a solved puzzle level opens a ready-made meme from its part of town. */
+  async function fromPuzzle(levelId: string) {
+    history.replaceState(null, '', import.meta.env.BASE_URL);
+    const part = levelId.split('-')[0] ?? '';
+    const where: Where = (WHERE as readonly string[]).includes(part) ? (part as Where) : 'harbour';
+    const top = { harbour: 'When the whole harbour', market: 'When the whole market', ferry: 'When the whole ferry', lighthouse: 'When even the lighthouse' }[where];
+    draft = { ...FIRST_MEME, where, top, bottom: 'finally says Moin', nick: settings.rememberNick ? settings.nick : '' };
+    rules = { ...rules, kind: 'chain' };
+    await go({ name: 'create' });
+  }
+
   async function startUp() {
     settings = await loadSettings();
     await refresh();
     const href = location.href;
     const url = new URL(href);
     if (/\/m\/[^/]+\/?$/.test(url.pathname) || url.searchParams.has('m')) await openLink(href);
+    else if (url.searchParams.has('from')) await fromPuzzle(url.searchParams.get('from') ?? '');
     else document.querySelector<HTMLElement>('main h1')?.focus();
   }
 

@@ -193,3 +193,12 @@ test('about and the rules: what is not allowed, how reports work, who to write t
   await page.getByRole('button', { name: 'About and the rules' }).click();
   await expect(page.getByText(/No contact address yet/)).toBeVisible();
 });
+
+test('from the puzzle (S4): a solved market level opens a ready meme from the market', async ({ page }) => {
+  await page.goto('./?from=market-03');
+  await expect(page.getByRole('heading', { name: 'Make the meme' })).toBeVisible();
+  await expect(page.getByRole('img', { name: /at the market.*When the whole market \/ finally says Moin/ })).toBeVisible();
+  expect(page.url()).not.toContain('from=');
+  await page.goto('./?from=nonsense');
+  await expect(page.getByRole('img', { name: /at the harbour.*When the whole harbour/ })).toBeVisible();
+});

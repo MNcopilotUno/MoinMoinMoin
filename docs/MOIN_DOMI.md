@@ -201,6 +201,10 @@ Each stage ends in a gate: a question with an observable answer.
 > reason (38 tests), DSA answer written with its source. S1 and S2 are **built and tested**
 > (`services/cursus`, `apps/moin-domi`, design canvas) but **not deployed**: Cursus has no host,
 > so their gates (six real people; someone browsing the tree) cannot be run.
+> Since then: offline (§6 rows: service worker, outbox, tree as last seen), relay rate limits and
+> a deploy kit, the DSA contact/terms/report, and **S4 built ahead of S3** (S3 waits for A2): the
+> puzzle's win card links to a ready meme; gate met by test — no request to `/domi/` until
+> pressed, disabled with its reason offline.
 
 ### S0 — Design and Tessera · ~1–2 weeks
 - Review §3 with a threat model in `.agents/features/tessera.md`; settle Argon2id vs PBKDF2.

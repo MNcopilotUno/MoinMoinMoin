@@ -32,6 +32,14 @@
   let ready = $state(false);
   /** Index into the story's `levels`, or -1 while playing the daily level. */
   let levelIndex = $state(0);
+  /** For the bridge to Moin Domi (S4): offline, the link is disabled with its reason. */
+  let online = $state(typeof navigator === 'undefined' ? true : navigator.onLine);
+  $effect(() => {
+    const up = () => (online = true), down = () => (online = false);
+    addEventListener('online', up);
+    addEventListener('offline', down);
+    return () => { removeEventListener('online', up); removeEventListener('offline', down); };
+  });
   let level = $state.raw<Level>(levels[0]!);
   let picking = $state(false);
   const firstGame = createGame(toBoard(levels[0]!));
@@ -451,7 +459,8 @@
   {#if showWin && solved}
     <WinCard autofocus={!picking && !settingsOpen} stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
       last={!isDaily && levelIndex === levels.length - 1} {nextLabel} onnext={next} onreplay={restart}
-      share={isDaily ? share : null} quote={narratorOn ? (line?.text ?? null) : null} />
+      share={isDaily ? share : null} quote={narratorOn ? (line?.text ?? null) : null}
+      chainHref={online ? `domi/?from=${encodeURIComponent(level.id)}` : null} />
   {/if}
   <p class="visually-hidden" aria-live="polite" data-testid="announcer">{announcement}</p>
 </div>

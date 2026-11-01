@@ -27,10 +27,11 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | QA pass | Two QA agents (function/a11y, feel/sound); findings and outcomes in `.agents/reviews/qa-polish.md` |
 | Moin Domi S0 | `packages/tessera` (128-bit link keys, HKDF, AES-GCM boxes bound to chain/parent/depth/hop, link codec, Cursus client, chain protocol with pending hops); threat model `.agents/features/tessera.md`; DSA answer `.agents/features/dsa.md` (hosting service, not a platform; Arts. 11, 12, 14, 16, 18) |
 | Moin Domi S1 + tree | `packages/meme` (strict meme value, turn rules), `services/cursus` (Node + SQLite relay, caps, expiry, takedown), the app at `/domi/` designed after the dark canvas: home, make, rules, link, turn, tree with wave, finale with local voice, postcard (*Just send*, proposal A6), yours, gone, settings; save image as PNG. Live site: everything but sending ("the relay has no home") |
+| Domi after S1 | Offline (worker, outbox, tree as last seen), relay rate limits + disk guard + deploy kit (`services/cursus/deploy/`), DSA contact + terms + *Report this chain* (`dsa.md`), S4 bridge from the puzzle's win card (`bridge.md`) |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 23; e2e puzzle
-44 + Domi 7 on Chromium (Domi against a local Cursus);
+Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 31; e2e puzzle
+45 + Domi 12 on Chromium (Domi against a local Cursus);
 `validate:levels` 40
 levels ok, 14 fixtures fail as expected.
 
@@ -40,8 +41,8 @@ levels ok, 14 fixtures fail as expected.
    then hand them the market set. Does anyone ask for more?
 2. **Phase 2 gate:** a month from now, do you still open it for fun?
 3. Real-device checks still **predicted**: iOS silent switch and Web Audio; install banner on Android.
-4. Moin Domi: **a host and a domain for Cursus** (owner's call) — then set `VITE_CURSUS_URL` in
-   the Pages build and `CURSUS_ORIGIN` on the relay, add a rate limit, a contact address and a
-   notice form (DSA, `dsa.md`), and run the S1 gate with six people. Owner to confirm A6
-   (postcards = one-stop chains) and that the bubble stays red (D4). Gaps: no offline queue, no
-   service worker for Domi, password/custom links wait for A2 (S3).
+4. Moin Domi: **a host and a domain for Cursus** (owner's call). Then: run it with
+   `services/cursus/deploy/` (systemd + Caddy or Docker — *untried on a real host*), set the
+   repository variables `CURSUS_URL` and `DOMI_CONTACT`, push, and run the S1 gate with six
+   people. Owner to confirm A6 (postcards), the red bubble (D4) and mood as a touch. Still open:
+   password/custom links wait for A2 (S3); Art. 16(4)–(5) receipts are answered by hand.
