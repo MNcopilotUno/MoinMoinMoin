@@ -29,7 +29,8 @@ test('opens with no network once loaded, and a chain made offline goes out when 
   await expect(page.getByRole('heading', { name: 'Waiting to send' })).toBeVisible();
   await expect(page.getByText('Goes out when you’re back online')).toBeVisible();
   await context.setOffline(false);
-  // The relay may not answer the instant the network returns; the outbox retries (2 s, 4 s …).
+  // On the `online` event, or at the latest the outbox's next 5-second look (Firefox may not send
+  // the event to a page loaded offline), plus a retry if the relay is not reachable yet.
   await expect(page.getByRole('status')).toHaveText(/Your Moin went out/, { timeout: 15_000 });
   await expect(page.getByRole('heading', { name: 'Waiting to send' })).toHaveCount(0);
   await page.getByRole('button', { name: /All your chains/ }).click();
@@ -86,4 +87,17 @@ test('online but the relay unreachable: kept, then sent by itself on a retry', a
   await expect(page.getByRole('heading', { name: 'Waiting for the tide' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Your chain is ready' })).toBeVisible({ timeout: 10_000 });
   expect(refused).toBe(2);
+});
+
+test('the outbox goes out even if the online event never comes', async ({ page, context }) => {
+  await loadOnce(page);
+  // Swallow every online event, as Firefox did in CI for a page loaded offline.
+  await page.addInitScript(() => window.addEventListener('online', (e) => e.stopImmediatePropagation(), { capture: true }));
+  await context.setOffline(true);
+  await page.reload();
+  await makeMeme(page, 'No event came');
+  await page.getByRole('button', { name: 'Send it when I’m back online' }).click();
+  await page.getByRole('button', { name: 'Home' }).click();
+  await context.setOffline(false);
+  await expect(page.getByRole('status')).toHaveText(/Your Moin went out/, { timeout: 15_000 });
 });
