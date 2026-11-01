@@ -16,8 +16,11 @@
     quote?: string | null;
     /** False while a dialog is open: never steal its focus (QA M4). */
     autofocus?: boolean;
+    /** The bridge to Moin Domi (S4): a plain link, so nothing is fetched until it is pressed;
+     *  `null` when offline (disabled, with the reason). `undefined` hides it. */
+    chainHref?: string | null | undefined;
   }
-  let { stars, taps, par, last, nextLabel, onnext, onreplay, share = null, quote = null, autofocus = true }: Props = $props();
+  let { stars, taps, par, last, nextLabel, onnext, onreplay, share = null, quote = null, autofocus = true, chainHref = undefined }: Props = $props();
   let shared = $state<'idle' | 'copied' | 'manual'>('idle');
   /** The phone's own share sheet, where the browser has one (settings.md): still text only. */
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
@@ -73,6 +76,13 @@
     <button type="button" class="secondary" onclick={onreplay}>{copy.replay}</button>
     <button type="button" class="primary" onclick={onnext} use:focus>{nextLabel}</button>
   </div>
+  {#if chainHref !== undefined}
+    <div class="bridge">
+      {#if chainHref}<a class="chain" href={chainHref}>{copy.startChain}</a>
+      {:else}<button type="button" class="chain" disabled aria-describedby="chain-why">{copy.startChain}</button>
+        <p id="chain-why">{copy.startChainOffline}</p>{/if}
+    </div>
+  {/if}
 </section>
 
 <style>
@@ -115,6 +125,14 @@
   button:active { transform: scale(0.97); }
   button:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
   .primary { background: var(--ink); color: var(--paper); }
+  .bridge { margin-top: 0.4rem; text-align: center; }
+  .chain {
+    min-height: 44px; display: inline-flex; align-items: center; padding: 0 0.6rem; border: 0; box-shadow: none; background: none;
+    font: inherit; font-weight: 700; font-size: 0.95rem; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .chain:disabled { cursor: default; text-decoration: none; opacity: 0.6; }
+  .bridge p { margin: 0; font-size: 0.85rem; color: var(--ink-soft); }
+  a.chain:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; border-radius: 8px; }
   .secondary { background: var(--paper); color: var(--ink); }
   /* Landscape phones (screens.md): the card sits in the left column, beside the solved board. */
   @media (orientation: landscape) and (max-height: 560px) {
