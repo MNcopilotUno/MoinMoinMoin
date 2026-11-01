@@ -10,6 +10,11 @@ const jobs: [string, string, number][] = [
   ['icon.svg', 'icon-512.png', 512],
   ['icon.svg', 'apple-touch-icon.png', 180],
   ['maskable.svg', 'maskable-512.png', 512],
+  // Moin Domi (.agents/features/domi-install.md): its own icon, served from apps/moin-domi.
+  ['domi/icon.svg', 'domi/icon-192.png', 192],
+  ['domi/icon.svg', 'domi/icon-512.png', 512],
+  ['domi/icon.svg', 'domi/apple-touch-icon.png', 180],
+  ['domi/maskable.svg', 'domi/maskable-512.png', 512],
 ];
 const browser = await chromium.launch(process.env.PLAYWRIGHT_CHROMIUM ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM } : {});
 try {

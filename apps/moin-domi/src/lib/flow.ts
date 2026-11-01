@@ -121,6 +121,18 @@ export function reportHref(item: Pick<Item, 'hopId' | 'secret'>): string | null 
   return `mailto:${contact}?subject=${encodeURIComponent('Moin Domi: report a chain')}&body=${encodeURIComponent(body)}`;
 }
 
+/**
+ * The share sheet hands us whatever the messenger sent: a bare link, or a sentence with a link in
+ * it, fragment and all. Find the first Moin Domi link (`…/m/<id>#<key>`), or `null`.
+ */
+export function linkInShare(...parts: readonly (string | null)[]): string | null {
+  for (const part of parts) {
+    const found = part?.match(/https?:\/\/\S+?(?:\/m\/[A-Za-z0-9_-]{8}|\?m=[A-Za-z0-9_-]{8})#[A-Za-z0-9_-]{22}/);
+    if (found) return found[0];
+  }
+  return null;
+}
+
 export function errorText(error: unknown): string {
   const reason = error instanceof TesseraError ? error.reason : '';
   switch (reason) {

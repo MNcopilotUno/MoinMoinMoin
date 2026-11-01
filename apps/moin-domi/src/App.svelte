@@ -7,7 +7,7 @@
   import { startServiceWorker } from './lib/sw.js';
   import Queued from './screens/Queued.svelte';
   import About from './screens/About.svelte';
-  import { errorText, passOn, receive, start, tree, type Node, type Rules as RulesValue } from './lib/flow.js';
+  import { errorText, linkInShare, passOn, receive, start, tree, type Node, type Rules as RulesValue } from './lib/flow.js';
   import Create from './screens/Create.svelte';
   import Finale from './screens/Finale.svelte';
   import Gone from './screens/Gone.svelte';
@@ -249,7 +249,7 @@
     } catch (e) {
       const reason = (e as { reason?: string }).reason;
       // Offline: put the link back, key and all, so a reload when the network returns opens it.
-      if (reason === 'offline') history.replaceState(null, '', href);
+      if (reason === 'offline' && new URL(href).origin === location.origin) history.replaceState(null, '', href);
       if (reason === 'not-found') await go({ name: 'gone', title: 'Gone with the tide', text: goneText });
       else if (reason === 'offline') await go({ name: 'gone', title: 'Offline', text: 'This Moin is waiting on the relay, and you’re offline. Keep this page open, or open the link again when you’re back.' });
       else await go({ name: 'gone', title: 'This link doesn’t open', text: errorText(e) });
@@ -274,6 +274,15 @@
     const url = new URL(href);
     if (/\/m\/[^/]+\/?$/.test(url.pathname) || url.searchParams.has('m')) await openLink(href);
     else if (url.searchParams.has('from')) await fromPuzzle(url.searchParams.get('from') ?? '');
+    else if (['share-text', 'share-url', 'share-title'].some((k) => url.searchParams.has(k))) {
+      // From the phone's share sheet (installed app): open the Moin in what was shared.
+      const shared = linkInShare(url.searchParams.get('share-url'), url.searchParams.get('share-text'), url.searchParams.get('share-title'));
+      if (shared) await openLink(shared);
+      else {
+        history.replaceState(null, '', import.meta.env.BASE_URL);
+        await go({ name: 'gone', title: 'No Moin in that', text: 'What was shared has no Moin Domi link in it. Share the whole link — the part after # is its key.' });
+      }
+    }
     else document.querySelector<HTMLElement>('main h1')?.focus();
   }
 
