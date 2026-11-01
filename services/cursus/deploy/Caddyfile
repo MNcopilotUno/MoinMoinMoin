@@ -1,0 +1,7 @@
+# Caddy in front of Cursus: TLS from Let's Encrypt, no access log (Caddy writes none unless a
+# `log` directive asks for it — keep it that way: the relay must not record addresses).
+relay.example.org {
+	encode gzip
+	reverse_proxy 127.0.0.1:4175
+	header -Server
+}

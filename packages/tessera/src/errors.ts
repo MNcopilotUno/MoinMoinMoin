@@ -14,6 +14,7 @@ export type TesseraReason =
   | 'gone'
   | 'conflict'
   | 'rejected'
+  | 'slow-down'
   | 'relay';
 
 export class TesseraError extends Error {

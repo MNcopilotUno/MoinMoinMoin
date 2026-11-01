@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { createLimiter, type Kind, type Limiter } from './limit.ts';
 import { LIMITS, type Outcome, type Store } from './store.ts';
 
 const ID = /^[A-Za-z0-9_-]{8}$/;
@@ -10,6 +11,11 @@ export interface Options {
   readonly now?: () => number;
   /** The app's origin for CORS; `*` is safe because nothing uses cookies. */
   readonly origin?: string;
+  readonly limiter?: Limiter;
+  /** Behind a reverse proxy: take the address from `X-Forwarded-For` (first entry). */
+  readonly trustProxy?: boolean;
+  /** Refuse new chains (507) once the database is this big. */
+  readonly maxBytes?: number;
 }
 
 type Body = Record<string, unknown>;
@@ -60,7 +66,11 @@ function unwrap<T>(outcome: Outcome<T>): T {
 }
 
 /** The whole relay as one request handler. Writes nothing about requests anywhere. */
-export function createHandler({ store, now = () => Date.now(), origin = '*' }: Options) {
+export function createHandler({ store, now = () => Date.now(), origin = '*', limiter = createLimiter({ now }), trustProxy = false, maxBytes = 512 * 1024 * 1024 }: Options) {
+  const addressOf = (req: IncomingMessage): string => {
+    const forwarded = trustProxy ? String(req.headers['x-forwarded-for'] ?? '').split(',')[0]?.trim() : '';
+    return forwarded || req.socket.remoteAddress || 'unknown';
+  };
   return async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     const headers: Record<string, string> = {
       'cache-control': 'no-store',
@@ -82,11 +92,22 @@ export function createHandler({ store, now = () => Date.now(), origin = '*' }: O
         headers['access-control-max-age'] = '86400';
         return send(204);
       }
+      if (path === '/v1/health') {
+        if (method !== 'GET') throw new HttpError(405);
+        return send(200, { ok: true, api: 1 });
+      }
+      const kind: Kind = method !== 'POST' ? 'read' : path === '/v1/chains' ? 'create' : 'write';
+      const wait = limiter.take(kind, addressOf(req));
+      if (wait > 0) {
+        headers['retry-after'] = String(wait);
+        throw new HttpError(429, 'slow-down');
+      }
       const t = now();
       let m: RegExpExecArray | null;
       if (path === '/v1/chains') {
         if (method !== 'POST') throw new HttpError(405);
         const b = await readBody(req);
+        if (store.sizeBytes() >= maxBytes) throw new HttpError(507, 'full');
         if (!isInt(b.maxStops, 1, 12) || !isInt(b.maxBranches, 1, 3) || !isWrap(b.wrapKeyByT) || !isWrap(b.wrapTByKey)) throw new HttpError(422, 'bad-request');
         const value = unwrap(store.createChain({ chainId: id(b.chainId), hopId: id(b.hopId), maxStops: b.maxStops, maxBranches: b.maxBranches, content: content(b.content), wrapKeyByT: b.wrapKeyByT, wrapTByKey: b.wrapTByKey }, t));
         return send(201, value);

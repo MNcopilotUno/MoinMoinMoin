@@ -1,0 +1,40 @@
+# systemd unit for Cursus (D16). Install the repository at /opt/moin, then:
+#   sudo cp cursus.service /etc/systemd/system/ && sudo systemctl enable --now cursus
+# The database lives in /var/lib/cursus (StateDirectory); nothing else is writable.
+[Unit]
+Description=Cursus — the Moin Domi relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+DynamicUser=yes
+StateDirectory=cursus
+WorkingDirectory=/opt/moin/services/cursus
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning src/main.ts
+Environment=CURSUS_DB=/var/lib/cursus/cursus.sqlite
+Environment=CURSUS_HOST=127.0.0.1
+Environment=CURSUS_PORT=4175
+# The app's origin, e.g. https://mncopilotuno.github.io (scheme + host, no path):
+Environment=CURSUS_ORIGIN=https://mncopilotuno.github.io
+# Behind Caddy on the same machine: take the address for rate limits from X-Forwarded-For.
+Environment=CURSUS_TRUST_PROXY=1
+Environment=CURSUS_MAX_MB=512
+Restart=on-failure
+# Hardening: no new privileges, read-only system, private /tmp, no devices.
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=no
+SystemCallArchitectures=native
+# journald gets only start/stop and internal errors: Cursus logs nothing per request.
+
+[Install]
+WantedBy=multi-user.target

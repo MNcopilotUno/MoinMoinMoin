@@ -185,3 +185,30 @@ describe('Cursus over HTTP with the Tessera client', () => {
     expect(store.takedown('zzzzzzzz')).toBe(false);
   });
 });
+
+describe('a public relay', () => {
+  it('answers health without touching the store', async () => {
+    const res = await fetch(`${base}/v1/health`);
+    expect(await res.json()).toEqual({ ok: true, api: 1 });
+  });
+
+  it('slows down an address that makes too many chains, and says when to come back', async () => {
+    for (let i = 0; i < 10; i++) await startChain(relay, { maxStops: 3, maxBranches: 1 }, bytes(`${i}`));
+    expect(await reason(startChain(relay, { maxStops: 3, maxBranches: 1 }, bytes('11')))).toBe('slow-down');
+    const res = await post('/v1/chains', {});
+    expect(res.status).toBe(429);
+    expect(res.headers.get('retry-after')).toBe('360');
+    clock += 6 * 60_000;
+    expect(await reason(startChain(relay, { maxStops: 3, maxBranches: 1 }, bytes('later')))).toBe('ok');
+  });
+
+  it('refuses new chains when the database is full (507), but still serves what it has', async () => {
+    const tiny = createServer(createHandler({ store, now: () => clock, maxBytes: 1 }));
+    await new Promise<void>((resolve) => tiny.listen(0, '127.0.0.1', resolve));
+    const port = (tiny.address() as { port: number }).port;
+    const res = await fetch(`http://127.0.0.1:${port}/v1/chains`, { method: 'POST', body: '{}' });
+    expect(res.status).toBe(507);
+    expect((await fetch(`http://127.0.0.1:${port}/v1/health`)).status).toBe(200);
+    await new Promise((resolve) => tiny.close(resolve));
+  });
+});
