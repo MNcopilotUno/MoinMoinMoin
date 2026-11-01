@@ -43,14 +43,22 @@ export async function renderPng(el: HTMLElement, meme: Meme): Promise<Blob> {
   const scale = Math.max(SIZE / bg.width, SIZE / bg.height);
   const w = bg.width * scale, h = bg.height * scale;
   ctx.drawImage(bg, (SIZE - w) / 2, (SIZE - h) * 0.22, w, h);
+  const weather = el.querySelector<SVGElement>('.weather svg');
+  if (weather) {
+    const svg = weather.cloneNode(true) as SVGElement;
+    svg.setAttribute('width', String(SIZE));
+    svg.setAttribute('height', String(SIZE));
+    ctx.drawImage(await svgImage(svg), 0, 0, SIZE, SIZE);
+  }
   const face = el.querySelector<SVGElement>('.face svg');
   if (face) {
     const img = await svgImage(face);
-    const fw = SIZE * 0.64, fh = (fw * 220) / 200;
+    const star = meme.who === 'gull';
+    const fw = SIZE * (star ? 0.7 : 0.64), fh = star ? fw : (fw * 220) / 200;
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.55)';
     ctx.shadowBlur = 24;
-    ctx.drawImage(img, (SIZE - fw) / 2, SIZE * 1.02 - fh, fw, fh);
+    ctx.drawImage(img, (SIZE - fw) / 2, (star ? SIZE * 0.98 : SIZE * 1.02) - fh, fw, fh);
     ctx.restore();
   }
   const gull = el.querySelector<SVGElement>('.gull svg');

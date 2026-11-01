@@ -2,8 +2,10 @@
  * A Moin Domi meme (docs/MOIN_DOMI.md D1–D6): our own cast on a night painting, two free-text
  * captions and a few touches. Pure data — rendering lives in the app. This is what Tessera seals.
  */
-export const WHO = ['captain', 'fisherman', 'market', 'kid', 'chatterbox'] as const;
-export const WHERE = ['harbour', 'market', 'ferry', 'lighthouse'] as const;
+export const WHO = ['captain', 'fisherman', 'market', 'kid', 'chatterbox', 'gull', 'harbourmaster', 'netmender'] as const;
+export const WHERE = ['harbour', 'market', 'ferry', 'lighthouse', 'water'] as const;
+/** A touch over the painting (D4 "and similar"): clear sky, rain, fog, or the lighthouse beam. */
+export const WEATHER = ['clear', 'rain', 'fog', 'beam'] as const;
 export const BUBBLES = ['none', 'moin', 'moinmoin'] as const;
 export const MOODS = ['grumpy', 'smiling'] as const;
 
@@ -11,6 +13,7 @@ export type Who = (typeof WHO)[number];
 export type Where = (typeof WHERE)[number];
 export type Bubble = (typeof BUBBLES)[number];
 export type Mood = (typeof MOODS)[number];
+export type Weather = (typeof WEATHER)[number];
 
 /** D2. */
 export const CAPTION_MAX = 140;
@@ -27,6 +30,8 @@ export interface Meme {
   readonly bubble: Bubble;
   readonly gull: boolean;
   readonly mood: Mood;
+  /** Optional in stored memes (added 2026-11-01): absent means clear. */
+  readonly weather: Weather;
   /** D6: optional, per hop. Empty means anonymous. */
   readonly nick: string;
   /** D3: words each person may swap, 1–3. A chain rule the relay never sees, so it travels sealed. */
@@ -35,7 +40,7 @@ export interface Meme {
 
 export const FIRST_MEME: Meme = {
   v: 1, who: 'captain', where: 'harbour', top: 'When the captain', bottom: 'finally says Moin',
-  bubble: 'moin', gull: false, mood: 'smiling', nick: '', budget: 1,
+  bubble: 'moin', gull: false, mood: 'smiling', weather: 'clear', nick: '', budget: 1,
 };
 
 export class MemeError extends Error {
@@ -51,7 +56,7 @@ export function tidy(text: string): string {
   return text.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-const KEYS = ['v', 'who', 'where', 'top', 'bottom', 'bubble', 'gull', 'mood', 'nick', 'budget'] as const;
+const KEYS = ['v', 'who', 'where', 'top', 'bottom', 'bubble', 'gull', 'mood', 'weather', 'nick', 'budget'] as const;
 
 function oneOf<T extends string>(list: readonly T[], value: unknown, name: string): T {
   if (typeof value !== 'string' || !(list as readonly string[]).includes(value)) throw new MemeError(`${name} is not one of ${list.join(', ')}`);
@@ -82,6 +87,7 @@ export function toMeme(value: unknown): Meme {
     bubble: oneOf(BUBBLES, o.bubble, 'bubble'),
     gull: o.gull,
     mood: oneOf(MOODS, o.mood, 'mood'),
+    weather: o.weather === undefined ? 'clear' : oneOf(WEATHER, o.weather, 'weather'),
     nick: textField(o.nick, 'nick', NICK_MAX),
     budget: o.budget as number,
   };
