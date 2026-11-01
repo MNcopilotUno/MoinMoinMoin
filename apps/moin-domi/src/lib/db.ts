@@ -23,6 +23,8 @@ export interface Item {
   readonly expiresDay: number;
   readonly updated: number;
   readonly mine: boolean;
+  /** The password link's name (D12, D13), when this hop was sent with one. */
+  readonly lockName?: string;
   /** The tree as last read, for offline (§6): shown with the day it was seen. */
   readonly snapshot?: Snapshot;
 }
@@ -51,6 +53,8 @@ export interface Outgoing {
   readonly rules?: { readonly kind: 'chain' | 'postcard'; readonly maxStops: number; readonly maxBranches: number };
   /** The hop received, for a turn. */
   readonly parent?: Item;
+  /** A password (and name) to put on the new hop once it is made. Kept here only until sent. */
+  readonly lock?: { readonly password: string; readonly name?: string };
   readonly created: number;
   /** Set when the relay refused it for good (e.g. someone else took the stop). */
   readonly problem?: string;

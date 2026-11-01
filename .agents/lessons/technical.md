@@ -46,3 +46,9 @@ the tsconfig (typecheck now fails on it) and a test that imports every module in
 A heredoc containing the six characters ` ` arrived in the file as U+2028 itself, which
 ends a JavaScript regex literal ("Unterminated regular expression"). Write such escapes with a
 Python script that writes `\\u2028`, and grep for the raw bytes `e2 80 a8` after.
+
+## A strict CSP blocks WebAssembly (2026-11-01, Domi S3)
+`script-src 'self'` refuses to compile WebAssembly, so Argon2id (hash-wasm) failed and every
+password link fell back to a key link — the fallback message was the only clue ("the relay didn't
+answer", because the error surfaced as a generic one). `'wasm-unsafe-eval'` allows WebAssembly
+compilation only, not `eval`. Test the real built page, CSP included, for anything that loads WASM.

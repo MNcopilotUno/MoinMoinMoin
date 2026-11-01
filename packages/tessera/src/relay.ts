@@ -51,6 +51,17 @@ export interface TreeView {
 /** Why the relay refused a turn (HTTP 422). */
 export type Refusal = 'last-stop' | 'branches-full' | 'chain-full' | 'too-big' | 'bad-request';
 
+/** A password lock on a hop (D12, D13; `.agents/features/password-links.md`). */
+export interface Kdf { readonly m: number; readonly t: number; readonly p: number }
+export interface NewLock {
+  readonly name: string;
+  readonly hopId: string;
+  readonly salt: string;
+  readonly kdf: Kdf;
+  readonly verifier: string;
+  readonly wrapped: string;
+}
+
 export interface Relay {
   createChain(chain: NewChain): Promise<{ day: number }>;
   getHop(hopId: string): Promise<HopView>;
@@ -58,6 +69,19 @@ export interface Relay {
   addHop(parentId: string, hop: { hopId: string; content: string }): Promise<{ wrapTByKey: string; day: number }>;
   completeHop(hopId: string, wraps: { wrapKeyByT: string; wrapTByKey: string }): Promise<{ day: number }>;
   getTree(chainId: string): Promise<TreeView>;
+  createLock(lock: NewLock): Promise<{ day: number }>;
+  getLock(name: string): Promise<{ salt: string; kdf: Kdf }>;
+  /** 200 → the hop and its wrapped key; 401 → `wrong-password`; 429 → `wait` (both with `waitUntil`). */
+  openLock(name: string, authKey: string): Promise<{ hopId: string; wrapped: string }>;
+}
+
+/** A refused password: how long to wait before the next try, if at all (ms since 1970). */
+export class LockRefusal extends TesseraError {
+  readonly waitUntil: number | null;
+  constructor(reason: 'wrong-password' | 'wait', waitUntil: number | null) {
+    super(reason);
+    this.waitUntil = waitUntil;
+  }
 }
 
 export class RelayRefusal extends TesseraError {
@@ -89,6 +113,13 @@ export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch
     }
     if (res.ok) return (await res.json()) as T;
     if (res.status === 404) throw new TesseraError('not-found');
+    if (res.status === 401 || res.status === 429) {
+      // 429 is the password slowdown (`wait`) or the relay's rate limit (`slow-down`): ask the body.
+      const body = (await res.json().catch(() => ({}))) as { error?: string; waitUntil?: number | null };
+      const until = typeof body.waitUntil === 'number' ? body.waitUntil : null;
+      if (res.status === 401) throw new LockRefusal('wrong-password', until);
+      if (body.error === 'wait') throw new LockRefusal('wait', until);
+    }
     if (res.status === 409) throw new TesseraError('conflict');
     if (res.status === 410) throw new TesseraError('gone');
     if (res.status === 429) throw new TesseraError('slow-down', res.headers.get('retry-after') ?? undefined);
@@ -105,5 +136,8 @@ export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch
     addHop: (parentId, hop) => call('POST', `/hops/${at(parentId)}/children`, hop),
     completeHop: (hopId, wraps) => call('POST', `/hops/${at(hopId)}/complete`, wraps),
     getTree: (chainId) => call('GET', `/chains/${at(chainId)}/tree`),
+    createLock: (lock) => call('POST', '/locks', lock),
+    getLock: (name) => call('GET', `/locks/${at(name)}`),
+    openLock: (name, authKey) => call('POST', `/locks/${at(name)}/open`, { authKey }),
   };
 }

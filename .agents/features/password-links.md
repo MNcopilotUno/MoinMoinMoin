@@ -1,6 +1,11 @@
 # Proposal: password and custom links (A2, for stage S3)
 
-**Status: a proposal for the owner, not a decision.** Amendment A2 says the password-link and
+**Status (2026-11-01): built as proposed, on its defaults** — the owner said "continue" twice after
+seeing this file, without choosing; every **[decide]** below is still open and each is a
+parameter or a branch, not a rebuild (`KDF` and `passwordProblem` in `packages/tessera/src/lock.ts`,
+`waitAfter` in `services/cursus/src/store.ts`, `suggestPassphrase` in the app).
+
+**Originally: a proposal for the owner, not a decision.** Amendment A2 says the password-link and
 lockout design is "done completely new" and that nothing in `MOIN_DOMI.md` binds it. This file
 is one candidate, written so S3 can start the day the owner says yes, no, or "like this, but…".
 Every choice the owner should make is marked **[decide]**.
@@ -85,6 +90,19 @@ passphrase and the strength reason. *With a password* and *A name you choose* lo
 | Happy day | Bad weather |
 |:--|:--|
 | make a password link and a custom link; open both with the password; suggested passphrase accepted | wrong password counts; 6th try waits 1 min, 7th 2 min; right password resets; `GET` never returns `wrapped` or `verifier`; a DB scan finds no password; weak password refused with its reason; slug taken → 409; slug freed when the chain expires; a stolen DB row cannot be opened with a wrong password (offline check) |
+
+## As built (differences from the text above)
+- Argon2id gives **48** bytes, not 64: `authKey` 32 + `wrapKey` 16 (Tessera secrets are 128-bit, A5).
+- The suggested passphrase is **five** words from **256** (40 bits), not four from 2 048: a list of
+  256 original northern words fits in the app; five of them give the same order of strength.
+- The relay refuses a key derivation outside `m` 8–64 MiB, `t` 1–10, `p` 1–4 — a lock made to
+  freeze the recipient's phone is refused on both sides.
+- Password and custom links are chosen when a chain (or postcard) is **made**; a turn passes on
+  with an ordinary key link. *Gap*: no password on later hops.
+- The page's CSP gains `'wasm-unsafe-eval'` (WebAssembly compile only, no JavaScript eval) for
+  Argon2id.
+- Ready shows the password **once**, with *Copy password*; it is never stored on the phone. It
+  sits in the outbox (IndexedDB) only while a chain made offline waits to be sent.
 
 ## Questions for the owner
 1. Slowdown (as above) or a hard lock after N tries?

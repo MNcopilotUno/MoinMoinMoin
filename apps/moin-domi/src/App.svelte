@@ -7,7 +7,9 @@
   import { startServiceWorker } from './lib/sw.js';
   import Queued from './screens/Queued.svelte';
   import About from './screens/About.svelte';
-  import { errorText, linkInShare, passOn, receive, start, tree, type Node, type Rules as RulesValue } from './lib/flow.js';
+  import { errorText, linkInShare, lock, passOn, receive, start, tree, unlock, type LinkChoice, type Node, type Rules as RulesValue } from './lib/flow.js';
+  import { lockNameIn, LockRefusal, slugify } from '@moin/tessera';
+  import Unlock from './screens/Unlock.svelte';
   import Create from './screens/Create.svelte';
   import Finale from './screens/Finale.svelte';
   import Gone from './screens/Gone.svelte';
@@ -29,6 +31,7 @@
     | { name: 'postcard'; item: Item }
     | { name: 'queued'; outgoing: Outgoing }
     | { name: 'about' }
+    | { name: 'unlock'; lockName: string; waitUntil: number | null }
     | { name: 'tree'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; stale?: number }
     | { name: 'finale'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; finalId: string }
     | { name: 'gone'; title: string; text: string };
@@ -38,6 +41,7 @@
   let settings = $state<SettingsValue>(defaultSettings);
   let draft = $state<Meme>({ ...FIRST_MEME });
   let rules = $state<RulesValue>({ kind: 'chain', maxStops: 6, maxBranches: 1 });
+  let link = $state<LinkChoice>({ kind: 'plain', password: '', name: '' });
   let busy = $state(false);
   let error = $state<string | null>(null);
   let online = $state(typeof navigator === 'undefined' ? true : navigator.onLine);
@@ -97,7 +101,7 @@
       for (const o of await listOutbox()) {
         if (o.problem) continue;
         try {
-          const item = o.kind === 'start' ? await start(relay, o.rules!, o.meme) : await passOn(relay, o.parent!, o.meme);
+          const item = o.kind === 'start' ? await withLock(await start(relay, o.rules!, o.meme), o.lock) : await passOn(relay, o.parent!, o.meme);
           await putItem(item);
           await removeOutgoing(o.id);
           retryIn = 2000;
@@ -131,6 +135,27 @@
     return () => clearInterval(timer);
   });
 
+  /** D12, D13: the password opens the lock; the hop is then read like any link. */
+  async function openLock(lockName: string, password: string) {
+    if (!relay || busy) return;
+    busy = true;
+    error = null;
+    try {
+      const item = await unlock(relay, lockName, password, (chainId) => items.find((i) => i.chainId === chainId) ?? null);
+      await putItem(item);
+      await refresh();
+      busy = false;
+      await openItem(item);
+    } catch (e) {
+      busy = false;
+      if (e instanceof LockRefusal) {
+        screen = { name: 'unlock', lockName, waitUntil: e.waitUntil };
+        error = e.reason === 'wait' ? null : errorText(e);
+      } else if ((e as { reason?: string }).reason === 'not-found') await go({ name: 'gone', title: 'Gone with the tide', text: goneText });
+      else error = errorText(e);
+    }
+  }
+
   async function discard(o: Outgoing) {
     await removeOutgoing(o.id);
     await refresh();
@@ -156,6 +181,8 @@
   function newMeme(kind: RulesValue['kind']) {
     draft = { ...FIRST_MEME, nick: settings.rememberNick ? settings.nick : '' };
     rules = { ...rules, kind };
+    link = { kind: 'plain', password: '', name: '' };
+    lockNote = null;
     void go({ name: 'create' });
   }
 
@@ -163,14 +190,39 @@
     if (settings.rememberNick && tidy(nick) !== settings.nick) await changeSettings({ ...settings, nick: tidy(nick) });
   }
 
+  const lockRequest = () => (link.kind === 'plain' ? undefined : { password: link.password, ...(link.kind === 'custom' ? { name: slugify(link.name) } : {}) });
+
+  /** After a chain is made: put the password on it. If that fails, the key link still works. */
+  async function withLock(item: Item, request: Outgoing['lock']): Promise<Item> {
+    if (!relay || !request) return item;
+    try {
+      return await lock(relay, item, request.password, request.name);
+    } catch (e) {
+      lockNote = `The password couldn’t be set (${errorText(e)}) This link opens with its key instead.`;
+      return item;
+    }
+  }
+  let lockNote = $state<string | null>(null);
+
   async function make() {
     if (!relay || busy) return;
-    const outgoing: Outgoing = { id: crypto.randomUUID(), kind: 'start', meme: { ...draft, nick: tidy(draft.nick) }, rules, created: Date.now() };
+    const outgoing: Outgoing = { id: crypto.randomUUID(), kind: 'start', meme: { ...draft, nick: tidy(draft.nick) }, rules, created: Date.now(), ...(lockRequest() ? { lock: lockRequest()! } : {}) };
     if (!navigator.onLine) return enqueue(outgoing);
     busy = true;
     error = null;
     try {
-      const item = await start(relay, rules, { ...draft, nick: tidy(draft.nick) });
+      const request = lockRequest();
+      if (request?.name) {
+        // D13: a name is unique while its chain lives — ask before making the chain.
+        const taken = await relay.getLock(request.name).then(() => true, (e: unknown) => ((e as { reason?: string }).reason === 'not-found' ? false : Promise.reject(e)));
+        if (taken) {
+          busy = false;
+          error = 'That name is taken while its chain lives. Pick another.';
+          return;
+        }
+      }
+      lockNote = null;
+      const item = await withLock(await start(relay, rules, { ...draft, nick: tidy(draft.nick) }), request);
       await putItem(item);
       await rememberNick(draft.nick);
       await refresh();
@@ -272,6 +324,11 @@
 
   /** A link someone sent: read it, keep the key here, and take the key out of the address bar. */
   async function openLink(href: string) {
+    const lockName = lockNameIn(href);
+    if (lockName) {
+      history.replaceState(null, '', import.meta.env.BASE_URL);
+      return go({ name: 'unlock', lockName, waitUntil: null });
+    }
     await go({ name: 'opening' });
     history.replaceState(null, '', import.meta.env.BASE_URL);
     if (!relay) return go({ name: 'gone', title: 'Not yet', text: 'This Moin needs the relay, and the relay isn’t switched on yet.' });
@@ -340,10 +397,11 @@
 {:else if screen.name === 'create'}
   <Create {draft} postcard={rules.kind === 'postcard'} onchange={(m) => (draft = m)} onback={() => go({ name: 'home' })} onnext={() => go({ name: 'rules' })} />
 {:else if screen.name === 'rules'}
-  <Rules {rules} {draft} {busy} {blocked} {error} offline={!online} onrules={(r) => (rules = r)} ondraft={(m) => (draft = m)} onback={() => go({ name: 'create' })} onmake={make} />
+  <Rules {rules} {draft} {busy} {blocked} {error} offline={!online} {link} onlink={(l) => (link = l)} onrules={(r) => (rules = r)} ondraft={(m) => (draft = m)} onback={() => go({ name: 'create' })} onmake={make} />
 {:else if screen.name === 'ready'}
   {@const s = screen}
-  <Ready item={s.item} started={s.started} onback={() => go({ name: 'home' })} ondone={() => go({ name: 'home' })} ontree={() => openTree(s.item)} />
+  {#if lockNote}<p class="locknote" role="alert">{lockNote}</p>{/if}
+  <Ready item={s.item} started={s.started} password={s.started && s.item.lockName ? link.password : null} onback={() => go({ name: 'home' })} ondone={() => go({ name: 'home' })} ontree={() => openTree(s.item)} />
 {:else if screen.name === 'turn'}
   {@const s = screen}
   <Turn item={s.item} nick={settings.rememberNick ? settings.nick : ''} {busy} {error} {blocked} offline={!online} onback={() => go({ name: 'home' })} onpass={(m) => pass(s.item, m)} />
@@ -362,6 +420,9 @@
   <Yours {items} onback={() => go({ name: 'home' })} onopen={openItem} onforget={forget} />
 {:else if screen.name === 'settings'}
   <Settings {settings} onchange={changeSettings} onabout={() => go({ name: 'about' })} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
+{:else if screen.name === 'unlock'}
+  {@const s = screen}
+  <Unlock name={s.lockName} {busy} {error} waitUntil={s.waitUntil} onopen={(pw) => openLock(s.lockName, pw)} onhome={() => go({ name: 'home' })} />
 {:else if screen.name === 'about'}
   <About onback={() => go({ name: 'settings' })} />
 {:else if screen.name === 'queued'}
@@ -385,6 +446,7 @@
 {/if}
 
 <style>
+  .locknote { position: fixed; z-index: 9; left: 12px; right: 12px; top: max(12px, env(safe-area-inset-top)); margin: 0 auto; max-width: 28rem; padding: 10px 14px; border-radius: 14px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--gold); font-size: 13.5px; line-height: 1.4; }
   .update {
     position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%);
     width: min(calc(100% - 24px), 28rem); display: flex; align-items: center; justify-content: space-between; gap: 10px;

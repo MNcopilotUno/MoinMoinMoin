@@ -4,8 +4,8 @@
  */
 import { decodeMeme, encodeMeme, MemeError, type Meme } from '@moin/meme';
 import {
-  formatLink, openHop, parseLink, readTree, secretFromText, secretToText, startChain, takeTurn,
-  TesseraError, type HopKey, type Relay,
+  formatLink, formatLockLink, lockHop, openHop, parseLink, readTree, secretFromText, secretToText, startChain, takeTurn,
+  TesseraError, unlockHop, type HopKey, type Relay,
 } from '@moin/tessera';
 import { appBase, contact, today } from './config.js';
 import type { Item } from './db.js';
@@ -17,6 +17,27 @@ export interface Rules {
 }
 
 export const linkFor = (item: Pick<Item, 'hopId' | 'secret'>): string => formatLink(appBase, item.hopId, secretFromText(item.secret));
+/** The link to send: the password link when there is one (D12, D13), else the key link (D11). */
+export const sendLinkFor = (item: Pick<Item, 'hopId' | 'secret' | 'lockName'>): string => (item.lockName ? formatLockLink(appBase, item.lockName) : linkFor(item));
+
+/** What *How it travels* asked for: a key link, a password link, or a name with a password. */
+export interface LinkChoice {
+  readonly kind: 'plain' | 'password' | 'custom';
+  readonly password: string;
+  readonly name: string;
+}
+
+/** Puts the password (and name) on the hop just made. */
+export async function lock(relay: Relay, item: Item, password: string, name?: string): Promise<Item> {
+  const { name: lockName } = await lockHop(relay, keyOf(item), password, name);
+  return { ...item, lockName };
+}
+
+/** Opens a password link: the hop's key comes out of the lock, then it is read like any link. */
+export async function unlock(relay: Relay, lockName: string, password: string, knownChain: (chainId: string) => Item | null): Promise<Item> {
+  const { hopId, secret } = await unlockHop(relay, lockName, password);
+  return receive(relay, formatLink(appBase, hopId, secret), knownChain);
+}
 
 function keyOf(item: Item): HopKey {
   return { chainId: item.chainId, hopId: item.hopId, parentId: item.parentId, depth: item.depth, secret: secretFromText(item.secret) };
@@ -142,6 +163,10 @@ export function errorText(error: unknown): string {
     case 'locked': return 'This link doesn’t open. Ask for it again, all of it.';
     case 'rejected': return 'Someone was quicker: this stop is already taken.';
     case 'slow-down': return 'The relay needs a breather. Try again in a few minutes.';
+    case 'wrong-password': return 'That isn’t it. Check the spelling and try again.';
+    case 'weak-password': return 'Choose a longer password: three words, or twelve characters.';
+    case 'bad-name': return 'That name can’t be used: 3 to 32 letters, numbers and single hyphens.';
+    case 'conflict': return 'That name is taken while its chain lives. Pick another.';
     default: return 'The relay didn’t answer. Try again in a moment.';
   }
 }
