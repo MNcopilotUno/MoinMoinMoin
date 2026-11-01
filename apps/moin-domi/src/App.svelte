@@ -352,7 +352,7 @@
     history.replaceState(null, '', import.meta.env.BASE_URL);
     const part = levelId.split('-')[0] ?? '';
     const where: Where = (WHERE as readonly string[]).includes(part) ? (part as Where) : 'harbour';
-    const top = { harbour: 'When the whole harbour', market: 'When the whole market', ferry: 'When the whole ferry', lighthouse: 'When even the lighthouse' }[where];
+    const top = { harbour: 'When the whole harbour', market: 'When the whole market', ferry: 'When the whole ferry', lighthouse: 'When even the lighthouse', water: 'When the whole North Sea' }[where];
     draft = { ...FIRST_MEME, where, top, bottom: 'finally says Moin', nick: settings.rememberNick ? settings.nick : '' };
     rules = { ...rules, kind: 'chain' };
     await go({ name: 'create' });

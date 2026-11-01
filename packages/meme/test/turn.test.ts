@@ -23,6 +23,10 @@ describe('a turn (D3–D5)', () => {
     expect(checkTurn(m, { ...m, gull: true, bubble: 'none' }, 1)).toBe('touch');
     expect(touchesChanged(m, { ...m, mood: 'grumpy', gull: true })).toEqual(['gull', 'mood']);
   });
+  it('weather is one touch, and not on top of another', () => {
+    expect(checkTurn(m, { ...m, weather: 'fog' }, 1)).toBeNull();
+    expect(checkTurn(m, { ...m, weather: 'rain', gull: true }, 1)).toBe('touch');
+  });
   it('a word and a touch together are allowed', () => {
     expect(checkTurn(m, { ...swapWord(m, 0, 'If'), gull: true }, 1)).toBeNull();
   });

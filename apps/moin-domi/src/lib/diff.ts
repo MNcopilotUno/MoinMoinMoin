@@ -11,7 +11,8 @@ export function marked(before: Meme | null, after: Meme): Piece[] {
 export function touchNote(before: Meme | null, after: Meme): string {
   if (!before) return '';
   const notes = touchesChanged(before, after).map((t) =>
-    t === 'gull' ? (after.gull ? 'a gull joined' : 'the gull left')
+    t === 'weather' ? (after.weather === 'clear' ? 'the sky cleared' : after.weather === 'rain' ? 'rain' : after.weather === 'fog' ? 'fog rolled in' : 'the lighthouse beam')
+      : t === 'gull' ? (after.gull ? 'a gull joined' : 'the gull left')
       : t === 'mood' ? (after.mood === 'smiling' ? 'a smile' : 'a frown')
         : after.bubble === 'none' ? 'the bubble went quiet' : after.bubble === 'moinmoin' ? 'Moin moin' : 'a Moin bubble');
   return notes.join(', ');

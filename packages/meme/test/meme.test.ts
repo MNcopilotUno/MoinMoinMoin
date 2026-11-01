@@ -31,10 +31,20 @@ describe('the meme value', () => {
     ['gull as a string', { ...FIRST_MEME, gull: 'yes' }],
     ['a missing mood', { ...FIRST_MEME, mood: undefined }],
     ['budget 0', { ...FIRST_MEME, budget: 0 }],
+    ['unknown weather', { ...FIRST_MEME, weather: 'tornado' }],
     ['budget 4', { ...FIRST_MEME, budget: 4 }],
     ['budget 1.5', { ...FIRST_MEME, budget: 1.5 }],
   ])('rejects %s', (_, value) => {
     expect(() => toMeme(value)).toThrow(MemeError);
+  });
+  it('a meme stored before weather existed opens as clear', () => {
+    const { weather: _w, ...old } = FIRST_MEME;
+    void _w;
+    expect(toMeme(old).weather).toBe('clear');
+  });
+  it('knows the whole cast and every place', () => {
+    for (const who of ['gull', 'harbourmaster', 'netmender'] as const) expect(toMeme({ ...FIRST_MEME, who }).who).toBe(who);
+    expect(toMeme({ ...FIRST_MEME, where: 'water' }).where).toBe('water');
   });
   it('tidies whitespace and control characters', () => {
     expect(tidy('  When\tthe\n\ncaptain\u2028 ')).toBe('When the captain');

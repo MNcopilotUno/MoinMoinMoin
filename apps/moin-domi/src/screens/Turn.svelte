@@ -3,7 +3,7 @@
   import Icon from '../components/Icon.svelte';
   import Report from '../components/Report.svelte';
   import Meme from '../components/Meme.svelte';
-  import { bubbleText } from '../lib/look.js';
+  import { bubbleText, WEATHER_NAMES } from '../lib/look.js';
   import type { Item } from '../lib/db.js';
 
   interface Props { item: Item; nick: string; busy: boolean; error: string | null; blocked: string | null; offline: boolean; onback: () => void; onpass: (m: MemeValue) => void }
@@ -12,7 +12,8 @@
   const IDEAS = ['gull', 'herring', 'Oma', 'Moin', 'Fischbrötchen', 'rain', 'ferry', 'tide', 'never', 'secretly', 'loudly', 'sings', 'steals', 'eats', 'captain', 'Hamburg'];
   const received = $derived(item.meme);
   let swaps = $state<Record<number, string>>({});
-  let touch = $state<'none' | 'bubble' | 'gull' | 'mood'>('none');
+  let touch = $state<'none' | 'bubble' | 'gull' | 'mood' | 'weather'>('none');
+  const nextWeather = (w: MemeValue['weather']): MemeValue['weather'] => (w === 'clear' ? 'rain' : w === 'rain' ? 'fog' : w === 'fog' ? 'beam' : 'clear');
   let picked = $state(-1);
   let typing = $state('');
   let typed = $state(false);
@@ -28,6 +29,7 @@
     if (touch === 'bubble') m = { ...m, bubble: nextBubble(received.bubble) };
     if (touch === 'gull') m = { ...m, gull: !received.gull };
     if (touch === 'mood') m = { ...m, mood: received.mood === 'smiling' ? 'grumpy' : 'smiling' };
+    if (touch === 'weather') m = { ...m, weather: nextWeather(received.weather) };
     return m;
   });
   const problem = $derived(checkTurn(received, version));
@@ -38,6 +40,7 @@
     { id: 'bubble', label: received.bubble === 'none' ? 'Moin bubble' : received.bubble === 'moin' ? 'Moin moin' : 'No bubble' },
     { id: 'gull', label: received.gull ? 'No gull' : 'A gull' },
     { id: 'mood', label: received.mood === 'smiling' ? 'A frown' : 'A smile' },
+    { id: 'weather', label: WEATHER_NAMES[nextWeather(received.weather)] },
   ] as const);
 
   function tap(i: number) {
@@ -151,8 +154,8 @@
   .alts p { margin: 2px 6px 6px; font-size: 12.5px; color: var(--mist); }
   .alt { min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--paper); color: var(--black); font-size: 15px; font-weight: 800; }
   .own { margin-top: 8px; padding-right: 4px; }
-  .touches { display: flex; gap: 6px; }
-  .touches .chip { flex: 1; padding: 0 4px; font-size: 13.5px; }
+  .touches { display: flex; flex-wrap: wrap; gap: 6px; }
+  .touches .chip { flex: 1 1 28%; padding: 0 4px; font-size: 13.5px; }
   .sign { margin-top: 12px; }
   .sign .soft { font-size: 14px; font-weight: 700; }
   .warn { margin: 0 4px; font-size: 13px; line-height: 1.4; color: var(--lilac); text-align: center; }

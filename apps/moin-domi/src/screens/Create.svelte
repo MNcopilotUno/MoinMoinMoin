@@ -3,12 +3,14 @@
   import { portrait } from '@moin/ui/portrait';
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
-  import { CAST, PAINTINGS, PLACE_NAMES, portraitOf } from '../lib/look.js';
+  import SeagullSprite from '@moin/ui/SeagullSprite.svelte';
+  import { WEATHER } from '@moin/meme';
+  import { CAST, PAINTINGS, PLACE_NAMES, portraitOf, WEATHER_NAMES } from '../lib/look.js';
 
   interface Props { draft: MemeValue; onchange: (m: MemeValue) => void; onback: () => void; onnext: () => void; postcard: boolean }
   let { draft, onchange, onback, onnext, postcard }: Props = $props();
   const set = (patch: Partial<MemeValue>) => onchange({ ...draft, ...patch });
-  const faces = CAST.map((c) => ({ ...c, svg: portrait({ ...portraitOf(c.who, 'smiling'), id: `pick-${c.who}` }) }));
+  const faces = CAST.map((c) => ({ ...c, svg: c.who === 'gull' ? '' : portrait({ ...portraitOf(c.who, 'smiling'), id: `pick-${c.who}` }) }));
   const ready = $derived(tidy(draft.top) !== '' || tidy(draft.bottom) !== '');
 </script>
 
@@ -25,7 +27,9 @@
     <h2 id="who" class="label">Who</h2>
     <div class="pick" role="radiogroup" aria-labelledby="who">
       {#each faces as f (f.who)}
-        <button type="button" role="radio" aria-checked={draft.who === f.who} aria-label={f.name} class="face" onclick={() => set({ who: f.who })}>{@html f.svg}</button>
+        <button type="button" role="radio" aria-checked={draft.who === f.who} aria-label={f.name} class="face" class:bird={f.who === 'gull'} onclick={() => set({ who: f.who })}>
+          {#if f.who === 'gull'}<SeagullSprite />{:else}{@html f.svg}{/if}
+        </button>
       {/each}
     </div>
   </section>
@@ -56,6 +60,11 @@
       <button type="button" class="chip" aria-pressed={draft.gull} onclick={() => set({ gull: !draft.gull })}>A gull</button>
       <button type="button" class="chip" aria-pressed={draft.mood === 'smiling'} onclick={() => set({ mood: draft.mood === 'smiling' ? 'grumpy' : 'smiling' })}>Smile</button>
     </div>
+    <div class="touches weather" role="radiogroup" aria-label="Weather">
+      {#each WEATHER as w (w)}
+        <button type="button" class="chip" role="radio" aria-checked={draft.weather === w} onclick={() => set({ weather: w })}>{w === 'clear' ? 'Clear' : WEATHER_NAMES[w]}</button>
+      {/each}
+    </div>
   </section>
 
   <div class="foot">
@@ -70,6 +79,10 @@
   section { padding-top: 12px; }
   section .label { margin: 0 4px 6px; }
   .pick { display: flex; gap: 8px; }
+  [aria-labelledby='who'].pick { display: grid; grid-template-columns: repeat(4, 1fr); }
+  .face.bird { display: grid; place-items: center; }
+  .face.bird :global(svg) { width: 86%; height: 86%; transform: none; }
+  .touches.weather { margin-top: 6px; }
   .face, .place { flex: 1; min-width: 0; height: 56px; padding: 0; border: 0; border-radius: 14px; overflow: hidden; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); }
   .face :global(svg) { width: 100%; height: 100%; object-fit: cover; transform: scale(1.5) translateY(14%); }
   .place { position: relative; height: 52px; display: flex; align-items: flex-end; justify-content: center; }

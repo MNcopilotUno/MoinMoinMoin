@@ -19,13 +19,14 @@ export function swapWord(meme: Meme, index: number, word: string): Meme {
   return { ...meme, top: top.join(' '), bottom: bottom.join(' ') };
 }
 
-export type Touch = 'bubble' | 'gull' | 'mood';
+export type Touch = 'bubble' | 'gull' | 'mood' | 'weather';
 
 export function touchesChanged(before: Meme, after: Meme): Touch[] {
   const out: Touch[] = [];
   if (before.bubble !== after.bubble) out.push('bubble');
   if (before.gull !== after.gull) out.push('gull');
   if (before.mood !== after.mood) out.push('mood');
+  if (before.weather !== after.weather) out.push('weather');
   return out;
 }
 
