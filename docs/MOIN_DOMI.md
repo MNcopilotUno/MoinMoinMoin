@@ -149,7 +149,9 @@ The creator generates `T` and the first `K` when starting the chain.
 A daily job deletes every chain past `expiresDay`, with its hops and locks; pending hops go after
 a few minutes (A4). Adding a column is a design discussion, not a migration.
 
-**Hosting duties *(verify in S0)*:** running Cursus probably makes you a hosting service under the
+**Hosting duties *(answered in S0: `.agents/features/dsa.md`)*:** Cursus is a hosting service,
+not an online platform (private links, finite recipients, no discovery); Arts. 11, 12, 14, 16,
+18 apply; the takedown is by chain id from a notice that carries the full link. Original note: running Cursus probably makes you a hosting service under the
 EU Digital Services Act, with notice-and-action duties. Captions are short encrypted text and there
 are no uploads, which keeps the exposure small — but it must be checked, and a contact point and a
 way to take a reported chain down must exist before launch.
