@@ -30,8 +30,9 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Domi after S1 | Offline (worker, outbox, tree as last seen), relay rate limits + disk guard + deploy kit (`services/cursus/deploy/`), DSA contact + terms + *Report this chain* (`dsa.md`), S4 bridge from the puzzle's win card (`bridge.md`) |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 31; e2e puzzle
-45 + Domi 12 on Chromium (Domi against a local Cursus);
+Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 32; e2e puzzle
+45 + Domi 14 on Chromium (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+the offline suite, which Playwright's WebKit cannot navigate);
 `validate:levels` 40
 levels ok, 14 fixtures fail as expected.
 
@@ -44,5 +45,6 @@ levels ok, 14 fixtures fail as expected.
 4. Moin Domi: **a host and a domain for Cursus** (owner's call). Then: run it with
    `services/cursus/deploy/` (systemd + Caddy or Docker — *untried on a real host*), set the
    repository variables `CURSUS_URL` and `DOMI_CONTACT`, push, and run the S1 gate with six
-   people. Owner to confirm A6 (postcards), the red bubble (D4) and mood as a touch. Still open:
+   people. Owner to confirm A6 (postcards), the red bubble (D4) and mood as a touch. Check by
+   hand on a real iPhone: Domi offline (Safari) and the iOS silent switch. Still open:
    password/custom links wait for A2 (S3); Art. 16(4)–(5) receipts are answered by hand.
