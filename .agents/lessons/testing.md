@@ -25,3 +25,9 @@ pushing a change to limits, count what the *whole CI matrix* does, not one brows
 `context.setOffline(true)` then `reload()` or `goto()` fails with "WebKit encountered an internal
 error" in Playwright's WebKit, although real Safari serves the page from its worker. The Domi
 offline suite runs on Chromium and Firefox; the puzzle already ran Firefox/WebKit for replay only.
+
+## Contrast measured mid-animation is a coin toss (2026-11-01, Domi a11y in CI)
+The axe audit waited a fixed 350 ms; the tree's wave runs for over a second, so on one Firefox run
+axe read a fading node and failed, on the next it passed — same commit. The audit now waits for
+`document.getAnimations()` to finish. The failure also pointed at something real: 56 px tree tiles
+printed their bubble's *Moin* at ~4 px. Small memes now draw the red bubble without words.

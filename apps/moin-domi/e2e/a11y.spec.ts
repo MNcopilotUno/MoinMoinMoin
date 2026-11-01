@@ -5,7 +5,8 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 // (CLAUDE.md §7: accessible from the first commit; .agents/features/domi-a11y.md).
 
 async function audit(page: Page, screen: string): Promise<string[]> {
-  await page.waitForTimeout(350); // let the 260 ms rise animation settle: axe reads final colours
+  // Axe must read final colours: wait until every animation (screen rise, the tree's wave) is done.
+  await page.waitForFunction(() => document.getAnimations().every((a) => a.playState !== 'running'), undefined, { timeout: 10_000 });
   const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa']).analyze();
   return result.violations.flatMap((v) => v.nodes.map((n) => `${screen}: ${v.id} — ${n.target.join(' ')} — ${n.failureSummary?.split('\n')[1]?.trim() ?? ''}`));
 }
