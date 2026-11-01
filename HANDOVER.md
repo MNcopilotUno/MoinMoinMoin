@@ -28,10 +28,11 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Moin Domi S0 | `packages/tessera` (128-bit link keys, HKDF, AES-GCM boxes bound to chain/parent/depth/hop, link codec, Cursus client, chain protocol with pending hops); threat model `.agents/features/tessera.md`; DSA answer `.agents/features/dsa.md` (hosting service, not a platform; Arts. 11, 12, 14, 16, 18) |
 | Moin Domi S1 + tree | `packages/meme` (strict meme value, turn rules), `services/cursus` (Node + SQLite relay, caps, expiry, takedown), the app at `/domi/` designed after the dark canvas: home, make, rules, link, turn, tree with wave, finale with local voice, postcard (*Just send*, proposal A6), yours, gone, settings; save image as PNG. Live site: everything but sending ("the relay has no home") |
 | Domi after S1 | Offline (worker, outbox, tree as last seen), relay rate limits + disk guard + deploy kit (`services/cursus/deploy/`), DSA contact + terms + *Report this chain* (`dsa.md`), S4 bridge from the puzzle's win card (`bridge.md`) |
+| Domi on the phone | Installable with its own icon; share target (Android) opens a Moin link shared from a messenger; Yours refreshes finales and gone chains; 1.2 MB build — `domi-install.md` |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
 Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 32; e2e puzzle
-45 + Domi 14 on Chromium (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+45 + Domi 18 on Chromium (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
 the offline suite, which Playwright's WebKit cannot navigate);
 `validate:levels` 40
 levels ok, 14 fixtures fail as expected.
