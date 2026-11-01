@@ -20,3 +20,8 @@ event came before a fetch could get through, so a chain made offline stayed queu
 phones do the same on captive portals and waking radios. Now: an "offline" failure while
 `navigator.onLine` is true retries itself with backoff (2 s → 60 s). Test: abort the relay's
 first answer while online and see the chain go out by itself.
+
+**Correction, same day.** The backoff above was a guess; CI failed again. The Firefox trace
+showed no request at all after reconnecting: the `online` event never reached a page loaded
+offline, and the backoff only starts once the browser says it is online. Now the outbox also
+looks every 5 s while it holds something. Read the trace before writing the fix.

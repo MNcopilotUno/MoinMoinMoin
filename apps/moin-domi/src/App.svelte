@@ -117,6 +117,20 @@
     }
   }
 
+  /**
+   * While something waits to be sent, look every 5 s as well: Firefox does not always deliver the
+   * `online` event to a page that was loaded offline (CI trace, 2026-11-01), and an event that
+   * never comes must not leave a Moin in the outbox for good.
+   */
+  $effect(() => {
+    if (outbox.length === 0) return;
+    const timer = setInterval(() => {
+      online = navigator.onLine;
+      if (online) void flush();
+    }, 5000);
+    return () => clearInterval(timer);
+  });
+
   async function discard(o: Outgoing) {
     await removeOutgoing(o.id);
     await refresh();
