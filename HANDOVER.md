@@ -32,7 +32,7 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
 Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 32; e2e puzzle
-45 + Domi 18 on Chromium (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+45 + Domi 21 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
 the offline suite, which Playwright's WebKit cannot navigate);
 `validate:levels` 40
 levels ok, 14 fixtures fail as expected.
@@ -48,4 +48,5 @@ levels ok, 14 fixtures fail as expected.
    repository variables `CURSUS_URL` and `DOMI_CONTACT`, push, and run the S1 gate with six
    people. Owner to confirm A6 (postcards), the red bubble (D4) and mood as a touch. Check by
    hand on a real iPhone: Domi offline (Safari) and the iOS silent switch. Still open:
-   password/custom links wait for A2 (S3); Art. 16(4)–(5) receipts are answered by hand.
+   password/custom links wait for A2 (S3) — a candidate design is in
+   `.agents/features/password-links.md` with four questions for the owner; Art. 16(4)–(5) receipts are answered by hand.
