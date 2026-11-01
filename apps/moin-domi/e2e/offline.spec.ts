@@ -29,7 +29,8 @@ test('opens with no network once loaded, and a chain made offline goes out when 
   await expect(page.getByRole('heading', { name: 'Waiting to send' })).toBeVisible();
   await expect(page.getByText('Goes out when you’re back online')).toBeVisible();
   await context.setOffline(false);
-  await expect(page.getByRole('status')).toHaveText(/Your Moin went out/);
+  // The relay may not answer the instant the network returns; the outbox retries (2 s, 4 s …).
+  await expect(page.getByRole('status')).toHaveText(/Your Moin went out/, { timeout: 15_000 });
   await expect(page.getByRole('heading', { name: 'Waiting to send' })).toHaveCount(0);
   await page.getByRole('button', { name: /All your chains/ }).click();
   await expect(page.getByRole('button', { name: /Made on the ferry/ })).toBeVisible();
@@ -73,4 +74,16 @@ test('a link opened offline keeps its key in the address bar to try again', asyn
   await page.goto('./m/abcdEFGH#AAAAAAAAAAAAAAAAAAAAAA');
   await expect(page.getByRole('heading', { name: 'Offline' })).toBeVisible();
   expect(page.url()).toMatch(/#AAAAAAAAAAAAAAAAAAAAAA$/);
+});
+
+test('online but the relay unreachable: kept, then sent by itself on a retry', async ({ page }) => {
+  await page.goto('./');
+  // The first answer from the relay never arrives: the phone thinks it is online, the send fails.
+  let refused = 0;
+  await page.route('**/v1/chains', (route) => (refused++ === 0 ? route.abort('internetdisconnected') : route.continue()));
+  await makeMeme(page, 'Behind a café portal');
+  await page.getByRole('button', { name: 'Lock it and make the first link' }).click();
+  await expect(page.getByRole('heading', { name: 'Waiting for the tide' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your chain is ready' })).toBeVisible({ timeout: 10_000 });
+  expect(refused).toBe(2);
 });

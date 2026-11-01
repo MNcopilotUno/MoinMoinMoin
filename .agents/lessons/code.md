@@ -13,3 +13,10 @@ still a Proxy) throws `DataCloneError`. The storage helper swallowed request err
 outbox entry simply never existed: the "Waiting to send" screen showed, and nothing was ever
 sent. Found only by the offline e2e test. Fix: the one storage module stores
 `JSON.parse(JSON.stringify(value))` — the data is plain JSON by design.
+
+## "online" is a promise, not a fact (2026-11-01, Moin Domi outbox)
+The outbox sent on the `online` event and gave up on the first network error. In Firefox CI the
+event came before a fetch could get through, so a chain made offline stayed queued forever; real
+phones do the same on captive portals and waking radios. Now: an "offline" failure while
+`navigator.onLine` is true retries itself with backoff (2 s → 60 s). Test: abort the relay's
+first answer while online and see the chain go out by itself.
