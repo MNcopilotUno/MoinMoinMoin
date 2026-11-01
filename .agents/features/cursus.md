@@ -45,8 +45,15 @@ CORS for the configured app origin (`CURSUS_ORIGIN`, default `*` — no cookies 
 `node src/cli.ts takedown <hopId|chainId>` deletes the whole chain (DSA Art. 6, `dsa.md`).
 
 ## Risks
-- **No rate limit.** Anyone can create chains until the disk fills. Before going public: a
-  per-IP token bucket in memory (never stored) or the reverse proxy's limit. *Gap, logged.*
+- **Rate limits (added 2026-11-01).** Token buckets in memory per *HMAC(salt, address)*, the
+  salt random per process: create 10 then 1 per 6 min, writes 60 then 1 per 10 s, reads 120 then
+  2 per s; 429 with `Retry-After`. The relay never holds a readable address; a restart forgets
+  everything. Behind a proxy (`CURSUS_TRUST_PROXY=1`) the first `X-Forwarded-For` entry counts —
+  without a proxy that header is ignored, so it cannot be spoofed. NAT'd groups (a school, a
+  café) share one bucket: accepted at this scale.
+- **Disk guard**: new chains get 507 once the database passes `CURSUS_MAX_MB` (default 512).
+- **Deploy kit** in `services/cursus/deploy/` (systemd + Caddy, or a Dockerfile) and a CI hook:
+  the repository variable `CURSUS_URL` becomes `VITE_CURSUS_URL` in the Pages build.
 - **Ids are client-chosen.** A squatter can take ids; harmless (48 random bits, 409 → retry).
 - `node:sqlite` prints an *experimental* warning in Node 22; the API used (`DatabaseSync`,
   `prepare`, `run`, `get`, `all`) has been stable in practice. Pin Node 22 in deploy.
@@ -58,5 +65,6 @@ CORS for the configured app origin (`CURSUS_ORIGIN`, default `*` — no cookies 
 | Pending (A4) | completes and appears | invisible to `GET hop` and tree; deleted by the sweep after 10 minutes; complete twice → 404 |
 | Expiry | gone on day 31 after the last hop | a hop on day 29 extends it to day 59 |
 | Privacy | — | DB file contains no caption plaintext, no `127.0.0.1`, no user agent; nothing logged per request |
-| HTTP | CORS preflight answers | unknown route 404, wrong method 405 |
+| HTTP | CORS preflight answers; `/v1/health` | unknown route 404, wrong method 405 |
+| Limits | a burst passes, refills after the interval | 11th chain in a burst → 429 with `Retry-After: 360`; full database → 507 while reads still work; no readable address in memory; two processes salt differently |
 | Operator | takedown by hop id removes the chain | takedown of an unknown id says so |

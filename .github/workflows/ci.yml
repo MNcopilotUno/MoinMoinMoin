@@ -42,6 +42,11 @@ jobs:
           PW_ALL_BROWSERS: '1'
       - name: Build for GitHub Pages
         run: pnpm build
+        env:
+          # Moin Domi's relay and contact (services/cursus/deploy/README.md). Unset: the live app
+          # says sending isn't switched on yet.
+          VITE_CURSUS_URL: ${{ vars.CURSUS_URL }}
+          VITE_DOMI_CONTACT: ${{ vars.DOMI_CONTACT }}
       - uses: actions/upload-artifact@v6
         if: failure()
         with:

@@ -91,6 +91,7 @@ export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch
     if (res.status === 404) throw new TesseraError('not-found');
     if (res.status === 409) throw new TesseraError('conflict');
     if (res.status === 410) throw new TesseraError('gone');
+    if (res.status === 429) throw new TesseraError('slow-down', res.headers.get('retry-after') ?? undefined);
     if (res.status === 422) {
       const refusal = ((await res.json().catch(() => ({}))) as { error?: Refusal }).error ?? 'bad-request';
       throw new RelayRefusal(refusal);

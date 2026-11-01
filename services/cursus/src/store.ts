@@ -127,6 +127,12 @@ export function openStore(path: string) {
       const h = q.hop.get(id) as HopRow | undefined;
       return Number(q.deleteChain.run(h ? h.chainId : id).changes) > 0;
     },
+    /** For the disk guard: the database's size in bytes. */
+    sizeBytes(): number {
+      const pages = db.prepare('PRAGMA page_count').get() as { page_count: number };
+      const size = db.prepare('PRAGMA page_size').get() as { page_size: number };
+      return pages.page_count * size.page_size;
+    },
     close: () => db.close(),
   };
 }

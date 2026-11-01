@@ -109,6 +109,7 @@ export function errorText(error: unknown): string {
     case 'not-a-link': case 'no-key': case 'bad-key': case 'bad-id': return 'This link is broken. Ask for it again, all of it.';
     case 'locked': return 'This link doesn’t open. Ask for it again, all of it.';
     case 'rejected': return 'Someone was quicker: this stop is already taken.';
+    case 'slow-down': return 'The relay needs a breather. Try again in a few minutes.';
     default: return 'The relay didn’t answer. Try again in a moment.';
   }
 }
