@@ -5,8 +5,8 @@
   import { bubbleText } from '../lib/look.js';
   import type { Item } from '../lib/db.js';
 
-  interface Props { item: Item; nick: string; busy: boolean; error: string | null; blocked: string | null; onback: () => void; onpass: (m: MemeValue) => void }
-  let { item, nick, busy, error, blocked, onback, onpass }: Props = $props();
+  interface Props { item: Item; nick: string; busy: boolean; error: string | null; blocked: string | null; offline: boolean; onback: () => void; onpass: (m: MemeValue) => void }
+  let { item, nick, busy, error, blocked, offline, onback, onpass }: Props = $props();
 
   const IDEAS = ['gull', 'herring', 'Oma', 'Moin', 'Fischbrötchen', 'rain', 'ferry', 'tide', 'never', 'secretly', 'loudly', 'sings', 'steals', 'eats', 'captain', 'Hamburg'];
   const received = $derived(item.meme);
@@ -119,9 +119,9 @@
   <label class="field sign"><span class="soft">Sign it</span><input bind:value={sign} maxlength={24} placeholder="or stay anonymous" autocomplete="nickname" /></label>
 
   <div class="foot">
-    <p class="warn" role={error || blocked ? 'alert' : undefined}>{error ?? blocked ?? 'Everyone after you will see your version.'}</p>
+    <p class="warn" role={error || blocked ? 'alert' : undefined}>{error ?? blocked ?? (offline ? 'You’re offline. It goes out when you’re back.' : 'Everyone after you will see your version.')}</p>
     <button type="button" class="primary" disabled={busy || problem !== null || blocked !== null} onclick={() => onpass(version)}>
-      {busy ? 'Passing it on…' : item.depth + 1 >= item.maxStops ? (changed ? 'Add the last version' : 'Add it unchanged as the last') : changed ? 'Pass it on' : 'Pass it on unchanged'}
+      {busy ? 'Passing it on…' : offline ? 'Pass it on when I’m back online' : item.depth + 1 >= item.maxStops ? (changed ? 'Add the last version' : 'Add it unchanged as the last') : changed ? 'Pass it on' : 'Pass it on unchanged'}
     </button>
   </div>
   <p class="sr" aria-live="polite">{touch === 'bubble' ? `The bubble now says ${bubbleText(version.bubble) || 'nothing'}` : ''}</p>

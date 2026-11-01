@@ -8,8 +8,8 @@
   import type { Node } from '../lib/flow.js';
   import { layout } from '../lib/layout.js';
 
-  interface Props { item: Item; nodes: readonly Node[]; maxStops: number; expiresDay: number; onback: () => void; onfinale: (hopId: string) => void }
-  let { item, nodes, maxStops, expiresDay, onback, onfinale }: Props = $props();
+  interface Props { item: Item; nodes: readonly Node[]; maxStops: number; expiresDay: number; stale?: number | undefined; onback: () => void; onlink: () => void; onfinale: (hopId: string) => void }
+  let { item, nodes, maxStops, expiresDay, stale, onback, onlink, onfinale }: Props = $props();
 
   const TILE = 56, COL = 72, ROW = 96, PAD = 44;
   const grid = $derived(layout(nodes));
@@ -39,6 +39,7 @@
     <div class="head">
       <h1 tabindex="-1">The tree opens</h1>
       <p>{item.mine ? 'You’re in. Now you see every version.' : 'Every version so far.'} Gone after {dayLabel(expiresDay)}.</p>
+      {#if stale}<p class="stale" role="status">Offline: this is the tree as you saw it on {new Date(stale).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}.</p>{/if}
     </div>
   </div>
 
@@ -88,6 +89,7 @@
       <button type="button" class="outline" onclick={() => (wave += 1)}><Icon name="wave" size={20} /> Replay the wave</button>
       {#if finals.length}<button type="button" class="primary" onclick={() => onfinale(finals.find((f) => f.hopId === selected)?.hopId ?? finals[0]!.hopId)}>The finale</button>{/if}
     </div>
+    {#if item.mine && item.status === 'travelling' && item.depth < maxStops}<button type="button" class="ghost" onclick={onlink}>Your link, to send it on</button>{/if}
     {#if !finals.length}<p class="note c">The finale opens when a branch reaches stop {maxStops}.</p>{/if}
   </div>
 </main>
@@ -120,4 +122,5 @@
   .sub { margin-top: 4px; font-size: 12.5px; line-height: 1.35; color: var(--mist); }
   .row .outline { font-size: 16px; padding: 0 12px; white-space: nowrap; flex: 1.25; }
   .c { text-align: center; }
+  .stale { margin-top: 4px; color: var(--gold) !important; }
 </style>
