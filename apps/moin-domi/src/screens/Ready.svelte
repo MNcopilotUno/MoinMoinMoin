@@ -3,10 +3,25 @@
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import type { Item } from '../lib/db.js';
+  import { passwordProblem, slugify } from '@moin/tessera';
   import { sendLinkFor } from '../lib/flow.js';
+  import { suggestPassphrase } from '../lib/passphrase.js';
 
-  interface Props { item: Item; started: boolean; password?: string | null; onback: () => void; ondone: () => void; ontree: () => void }
-  let { item, started, password = null, onback, ondone, ontree }: Props = $props();
+  interface Props { item: Item; started: boolean; password?: string | null; canLock?: boolean; onlock?: (password: string, name: string) => Promise<string | null>; onback: () => void; ondone: () => void; ontree: () => void }
+  let { item, started, password = null, canLock = false, onlock, onback, ondone, ontree }: Props = $props();
+  let locking = $state(false);
+  let lockPw = $state('');
+  let lockName = $state('');
+  let lockBusy = $state(false);
+  let lockError = $state<string | null>(null);
+  const lockProblem = $derived(passwordProblem(lockPw));
+  async function addLock() {
+    if (!onlock || lockBusy || lockProblem) return;
+    lockBusy = true;
+    lockError = await onlock(lockPw, lockName);
+    lockBusy = false;
+    if (!lockError) locking = false;
+  }
   let pwCopied = $state(false);
   async function copyPassword() {
     try {
@@ -78,6 +93,22 @@
     </section>
   {/if}
 
+  {#if canLock && !locked}
+    {#if locking}
+      <section class="panel lockbox" aria-label="Send it with a password">
+        <div class="field"><label for="ready-pw" class="soft">Password</label>
+          <input id="ready-pw" bind:value={lockPw} autocomplete="new-password" autocapitalize="none" spellcheck="false" aria-describedby="ready-pw-hint" />
+          <button type="button" class="chip mini" onclick={() => (lockPw = suggestPassphrase())}>New</button></div>
+        <div class="field"><label for="ready-name" class="soft">Name</label>
+          <input id="ready-name" bind:value={lockName} placeholder="optional, e.g. kapitaen-hein" autocapitalize="none" spellcheck="false" /></div>
+        <p id="ready-pw-hint" class="hint" role={lockError ? 'alert' : undefined}>{lockError ?? (lockProblem === 'common' ? 'Too common — anyone would guess it.' : lockProblem === 'too-short' ? 'Three words, or twelve characters.' : lockName ? `…/m/${slugify(lockName)}` : 'The link will carry no key; the password opens it.')}</p>
+        <button type="button" class="primary" disabled={lockBusy || lockProblem !== null} onclick={addLock}>{lockBusy ? 'Locking it…' : 'Lock it with this password'}</button>
+      </section>
+    {:else}
+      <button type="button" class="ghost" onclick={() => { locking = true; lockPw = suggestPassphrase(); }}>Send it with a password instead</button>
+    {/if}
+  {/if}
+
   <div class="foot">
     <div class="row">
       {#if canShare}<button type="button" class="primary" onclick={share}><Icon name="share" size={20} /> Send it</button>{/if}
@@ -105,6 +136,10 @@
   .k { color: var(--gold); }
   figcaption { margin-top: 8px; display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; line-height: 1.4; color: var(--mist); }
   figcaption :global(svg) { flex: none; margin-top: 1px; }
+  .lockbox { position: relative; margin-top: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+  .lockbox input { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 14px; }
+  .mini { min-height: 36px; padding: 0 12px; font-size: 13px; }
+  .hint { margin: 0 4px; font-size: 12.5px; line-height: 1.35; color: var(--mist); overflow-wrap: anywhere; }
   .pwbox { position: relative; margin-top: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
   .pw { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 15px; color: var(--gold); word-break: break-all; }
   .c { text-align: center; }

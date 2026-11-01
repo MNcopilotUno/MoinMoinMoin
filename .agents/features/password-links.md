@@ -95,8 +95,9 @@ passphrase and the strength reason. *With a password* and *A name you choose* lo
   256 original northern words fits in the app; five of them give the same order of strength.
 - The relay refuses a key derivation outside `m` 8–64 MiB, `t` 1–10, `p` 1–4 — a lock made to
   freeze the recipient's phone is refused on both sides.
-- Password and custom links are chosen when a chain (or postcard) is **made**; a turn passes on
-  with an ordinary key link. *Gap*: no password on later hops.
+- Password and custom links are chosen when a chain (or postcard) is **made**, and — since
+  `feature/domi-gaps` — any link you hand on can be locked from *Ready* (*Send it with a password
+  instead*), after a turn too.
 - The page's CSP gains `'wasm-unsafe-eval'` (WebAssembly compile only, no JavaScript eval) for
   Argon2id.
 - Ready shows the password **once**, with *Copy password*; it is never stored on the phone. It
