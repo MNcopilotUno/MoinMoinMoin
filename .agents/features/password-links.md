@@ -1,9 +1,7 @@
 # Proposal: password and custom links (A2, for stage S3)
 
-**Status (2026-11-01): built as proposed, on its defaults** — the owner said "continue" twice after
-seeing this file, without choosing; every **[decide]** below is still open and each is a
-parameter or a branch, not a rebuild (`KDF` and `passwordProblem` in `packages/tessera/src/lock.ts`,
-`waitAfter` in `services/cursus/src/store.ts`, `suggestPassphrase` in the app).
+**Status (2026-11-01): decided and built.** The owner accepted the defaults below (MOIN_DOMI.md
+A7); the **[decide]** marks are answered as written.
 
 **Originally: a proposal for the owner, not a decision.** Amendment A2 says the password-link and
 lockout design is "done completely new" and that nothing in `MOIN_DOMI.md` binds it. This file

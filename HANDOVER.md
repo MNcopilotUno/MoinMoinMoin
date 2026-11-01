@@ -45,11 +45,10 @@ levels ok, 14 fixtures fail as expected.
 
 1. **Phase 1 playtest** (sheet A): three people, a phone, no explanation.
 2. **Phase 2 check** on 2026-12-01 (sheet B).
-3. **A host and a domain for Cursus** (owner) → deploy with `services/cursus/deploy/`, set the
+3. **Cursus on the owner's home server** (chosen 2026-11-01): follow `docs/HOSTING.md`, set the
    repository variables `CURSUS_URL` and `DOMI_CONTACT`, push → run sheets C (S1, S2) and D (S3).
-4. **Owner's open choices**: the four questions in `.agents/features/password-links.md`; A6
-   (postcards), D4 (red bubble), mood as a touch; whether Domi's copy moves to
-   `packages/ui/src/copy/` or the rule is limited to the puzzle.
+4. Decided 2026-11-01 (MOIN_DOMI.md A6, A7): postcards, the red bubble, mood as a touch, the
+   password-link defaults; Domi's copy moves to `packages/ui/src/copy/`.
 5. **Real-device checks** still *(predicted)*: iOS silent switch; Domi offline in Safari; sharing
    a Domi link from two real messengers (does the part after `#` survive?); an installed puzzle
    opening Domi links in its own window.
