@@ -14,12 +14,12 @@ unfinished platform. The gates are there to stop that.
 
 ---
 
-> **Status (2026-10-31):** Phases 0–2 built and live at
-> <https://mncopilotuno.github.io/MoinMoinMoin/>. The Phase 0, 1 and 2 gates were **waived by
-> the owner, not passed** — no playtest yet, and the Phase 2 month has not elapsed. Phase 3 is
-> specified in `MOIN_DOMI.md` (owner's spec, amended 2026-10-31); S0 is done (2026-11-01), S1 and
-> the S2 tree are built and tested but wait for a host for the relay. See
-> `HANDOVER.md`.
+> **Status (2026-11-01): every phase is built; the gates are what is left.** Phases 0–2 are live
+> at <https://mncopilotuno.github.io/MoinMoinMoin/>; their gates were **waived by the owner, not
+> passed**. Phase 3 (Moin Domi, `MOIN_DOMI.md`): S0 done and its gate met; S1–S3 built and tested,
+> live at `/domi/` but unable to send until the relay has a host; S4 = Phase 4 built, gate met by
+> test. **Next is people, not code:** [`PLAYTEST.md`](PLAYTEST.md) has a sheet for each open gate.
+> Building further before those answers is the scope creep §0 warns about. See `HANDOVER.md`.
 
 ## Phase 0 — Design and foundations · ~1–2 weeks
 
@@ -84,13 +84,15 @@ A private Stille Post for memes. Specification and its own stages S0–S4 live i
 A "pass a real Moin" button on the puzzle's win screen that opens Moin Domi.
 
 **Gate:** the button works offline-gracefully (disabled with a reason, never an error) and adds no
-network call to the puzzle until it is pressed.
+network call to the puzzle until it is pressed. *Built 2026-11-01 (`.agents/features/bridge.md`):
+gate met by `apps/moin-moin-moin/e2e/bridge.spec.ts`.*
 
 ---
 
 ## Open questions
 
-- Hosting and domain for the two apps.
+- Hosting and domain for the two apps. *The puzzle and Domi's pages are on GitHub Pages; the open
+  part is a host for Cursus, the relay (`services/cursus/deploy/`).*
 - Whether the *Moin* sound is your own voice or a few different voices.
 - Whether the puzzle eventually gets a level editor (probably not — that's how small projects grow).
 - ~~Whether the daily level needs the same puzzle for everyone on the same local day, or the same UTC day.~~
