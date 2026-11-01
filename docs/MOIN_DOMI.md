@@ -24,6 +24,10 @@ Agreed after a review of this file; each overrides the text it names.
 - **A5 — A 128-bit link secret** after `#`, expanded to the AES-256 key with HKDF-SHA-256: about
   22 characters, so D11's link stays near its 30–35-character target.
 
+- **A6 — Postcards *(proposal, from the design canvas, 2026-11-01; not yet agreed)*.** *Just
+  send*: a chain of **one stop** that nobody can extend — the sharing half of the app. D3's range
+  becomes 1–12, where 1 means a postcard; the relay already enforces it (`last-stop`).
+
 Still open from that review: whether a touch may recolour the *Moin* bubble (D4) — the project
 rule is that red means *Moin*; hosting and domain for Cursus (needed before S1); the ROADMAP's
 Phase 2 gate was waived by the owner on 2026-10-24/30.

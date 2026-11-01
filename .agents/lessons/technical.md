@@ -35,3 +35,14 @@
 - **Inject randomness, even into crypto code.** `lock(m, password, random)` takes the byte source
   as an argument, so fixtures and golden links are exact, and the app passes
   `crypto.getRandomValues`.
+
+## Vitest is not Node (2026-11-01, Cursus)
+Cursus runs its TypeScript with Node's type stripping, no build. Vitest transpiles, so a
+constructor parameter property (`constructor(readonly status: number)`) passed all 21 tests and
+crashed `pnpm start` with `ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX`. Fixed with `erasableSyntaxOnly` in
+the tsconfig (typecheck now fails on it) and a test that imports every module in a real `node`.
+
+## The shell tool turns ` ` into a real line separator
+A heredoc containing the six characters ` ` arrived in the file as U+2028 itself, which
+ends a JavaScript regex literal ("Unterminated regular expression"). Write such escapes with a
+Python script that writes `\\u2028`, and grep for the raw bytes `e2 80 a8` after.
