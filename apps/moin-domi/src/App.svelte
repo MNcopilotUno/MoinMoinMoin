@@ -73,9 +73,23 @@
     await putOutgoing(o);
     await refresh();
     await go({ name: 'queued', outgoing: o });
+    retryLater();
   }
 
   let flushing = false;
+  /**
+   * The phone says it is online but the relay can't be reached (the `online` event fires before
+   * the network really works; a café portal; a flapping tunnel): try again, 2 s, 4 s … up to a
+   * minute, instead of waiting for an `online` event that already came (.agents/lessons/code.md).
+   */
+  let retryIn = 2000;
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+  function retryLater() {
+    if (retryTimer || !navigator.onLine) return;
+    retryTimer = setTimeout(() => { retryTimer = null; void flush(); }, retryIn);
+    retryIn = Math.min(retryIn * 2, 60_000);
+  }
+
   async function flush() {
     if (!relay || flushing || !navigator.onLine) return;
     flushing = true;
@@ -86,10 +100,14 @@
           const item = o.kind === 'start' ? await start(relay, o.rules!, o.meme) : await passOn(relay, o.parent!, o.meme);
           await putItem(item);
           await removeOutgoing(o.id);
+          retryIn = 2000;
           sentNote = item.kind === 'postcard' ? 'Your postcard was locked and sent to the relay. Its link is under Yours.' : 'Your Moin went out. Its link is under Yours.';
           if (screen.name === 'queued' && screen.outgoing.id === o.id) await go({ name: 'ready', item, started: o.kind === 'start' });
         } catch (e) {
-          if (isOffline(e)) break;
+          if (isOffline(e)) {
+            retryLater();
+            break;
+          }
           await putOutgoing({ ...o, problem: errorText(e) });
         }
       }
