@@ -2,8 +2,8 @@
   import { FIRST_MEME, tidy, WHERE, type Meme, type Where } from '@moin/meme';
   import { playMoin } from '@moin/assets';
   import { tick } from 'svelte';
-  import { relay } from './lib/config.js';
-  import { defaultSettings, forgetEverything, listItems, listOutbox, loadSettings, putItem, putOutgoing, removeOutgoing, saveSettings, type Item, type Outgoing, type Settings as SettingsValue } from './lib/db.js';
+  import { relay, today } from './lib/config.js';
+  import { defaultSettings, forgetEverything, listItems, listOutbox, loadSettings, putItem, putOutgoing, removeItem, removeOutgoing, saveSettings, type Item, type Outgoing, type Settings as SettingsValue } from './lib/db.js';
   import { startServiceWorker } from './lib/sw.js';
   import Queued from './screens/Queued.svelte';
   import About from './screens/About.svelte';
@@ -230,7 +230,41 @@
 
   const goneText = 'Nothing answers to this link any more. Chains vanish 30 days after their last stop — every version, everywhere — and then nobody can open them, not even us.';
 
+  /**
+   * Yours, kept honest: a chain you are in may have reached its finale or gone since you looked.
+   * Ask for the trees you can read (newest ten), quietly; anything that fails stays as it was.
+   */
+  let refreshing = false;
+  async function refreshStatuses() {
+    if (!relay || refreshing || !navigator.onLine) return;
+    refreshing = true;
+    try {
+      for (const it of items.filter((i) => i.kind === 'chain' && i.chainSecret && i.status === 'travelling').slice(0, 10)) {
+        try {
+          const t = await tree(relay, it);
+          const finale = t.nodes.some((n) => n.depth >= t.maxStops);
+          await putItem({ ...it, status: finale ? 'finale' : it.status, expiresDay: t.expiresDay, snapshot: { ...t, seen: Date.now() } });
+        } catch (e) {
+          const reason = (e as { reason?: string }).reason;
+          if (reason === 'not-found') await putItem({ ...it, status: 'gone' });
+          else if (reason === 'offline') break;
+        }
+      }
+      // Past its day on this phone's clock: gone, whether or not the relay was asked.
+      for (const it of items.filter((i) => i.status !== 'gone' && i.expiresDay < today())) await putItem({ ...it, status: 'gone' });
+    } finally {
+      refreshing = false;
+      await refresh();
+    }
+  }
+
+  async function forget(item: Item) {
+    await removeItem(item.chainId);
+    await refresh();
+  }
+
   async function openItem(item: Item) {
+    if (item.status === 'gone') return go({ name: 'gone', title: 'Gone with the tide', text: goneText });
     if (item.status === 'your-turn') return go({ name: 'turn', item });
     if (item.kind === 'postcard' || !item.chainSecret) return go({ name: 'postcard', item });
     return openTree(item);
@@ -301,7 +335,7 @@
 
 {#if screen.name === 'home'}
   <Home {waiting} {outbox} {sentNote} sendingOff={relay === null} onchain={() => newMeme('chain')} onsend={() => newMeme('postcard')}
-    onopen={openItem} onyours={() => go({ name: 'yours' })} onsettings={() => go({ name: 'settings' })}
+    onopen={openItem} onyours={() => { void go({ name: 'yours' }); void refreshStatuses(); }} onsettings={() => go({ name: 'settings' })}
     ondiscard={discard} ondismiss={() => (sentNote = null)} />
 {:else if screen.name === 'create'}
   <Create {draft} postcard={rules.kind === 'postcard'} onchange={(m) => (draft = m)} onback={() => go({ name: 'home' })} onnext={() => go({ name: 'rules' })} />
@@ -325,7 +359,7 @@
   {@const s = screen}
   <Finale nodes={s.nodes} finalId={s.finalId} maxStops={s.maxStops} onback={() => go({ name: 'tree', item: s.item, nodes: s.nodes, maxStops: s.maxStops, expiresDay: s.expiresDay })} onnew={() => newMeme('chain')} />
 {:else if screen.name === 'yours'}
-  <Yours {items} onback={() => go({ name: 'home' })} onopen={openItem} />
+  <Yours {items} onback={() => go({ name: 'home' })} onopen={openItem} onforget={forget} />
 {:else if screen.name === 'settings'}
   <Settings {settings} onchange={changeSettings} onabout={() => go({ name: 'about' })} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
 {:else if screen.name === 'about'}

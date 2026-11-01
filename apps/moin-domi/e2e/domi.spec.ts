@@ -222,3 +222,19 @@ test('shared into the app: a Moin link inside a messenger sentence opens the tur
   await page.goto(`./?share-text=${encodeURIComponent('just a sentence, no link')}`);
   await expect(page.getByRole('heading', { name: 'No Moin in that' })).toBeVisible();
 });
+
+test('yours keeps up: a chain you started shows its finale without opening the tree', async ({ browser }) => {
+  const creator = await person(browser);
+  const link = await makeChain(creator, 3);
+  const a = await person(browser);
+  await a.goto(link);
+  await a.getByRole('button', { name: 'Pass it on unchanged' }).click();
+  const next = await a.locator('[data-link]').getAttribute('data-link');
+  const b = await person(browser);
+  await b.goto(next!);
+  await b.getByRole('button', { name: 'Add it unchanged as the last' }).click();
+  await expect(b.getByRole('heading', { name: 'Look how far it drifted' })).toBeVisible();
+  await creator.goto('./');
+  await creator.getByRole('button', { name: /All your chains/ }).click();
+  await expect(creator.getByRole('button', { name: /^Finale When the captain finally says Moin/ })).toBeVisible();
+});

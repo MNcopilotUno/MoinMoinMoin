@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Meme } from '@moin/meme';
-  import { portrait, SeagullSprite } from '@moin/ui';
+  import SeagullSprite from '@moin/ui/SeagullSprite.svelte';
+  import { portrait } from '@moin/ui/portrait';
   import { bubbleText, describe, PAINTINGS, portraitOf } from '../lib/look.js';
 
   interface Props {

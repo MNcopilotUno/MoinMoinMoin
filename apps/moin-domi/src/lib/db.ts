@@ -4,7 +4,7 @@
  */
 import { toMeme, type Meme } from '@moin/meme';
 
-export type Status = 'your-turn' | 'travelling' | 'finale' | 'postcard-in' | 'postcard-out' | 'last-stop' | 'full';
+export type Status = 'your-turn' | 'travelling' | 'finale' | 'postcard-in' | 'postcard-out' | 'last-stop' | 'full' | 'gone';
 
 export interface Item {
   readonly chainId: string;
@@ -167,6 +167,12 @@ export async function putItem(item: Item): Promise<void> {
   const db = await open();
   if (db) await run('items', 'readwrite', (s) => s.put(plain(item)));
   else memory.items.set(item.chainId, plain(item));
+}
+
+export async function removeItem(chainId: string): Promise<void> {
+  const db = await open();
+  if (db) await run('items', 'readwrite', (s) => s.delete(chainId));
+  else memory.items.delete(chainId);
 }
 
 export async function loadSettings(): Promise<Settings> {
