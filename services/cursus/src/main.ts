@@ -1,5 +1,6 @@
 import { createServer } from 'node:http';
 import { createHandler } from './app.ts';
+import { createLimiter, scaled } from './limit.ts';
 import { openStore } from './store.ts';
 
 // Cursus (D16). Loopback by default; put a TLS reverse proxy in front to publish it.
@@ -10,7 +11,7 @@ const origin = process.env.CURSUS_ORIGIN ?? '*';
 const trustProxy = process.env.CURSUS_TRUST_PROXY === '1';
 const maxBytes = Number(process.env.CURSUS_MAX_MB ?? 512) * 1024 * 1024;
 
-const server = createServer(createHandler({ store, origin, trustProxy, maxBytes }));
+const server = createServer(createHandler({ store, origin, trustProxy, maxBytes, limiter: createLimiter({ rates: scaled(Number(process.env.CURSUS_RATE_SCALE ?? 1)) }) }));
 server.listen(port, host, () => console.log(`cursus: listening on http://${host}:${port}`));
 store.sweep(Date.now());
 const sweeper = setInterval(() => store.sweep(Date.now()), 60 * 60 * 1000);
