@@ -40,14 +40,16 @@ levels ok, 14 fixtures fail as expected.
 
 ## Next
 
-1. **Playtest** (the waived gate): three people, a phone, no explanation — level 1 in ten seconds,
-   then hand them the market set. Does anyone ask for more?
-2. **Phase 2 gate:** a month from now, do you still open it for fun?
-3. Real-device checks still **predicted**: iOS silent switch and Web Audio; install banner on Android.
-4. Moin Domi: **a host and a domain for Cursus** (owner's call). Then: run it with
-   `services/cursus/deploy/` (systemd + Caddy or Docker — *untried on a real host*), set the
-   repository variables `CURSUS_URL` and `DOMI_CONTACT`, push, and run the S1 gate with six
-   people. Owner to confirm A6 (postcards), the red bubble (D4) and mood as a touch. Check by
-   hand on a real iPhone: Domi offline (Safari) and the iOS silent switch. Still open:
-   password/custom links are built on the A2 candidate — its four questions for the owner are
-   still open (`.agents/features/password-links.md`); Art. 16(4)–(5) receipts are answered by hand.
+**Every roadmap phase is built; what is left is gates and the owner's choices** — see
+[`docs/PLAYTEST.md`](docs/PLAYTEST.md) for a sheet per open gate.
+
+1. **Phase 1 playtest** (sheet A): three people, a phone, no explanation.
+2. **Phase 2 check** on 2026-12-01 (sheet B).
+3. **A host and a domain for Cursus** (owner) → deploy with `services/cursus/deploy/`, set the
+   repository variables `CURSUS_URL` and `DOMI_CONTACT`, push → run sheets C (S1, S2) and D (S3).
+4. **Owner's open choices**: the four questions in `.agents/features/password-links.md`; A6
+   (postcards), D4 (red bubble), mood as a touch; whether Domi's copy moves to
+   `packages/ui/src/copy/` or the rule is limited to the puzzle.
+5. **Real-device checks** still *(predicted)*: iOS silent switch; Domi offline in Safari; sharing
+   a Domi link from two real messengers (does the part after `#` survive?); an installed puzzle
+   opening Domi links in its own window.
