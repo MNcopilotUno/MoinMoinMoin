@@ -2,8 +2,8 @@
   import Icon from '../components/Icon.svelte';
   import type { Settings } from '../lib/db.js';
 
-  interface Props { settings: Settings; onchange: (s: Settings) => void; onforget: () => void; onback: () => void }
-  let { settings, onchange, onforget, onback }: Props = $props();
+  interface Props { settings: Settings; onchange: (s: Settings) => void; onforget: () => void; onback: () => void; onabout: () => void }
+  let { settings, onchange, onforget, onback, onabout }: Props = $props();
   let confirming = $state(false);
   const calm = $derived(settings.calm ?? (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const rows = $derived([
@@ -55,6 +55,8 @@
     {/if}
   </section>
 
+  <button type="button" class="about" onclick={onabout}>About and the rules <Icon name="chevron" size={18} /></button>
+
   <footer class="note foot"><span>Always after dark</span><span>Moin Domi 0.1 · relay v1</span></footer>
 </main>
 
@@ -83,5 +85,6 @@
   .data > .note { margin: 0 4px; }
   .ask { padding: 14px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.4; color: #d9d3e9; box-shadow: inset 0 0 0 1.5px var(--gold); }
   .ask strong { color: var(--paper); }
+  .about { margin-top: 12px; min-height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px 0 16px; border: 0; border-radius: 16px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair); font-size: 15px; font-weight: 800; }
   footer { flex-direction: row; justify-content: space-between; color: var(--quiet); }
 </style>

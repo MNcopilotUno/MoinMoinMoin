@@ -133,6 +133,11 @@ test('just send: a postcard opens as a postcard and cannot be changed', async ({
   await expect(friend.getByRole('img', { name: /Herring is \/ a vegetable/ })).toBeVisible();
   await expect(friend.getByRole('button', { name: 'Send one back' })).toBeVisible();
   await expect(friend.getByRole('button', { name: /Pass it on/ })).toHaveCount(0);
+  // DSA Art. 16: a report carries the exact link — with its key, the only way to see a chain.
+  const report = decodeURIComponent((await friend.getByRole('link', { name: 'Report this chain' }).getAttribute('href'))!);
+  expect(report.startsWith('mailto:report@example.org?subject=Moin Domi: report a chain&body=')).toBe(true);
+  expect(report).toContain(link!);
+  expect(report).toContain('I believe in good faith');
   // Save image draws the same layers on a canvas: a real PNG, made on the phone.
   const [download] = await Promise.all([friend.waitForEvent('download'), friend.getByRole('button', { name: 'Save image' }).click()]);
   expect(download.suggestedFilename()).toBe('herring-is-a-vegetable-if-you-say-moin.png');
@@ -173,4 +178,18 @@ test('without a relay (the live site today) sending is off and says why', async 
   await page.getByRole('button', { name: 'Next: how it travels' }).click();
   await expect(page.getByRole('button', { name: 'Lock it and make the first link' })).toBeDisabled();
   await expect(page.getByRole('alert')).toHaveText(/the relay has no home/);
+});
+
+test('about and the rules: what is not allowed, how reports work, who to write to', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'About and the rules' }).click();
+  await expect(page.getByRole('heading', { name: 'About and the rules' })).toBeVisible();
+  await expect(page.getByText(/we delete the whole chain, for everyone/)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'report@example.org' })).toHaveAttribute('href', 'mailto:report@example.org');
+  expect(await tapTargets(page)).toEqual([]);
+  await page.goto(NO_RELAY);
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: 'About and the rules' }).click();
+  await expect(page.getByText(/No contact address yet/)).toBeVisible();
 });

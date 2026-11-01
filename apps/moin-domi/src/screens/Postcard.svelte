@@ -1,5 +1,6 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
+  import Report from '../components/Report.svelte';
   import Meme from '../components/Meme.svelte';
   import { dayLabel } from '../lib/config.js';
   import type { Item } from '../lib/db.js';
@@ -36,6 +37,7 @@
       {:else}<button type="button" class="primary" onclick={onreply}>Send one back</button>{/if}
       <button type="button" class="outline" onclick={() => el && saveImage(el, item.meme)}>Save image</button>
     </div>
+    {#if !item.mine}<Report {item} />{/if}
     <p class="note c">A saved image leaves the private link: it is yours to share, and it won’t expire.</p>
   </div>
 </main>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import harbour from '@moin/assets/art/harbour-night.jpg';
   import Icon from '../components/Icon.svelte';
+  import Report from '../components/Report.svelte';
   import Meme from '../components/Meme.svelte';
   import { dayLabel } from '../lib/config.js';
   import type { Item } from '../lib/db.js';
@@ -89,6 +90,7 @@
       <button type="button" class="outline" onclick={() => (wave += 1)}><Icon name="wave" size={20} /> Replay the wave</button>
       {#if finals.length}<button type="button" class="primary" onclick={() => onfinale(finals.find((f) => f.hopId === selected)?.hopId ?? finals[0]!.hopId)}>The finale</button>{/if}
     </div>
+    <Report {item} />
     {#if item.mine && item.status === 'travelling' && item.depth < maxStops}<button type="button" class="ghost" onclick={onlink}>Your link, to send it on</button>{/if}
     {#if !finals.length}<p class="note c">The finale opens when a branch reaches stop {maxStops}.</p>{/if}
   </div>
