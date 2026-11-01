@@ -50,3 +50,17 @@ About, and an operator command that deletes a chain by id (Art. 6 "expeditiously
 2026-11-01 via the article-by-article text at <https://www.eu-digital-services-act.com/>
 (EUR-Lex <https://eur-lex.europa.eu/eli/reg/2022/2065/oj> refused automated access that day;
 the quotes above should be checked against it once).
+
+## Built (2026-11-01, `feature/domi-report`)
+- **Contact** (Arts. 11–12): the repository variable `DOMI_CONTACT` becomes `VITE_DOMI_CONTACT`;
+  shown in *Settings → About and the rules*; without it, About says there is none yet and no
+  *Report* link appears (the relay is not public either).
+- **Terms** (Art. 14): *About and the rules* — what Moin Domi is, what is not allowed, how
+  moderation works (we see a chain only from a reported link; we delete the whole chain; we cannot
+  tell its members), how to reach us.
+- **Notice** (Art. 16): *Report this chain* under a received postcard, on a turn and on the tree
+  opens the person's mail app with the exact link (key included), a place for the reason and the
+  name, and the good-faith statement (Art. 16(2)(a)–(d)). The person's own address is the
+  notifier's e-mail. Takedown: `services/cursus/deploy/README.md`.
+- **Not built**: a confirmation of receipt (Art. 16(4)) and a decision notice (16(5)) — answered
+  by mail, by a person.

@@ -21,7 +21,7 @@ export default defineConfig({
     { command: 'CURSUS_DB=:memory: CURSUS_PORT=4175 pnpm --filter @moin/cursus start', port: 4175, reuseExistingServer: false, timeout: 60_000 },
     // The app as the live site has it today (no relay), and the app with the local relay.
     { command: 'vite build --outDir dist-norelay --emptyOutDir && DIST=dist-norelay PORT=4176 node e2e/serve.mjs', url: NO_RELAY, reuseExistingServer: false, timeout: 120_000 },
-    { command: `VITE_CURSUS_URL=${RELAY} vite build && node e2e/serve.mjs`, url, reuseExistingServer: false, timeout: 120_000 },
+    { command: `VITE_CURSUS_URL=${RELAY} VITE_DOMI_CONTACT=report@example.org vite build && node e2e/serve.mjs`, url, reuseExistingServer: false, timeout: 120_000 },
   ],
   projects: [
     { name: 'chromium', use: { ...devices['Pixel 7'] } },

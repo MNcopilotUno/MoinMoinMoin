@@ -6,6 +6,7 @@
   import { defaultSettings, forgetEverything, listItems, listOutbox, loadSettings, putItem, putOutgoing, removeOutgoing, saveSettings, type Item, type Outgoing, type Settings as SettingsValue } from './lib/db.js';
   import { startServiceWorker } from './lib/sw.js';
   import Queued from './screens/Queued.svelte';
+  import About from './screens/About.svelte';
   import { errorText, passOn, receive, start, tree, type Node, type Rules as RulesValue } from './lib/flow.js';
   import Create from './screens/Create.svelte';
   import Finale from './screens/Finale.svelte';
@@ -27,6 +28,7 @@
     | { name: 'turn'; item: Item }
     | { name: 'postcard'; item: Item }
     | { name: 'queued'; outgoing: Outgoing }
+    | { name: 'about' }
     | { name: 'tree'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; stale?: number }
     | { name: 'finale'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; finalId: string }
     | { name: 'gone'; title: string; text: string };
@@ -272,7 +274,9 @@
 {:else if screen.name === 'yours'}
   <Yours {items} onback={() => go({ name: 'home' })} onopen={openItem} />
 {:else if screen.name === 'settings'}
-  <Settings {settings} onchange={changeSettings} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
+  <Settings {settings} onchange={changeSettings} onabout={() => go({ name: 'about' })} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
+{:else if screen.name === 'about'}
+  <About onback={() => go({ name: 'settings' })} />
 {:else if screen.name === 'queued'}
   {@const s = screen}
   <Queued outgoing={s.outgoing} {online} onhome={() => go({ name: 'home' })} />

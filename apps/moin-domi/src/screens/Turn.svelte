@@ -1,6 +1,7 @@
 <script lang="ts">
   import { checkTurn, swapWord, tidy, WORD_MAX, words as wordsOf, type Meme as MemeValue } from '@moin/meme';
   import Icon from '../components/Icon.svelte';
+  import Report from '../components/Report.svelte';
   import Meme from '../components/Meme.svelte';
   import { bubbleText } from '../lib/look.js';
   import type { Item } from '../lib/db.js';
@@ -119,6 +120,7 @@
   <label class="field sign"><span class="soft">Sign it</span><input bind:value={sign} maxlength={24} placeholder="or stay anonymous" autocomplete="nickname" /></label>
 
   <div class="foot">
+    <Report {item} />
     <p class="warn" role={error || blocked ? 'alert' : undefined}>{error ?? blocked ?? (offline ? 'You’re offline. It goes out when you’re back.' : 'Everyone after you will see your version.')}</p>
     <button type="button" class="primary" disabled={busy || problem !== null || blocked !== null} onclick={() => onpass(version)}>
       {busy ? 'Passing it on…' : offline ? 'Pass it on when I’m back online' : item.depth + 1 >= item.maxStops ? (changed ? 'Add the last version' : 'Add it unchanged as the last') : changed ? 'Pass it on' : 'Pass it on unchanged'}

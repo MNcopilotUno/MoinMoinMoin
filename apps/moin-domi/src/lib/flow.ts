@@ -7,7 +7,7 @@ import {
   formatLink, openHop, parseLink, readTree, secretFromText, secretToText, startChain, takeTurn,
   TesseraError, type HopKey, type Relay,
 } from '@moin/tessera';
-import { appBase, today } from './config.js';
+import { appBase, contact, today } from './config.js';
 import type { Item } from './db.js';
 
 export interface Rules {
@@ -99,6 +99,26 @@ export function pathTo(nodes: readonly Node[], hopId: string): Node[] {
   const out: Node[] = [];
   for (let n = by.get(hopId); n; n = n.parentId ? by.get(n.parentId) : undefined) out.unshift(n);
   return out;
+}
+
+/**
+ * A notice under DSA Art. 16(2): where (the exact link — with its key, the only way we can see a
+ * chain), why, who, and the good-faith statement. Sent from the person's own mail app.
+ */
+export function reportHref(item: Pick<Item, 'hopId' | 'secret'>): string | null {
+  if (!contact) return null;
+  const body = [
+    'The Moin Domi link (keep all of it, with the part after #, or we cannot open it):',
+    linkFor(item),
+    '',
+    'Why it should come down:',
+    '',
+    '',
+    'Your name:',
+    '',
+    'I believe in good faith that this report is accurate and complete.',
+  ].join('\n');
+  return `mailto:${contact}?subject=${encodeURIComponent('Moin Domi: report a chain')}&body=${encodeURIComponent(body)}`;
 }
 
 export function errorText(error: unknown): string {
