@@ -23,7 +23,8 @@ art and the shared *Moin* sound.
   **This is built first.**
 - **Moin Domi** — a real *Moin* passed between real people via a link, in the Domi ecosystem.
   A private Stille Post for memes: specified in `docs/MOIN_DOMI.md` (stages S0–S4, decisions
-  D1–D16, amendments A1–A5). Not built yet beyond an app shell. Domi never adds a network call to
+  D1–D16, amendments A1–A6). S0 done; S1 and the S2 tree are built and tested but the relay has no
+  host yet, so the live app cannot send. Domi never adds a network call to
   the puzzle, and the puzzle keeps working with `services/cursus` deleted.
 
 Properties that are not negotiable:
@@ -56,9 +57,13 @@ packages/
   narration/     # the narrator's lines (data) + pure selection of which line plays when
   assets/        # shared sprites, the Moin sound(s), palette tokens
   ui/            # shared Svelte components (crowd grid, person sprite, buttons). No rules.
+  tessera/       # Domi: encrypted links — keys, sealed boxes, link codec, Cursus client. Knows no memes.
+  meme/          # Domi: the meme value, strict validation, turn rules (D1–D6). Pure.
+services/
+  cursus/        # Domi relay: Node 22 + node:sqlite, no build (types stripped). Not hosted yet.
 apps/
   moin-moin-moin/   # the puzzle PWA (Svelte 5 + Vite + workbox)
-  moin-domi/        # Moin Domi app shell (Svelte 5 + Vite); S0 adds packages/tessera, S1 services/cursus
+  moin-domi/        # Moin Domi (Svelte 5 + Vite), dark only; VITE_CURSUS_URL picks the relay
 docs/
   ROADMAP.md
   GAME_RULES.md     # the normative rules, mirrored by core's tests
@@ -87,8 +92,9 @@ pnpm test:offline                          # load once, cut the network, solve a
 pnpm validate:levels                       # schema + solver on every level; negative fixtures must FAIL
 ```
 
-> **Exit code 0 is not green.** Quote the test count per package. Four packages have tests
-> (`core`, `levels`, `narration`, `ui`); a run that names fewer has told you nothing.
+> **Exit code 0 is not green.** Quote the test count per package. Seven have tests (`core`,
+> `levels`, `narration`, `ui`, `tessera`, `meme`, `cursus`); a run that names fewer has told you
+> nothing. `pnpm test:e2e` runs the puzzle and then Domi against a throwaway local Cursus.
 
 ---
 

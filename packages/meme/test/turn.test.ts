@@ -26,6 +26,12 @@ describe('a turn (D3–D5)', () => {
   it('a word and a touch together are allowed', () => {
     expect(checkTurn(m, { ...swapWord(m, 0, 'If'), gull: true }, 1)).toBeNull();
   });
+  it('the budget travels with the meme and cannot be raised by a turn', () => {
+    const two = { ...m, budget: 2 };
+    const next = swapWord(swapWord(two, 2, 'gull'), 4, 'sings');
+    expect(checkTurn(two, next)).toBeNull();
+    expect(checkTurn(m, { ...swapWord(swapWord(m, 2, 'gull'), 4, 'sings'), budget: 2 })).toBe('template');
+  });
   it('changing the cast member or the place is rejected', () => {
     expect(checkTurn(m, { ...m, who: 'kid' }, 3)).toBe('template');
     expect(checkTurn(m, { ...m, where: 'ferry' }, 3)).toBe('template');

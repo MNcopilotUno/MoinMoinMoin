@@ -1,6 +1,7 @@
 # Handover
 
-_Last session: Phases 0, 1 and 2 built and deployed. The Phase 1 gate (playtest) and the Phase 2
+_Last session (2026-11-01): Moin Domi S0 done; S1 + the S2 tree built and tested on loopback, not
+hosted. Before that: Phases 0, 1 and 2 built and deployed. The Phase 1 gate (playtest) and the Phase 2
 gate (a month of play) were **waived by the owner on 2026-10-24**, not passed. Phase 3 (Moin Domi)
 is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotuno.github.io/MoinMoinMoin/>._
 
@@ -24,9 +25,12 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Every screen | Landscape phones: two columns, board fills the height; desktop/tablet: wide North German paintings (cached on first use, not precached); 320 px header fits — `.agents/features/screens.md` |
 | Settings | Ship's-wheel sheet: sound, volume, haptics, look, narrator, calm motion, start over (confirmed), about and privacy; update prompt and daily Share… restyled — `.agents/features/settings.md` |
 | QA pass | Two QA agents (function/a11y, feel/sound); findings and outcomes in `.agents/reviews/qa-polish.md` |
+| Moin Domi S0 | `packages/tessera` (128-bit link keys, HKDF, AES-GCM boxes bound to chain/parent/depth/hop, link codec, Cursus client, chain protocol with pending hops); threat model `.agents/features/tessera.md`; DSA answer `.agents/features/dsa.md` (hosting service, not a platform; Arts. 11, 12, 14, 16, 18) |
+| Moin Domi S1 + tree | `packages/meme` (strict meme value, turn rules), `services/cursus` (Node + SQLite relay, caps, expiry, takedown), the app at `/domi/` designed after the dark canvas: home, make, rules, link, turn, tree with wave, finale with local voice, postcard (*Just send*, proposal A6), yours, gone, settings; save image as PNG. Live site: everything but sending ("the relay has no home") |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 81, narration 59, ui 59; e2e puzzle 44 + Domi shell 1 on Chromium;
+Test counts: core 60, levels 81, narration 59, ui 59, tessera 38, meme 33, cursus 23; e2e puzzle
+44 + Domi 7 on Chromium (Domi against a local Cursus);
 `validate:levels` 40
 levels ok, 14 fixtures fail as expected.
 
@@ -36,7 +40,8 @@ levels ok, 14 fixtures fail as expected.
    then hand them the market set. Does anyone ask for more?
 2. **Phase 2 gate:** a month from now, do you still open it for fun?
 3. Real-device checks still **predicted**: iOS silent switch and Web Audio; install banner on Android.
-4. Phase 3 (Moin Domi): the owner's spec is `docs/MOIN_DOMI.md` (2026-10-31, amendments A1–A5).
-   The earlier wave-in-a-link design (`DOMI_ROADMAP`, `DOMI_FORMAT`, `packages/domi-link`) was
-   dropped by the owner; only the app shell at `/domi/` remains. Next: **S0** — threat model,
-   `packages/tessera`, Argon2id vs PBKDF2, the DSA answer. Before S1: hosting for Cursus.
+4. Moin Domi: **a host and a domain for Cursus** (owner's call) — then set `VITE_CURSUS_URL` in
+   the Pages build and `CURSUS_ORIGIN` on the relay, add a rate limit, a contact address and a
+   notice form (DSA, `dsa.md`), and run the S1 gate with six people. Owner to confirm A6
+   (postcards = one-stop chains) and that the bubble stays red (D4). Gaps: no offline queue, no
+   service worker for Domi, password/custom links wait for A2 (S3).

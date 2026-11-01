@@ -30,6 +30,9 @@ describe('the meme value', () => {
     ['a 25-character nickname', { ...FIRST_MEME, nick: 'n'.repeat(25) }],
     ['gull as a string', { ...FIRST_MEME, gull: 'yes' }],
     ['a missing mood', { ...FIRST_MEME, mood: undefined }],
+    ['budget 0', { ...FIRST_MEME, budget: 0 }],
+    ['budget 4', { ...FIRST_MEME, budget: 4 }],
+    ['budget 1.5', { ...FIRST_MEME, budget: 1.5 }],
   ])('rejects %s', (_, value) => {
     expect(() => toMeme(value)).toThrow(MemeError);
   });

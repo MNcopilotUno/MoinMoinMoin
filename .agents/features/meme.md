@@ -6,7 +6,9 @@ decrypted hop as hostile input (any chain member can post any bytes). The turn r
 need one pure place to live that tests can reach.
 
 ## Design
-- `Meme` = `{ v: 1, who, where, top, bottom, bubble, gull, mood, nick }`. `who` is our cast only
+- `Meme` = `{ v: 1, who, where, top, bottom, bubble, gull, mood, nick, budget }`. `budget` (D3,
+  1–3) is a chain rule the relay cannot see, so it travels sealed in every hop; a turn may not
+  change it. `who` is our cast only
   (D1: captain, fisherman, market woman, kid, chatterbox); `where` is one of the four night
   paintings; captions ≤ 140 characters, tidied (one space, no control characters) (D2).
 - **Touches (D4)**: the Moin bubble (none / *Moin* / *Moin moin*), the gull on or off, and the

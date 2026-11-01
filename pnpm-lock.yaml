@@ -32,7 +32,19 @@ importers:
       '@moin/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@moin/meme':
+        specifier: workspace:*
+        version: link:../../packages/meme
+      '@moin/tessera':
+        specifier: workspace:*
+        version: link:../../packages/tessera
+      '@moin/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
     devDependencies:
+      '@moin/cursus':
+        specifier: workspace:*
+        version: link:../../services/cursus
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0

@@ -29,11 +29,13 @@ export interface Meme {
   readonly mood: Mood;
   /** D6: optional, per hop. Empty means anonymous. */
   readonly nick: string;
+  /** D3: words each person may swap, 1–3. A chain rule the relay never sees, so it travels sealed. */
+  readonly budget: number;
 }
 
 export const FIRST_MEME: Meme = {
   v: 1, who: 'captain', where: 'harbour', top: 'When the captain', bottom: 'finally says Moin',
-  bubble: 'moin', gull: false, mood: 'smiling', nick: '',
+  bubble: 'moin', gull: false, mood: 'smiling', nick: '', budget: 1,
 };
 
 export class MemeError extends Error {
@@ -49,7 +51,7 @@ export function tidy(text: string): string {
   return text.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-const KEYS = ['v', 'who', 'where', 'top', 'bottom', 'bubble', 'gull', 'mood', 'nick'] as const;
+const KEYS = ['v', 'who', 'where', 'top', 'bottom', 'bubble', 'gull', 'mood', 'nick', 'budget'] as const;
 
 function oneOf<T extends string>(list: readonly T[], value: unknown, name: string): T {
   if (typeof value !== 'string' || !(list as readonly string[]).includes(value)) throw new MemeError(`${name} is not one of ${list.join(', ')}`);
@@ -70,6 +72,7 @@ export function toMeme(value: unknown): Meme {
   for (const key of Object.keys(o)) if (!(KEYS as readonly string[]).includes(key)) throw new MemeError(`unknown field ${key}`);
   if (o.v !== 1) throw new MemeError('unknown version');
   if (typeof o.gull !== 'boolean') throw new MemeError('gull is not true or false');
+  if (!Number.isInteger(o.budget) || (o.budget as number) < 1 || (o.budget as number) > 3) throw new MemeError('budget is not 1, 2 or 3');
   return {
     v: 1,
     who: oneOf(WHO, o.who, 'who'),
@@ -80,6 +83,7 @@ export function toMeme(value: unknown): Meme {
     gull: o.gull,
     mood: oneOf(MOODS, o.mood, 'mood'),
     nick: textField(o.nick, 'nick', NICK_MAX),
+    budget: o.budget as number,
   };
 }
 

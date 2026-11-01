@@ -17,3 +17,5 @@ test-results/
 
 # agent worktrees (Claude Code isolation)
 .claude/worktrees/
+
+dist-norelay/
