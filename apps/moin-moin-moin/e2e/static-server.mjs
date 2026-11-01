@@ -7,10 +7,10 @@ import { fileURLToPath } from 'node:url';
 
 const types = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.json': 'application/json',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.woff': 'font/woff', '.webmanifest': 'application/manifest+json', '.json': 'application/json',
 };
 
-export function startServer({ dir, base = '/', port = 4173 }) {
+export function startServer({ dir, base = '/', port = 4173, notFound = 'not found' }) {
   const server = createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://127.0.0.1');
     if (!url.pathname.startsWith(base)) { res.writeHead(404).end('not found'); return; }
@@ -24,7 +24,7 @@ export function startServer({ dir, base = '/', port = 4173 }) {
       res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream', 'cache-control': 'no-cache' });
       res.end(body);
     } catch {
-      res.writeHead(404).end('not found');
+      res.writeHead(404, { 'content-type': 'text/html; charset=utf-8' }).end(notFound);
     }
   });
   return new Promise((resolve) => {

@@ -1,14 +1,27 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 
 // Moin Domi lives beside the puzzle at <base>/domi/ (docs/MOIN_DOMI.md); the workflow sets BASE_PATH.
 const base = `${process.env.BASE_PATH ?? '/'}domi/`;
 
-export default defineConfig({
-  base,
-  publicDir: false,
-  plugins: [svelte()],
-  build: { target: 'es2022', sourcemap: false },
-  server: { host: '127.0.0.1' },
-  preview: { host: '127.0.0.1' },
+/** The page may talk to its own origin and to the relay, and nowhere else (CSP `connect-src`). */
+function relayCsp(relayUrl: string | undefined): Plugin {
+  const origin = relayUrl ? new URL(relayUrl).origin : '';
+  return {
+    name: 'domi-relay-csp',
+    transformIndexHtml: (html) => html.replace("connect-src 'self'", origin ? `connect-src 'self' ${origin}` : "connect-src 'self'"),
+  };
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_');
+  const relayUrl = process.env.VITE_CURSUS_URL ?? env.VITE_CURSUS_URL;
+  return {
+    base,
+    publicDir: false,
+    plugins: [svelte(), relayCsp(relayUrl)],
+    build: { target: 'es2022', sourcemap: false },
+    server: { host: '127.0.0.1' },
+    preview: { host: '127.0.0.1' },
+  };
 });

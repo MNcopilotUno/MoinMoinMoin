@@ -1,0 +1,66 @@
+/* Moin Domi — always after dark (the style board). Every colour is chosen against black. */
+:root {
+  --black: #000000;
+  --card: #0c0c0e;
+  --raised: #16161a;
+  --hair: #2b2b33;
+  --line: #3a3a44;
+  --paper: #f6efdf;
+  --lilac: #c9c3e2;
+  --mist: #b9b3cf;
+  --dusk: #8e88a8;
+  --quiet: #7d7894;
+  --gold: #f2c46b;
+  --moin: #c8102e;
+  --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --sans: 'Figtree', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: dark;
+}
+html, body { margin: 0; min-height: 100%; background: var(--black); color: var(--paper); font-family: var(--sans); -webkit-text-size-adjust: 100%; }
+body { overscroll-behavior-y: none; }
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: default; }
+a { color: var(--paper); }
+:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
+h1, h2, p { margin: 0; }
+h1:focus { outline: none; }
+
+.screen { position: relative; width: min(100%, 30rem); min-height: 100dvh; margin: 0 auto; display: flex; flex-direction: column; padding: 0 16px max(16px, env(safe-area-inset-bottom)); }
+.bar { display: flex; align-items: center; gap: 6px; padding: max(10px, env(safe-area-inset-top)) 0 0; margin: 0 -4px; }
+.bar h1, .title { font-family: var(--serif); font-weight: 700; font-size: 28px; line-height: 1; }
+.bar h1 { flex: 1; }
+.step { font-size: 12px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--lilac); padding-right: 4px; }
+.round { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--paper); text-decoration: none; }
+.round.dim { background: rgba(0, 0, 0, 0.66); box-shadow: inset 0 0 0 1px rgba(246, 239, 223, 0.35); }
+.label { font-size: 11px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; color: var(--lilac); }
+.note { font-size: 12.5px; line-height: 1.4; color: var(--dusk); }
+.soft { color: var(--lilac); }
+.panel { border-radius: 20px; background: var(--card); box-shadow: inset 0 0 0 1px var(--hair); }
+.foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; gap: 10px; }
+
+.primary, .outline, .ghost {
+  min-height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1;
+  border: 0; border-radius: 999px; font-size: 17px; font-weight: 800; text-decoration: none; text-align: center; padding: 0 18px;
+}
+.primary { background: var(--paper); color: var(--black); }
+.primary:disabled { background: var(--raised); color: var(--quiet); box-shadow: inset 0 0 0 1px var(--hair); }
+.outline { background: var(--black); color: var(--paper); box-shadow: inset 0 0 0 1.5px var(--paper); }
+.ghost { min-height: 44px; background: transparent; color: var(--lilac); font-size: 15px; font-weight: 700; }
+.chip {
+  min-height: 44px; padding: 0 14px; border: 0; border-radius: 999px; font-size: 14px; font-weight: 800;
+  background: var(--card); color: var(--paper); box-shadow: inset 0 0 0 1.5px var(--line);
+}
+.chip[aria-pressed='true'], .chip[aria-checked='true'] { background: var(--paper); color: var(--black); box-shadow: none; }
+.field { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 16px; background: #0e0e12; box-shadow: inset 0 0 0 1px var(--line); }
+.field input { flex: 1; min-width: 0; height: 44px; border: 0; background: transparent; font-size: 16px; font-weight: 600; }
+.field input::placeholder { color: var(--quiet); }
+.field input:focus-visible { outline: none; }
+.field:focus-within { box-shadow: inset 0 0 0 2px var(--paper); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.screen > * { animation: rise 260ms ease-out both; }
+:root[data-calm] .screen > * { animation: none; }

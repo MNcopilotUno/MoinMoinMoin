@@ -42,8 +42,8 @@ export type TurnProblem = 'template' | 'shape' | 'words' | 'touch';
  * The cast member and the place stay. The nickname is the new hop's own and is not compared.
  * Client-enforced only (§3): a modified client can break it.
  */
-export function checkTurn(before: Meme, after: Meme, budget: number): TurnProblem | null {
-  if (before.who !== after.who || before.where !== after.where) return 'template';
+export function checkTurn(before: Meme, after: Meme, budget: number = before.budget): TurnProblem | null {
+  if (before.who !== after.who || before.where !== after.where || before.budget !== after.budget) return 'template';
   const changed = wordsChanged(before, after);
   if (changed === null) return 'shape';
   if (changed > budget) return 'words';

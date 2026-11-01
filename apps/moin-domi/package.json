@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "@moin/assets": "workspace:*",
-    "@moin/core": "workspace:*"
+    "@moin/core": "workspace:*",
+    "@moin/meme": "workspace:*",
+    "@moin/tessera": "workspace:*",
+    "@moin/ui": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
@@ -21,6 +24,7 @@
     "svelte": "5.57.2",
     "svelte-check": "4.7.7",
     "typescript": "6.0.3",
-    "vite": "8.3.5"
+    "vite": "8.3.5",
+    "@moin/cursus": "workspace:*"
   }
 }

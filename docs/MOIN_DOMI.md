@@ -196,6 +196,12 @@ services/cursus/       Node + SQLite relay, ~a few hundred lines, self-hostable
 
 Each stage ends in a gate: a question with an observable answer.
 
+> **Status (2026-11-01):** S0 done — `packages/tessera`, threat model `.agents/features/tessera.md`,
+> DSA answer `.agents/features/dsa.md`; gate: every Tessera bad-weather test fails for the right
+> reason (38 tests), DSA answer written with its source. S1 and S2 are **built and tested**
+> (`services/cursus`, `apps/moin-domi`, design canvas) but **not deployed**: Cursus has no host,
+> so their gates (six real people; someone browsing the tree) cannot be run.
+
 ### S0 — Design and Tessera · ~1–2 weeks
 - Review §3 with a threat model in `.agents/features/tessera.md`; settle Argon2id vs PBKDF2.
 - `packages/tessera` with the Tessera rows of §6 (password rows wait for A2's design).

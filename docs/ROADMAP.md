@@ -17,7 +17,8 @@ unfinished platform. The gates are there to stop that.
 > **Status (2026-10-31):** Phases 0–2 built and live at
 > <https://mncopilotuno.github.io/MoinMoinMoin/>. The Phase 0, 1 and 2 gates were **waived by
 > the owner, not passed** — no playtest yet, and the Phase 2 month has not elapsed. Phase 3 is
-> specified in `MOIN_DOMI.md` (owner's spec, amended 2026-10-31); stage S0 is next. See
+> specified in `MOIN_DOMI.md` (owner's spec, amended 2026-10-31); S0 is done (2026-11-01), S1 and
+> the S2 tree are built and tested but wait for a host for the relay. See
 > `HANDOVER.md`.
 
 ## Phase 0 — Design and foundations · ~1–2 weeks
