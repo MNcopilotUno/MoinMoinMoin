@@ -9,12 +9,13 @@
     busy: boolean;
     blocked: string | null;
     error: string | null;
+    offline: boolean;
     onrules: (r: Rules) => void;
     ondraft: (m: Meme) => void;
     onback: () => void;
     onmake: () => void;
   }
-  let { rules, draft, busy, blocked, error, onrules, ondraft, onback, onmake }: Props = $props();
+  let { rules, draft, busy, blocked, error, offline, onrules, ondraft, onback, onmake }: Props = $props();
   const chain = $derived(rules.kind === 'chain');
   const say = (v: number, one: string, many: string) => (v === 1 ? one : `${v} ${many}`);
   const steppers = $derived([
@@ -78,11 +79,11 @@
 
   <div class="foot">
     <p class="warn" role={error || blocked ? 'alert' : undefined}>
-      {error ?? blocked ?? (chain ? 'Everyone after you will see your version.' : 'Anyone with the link can open it, for 30 days.')}
+      {error ?? blocked ?? (offline ? 'You’re offline. It will be locked and sent when you’re back.' : chain ? 'Everyone after you will see your version.' : 'Anyone with the link can open it, for 30 days.')}
     </p>
     <button type="button" class="primary" disabled={busy || blocked !== null} onclick={onmake}>
       <Icon name="lock" size={20} />
-      {busy ? 'Locking it…' : chain ? 'Lock it and make the first link' : 'Lock it and make the link'}
+      {busy ? 'Locking it…' : offline ? 'Send it when I’m back online' : chain ? 'Lock it and make the first link' : 'Lock it and make the link'}
     </button>
   </div>
 </main>

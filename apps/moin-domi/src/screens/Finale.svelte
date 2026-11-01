@@ -1,5 +1,5 @@
 <script lang="ts">
-  import keyart from '@moin/assets/art/harbour-night-wide.jpg';
+  import keyart from '@moin/assets/art/harbour-night.jpg';
   import { memeTitle } from '@moin/meme';
   import { onMount } from 'svelte';
   import Icon from '../components/Icon.svelte';

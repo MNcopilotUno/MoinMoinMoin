@@ -39,9 +39,16 @@ finale; keep your chains on the phone. It must be honest that the relay is not h
 ## Risks and gaps
 - **Not reachable from the live site** until Cursus has a home (§9). The e2e suite runs the
   whole flow against a local Cursus.
-- **No offline queue** (§6 Offline): offline, sending is disabled with *"You're offline — try
-  again when you're back"* instead of queuing. Gap.
-- **No service worker** for Domi yet: a received meme does not open offline (§6). Gap.
+- **Offline (added 2026-11-01, `feature/domi-offline`).** A service worker scoped to `/domi/`
+  precaches the shell, fonts and the four night paintings (the wide ones and the day paintings
+  are not precached); the relay is never cached. Making or passing on offline stores an
+  *outgoing* entry in IndexedDB and shows *Waiting for the tide*; it is sent on the `online`
+  event or the next start, while the app is open (no background sync). A refusal (someone took
+  the stop) marks it with the reason and offers *Discard*. Every tree read is kept on the item and
+  shown offline, marked with the day it was seen. A link opened offline keeps its key in the
+  address bar. *Your link, to send it on* on the tree gets the link back later.
+- **Not background sync**: if the app is closed while offline, the outgoing entry waits for the
+  next time it is opened. Chosen over Background Sync (Chromium only).
 - **Two links of one chain** on one phone: the record keeps the newest hop until you take a turn,
   then the tree covers both.
 - Tree layout for 100 hops × 3 branches is wide; the tree scrolls sideways inside its frame.
@@ -49,4 +56,5 @@ finale; keep your chains on the phone. It must be honest that the relay is not h
 ## Test matrix (`apps/moin-domi/e2e`, built app + local Cursus)
 | Happy day | Bad weather |
 |:--|:--|
+| offline after one visit: reload opens Home; a chain made offline is kept and goes out on reconnect; a turn taken offline goes out and lands on *Passed on*; the tree opens offline as last seen | a link opened offline keeps its key in the address bar |
 | cold open shows Home with both choices; make → rules → link; a second person opens the link (via the `/m/` path and the 404 redirect), swaps one word, passes on; the tree opens with both versions; the last stop gets the finale; a postcard opens as a postcard; Yours lists the chain; the address bar holds no key after opening | budget 1: a second word is locked; a link with a broken key → "This link is broken"; an unknown hop → Gone; no request off the app's origin and the relay; every button ≥ 44 px; no relay configured → sending disabled with the reason |

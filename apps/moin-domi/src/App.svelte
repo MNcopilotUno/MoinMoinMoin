@@ -3,7 +3,9 @@
   import { playMoin } from '@moin/assets';
   import { tick } from 'svelte';
   import { relay } from './lib/config.js';
-  import { defaultSettings, forgetEverything, listItems, loadSettings, putItem, saveSettings, type Item, type Settings as SettingsValue } from './lib/db.js';
+  import { defaultSettings, forgetEverything, listItems, listOutbox, loadSettings, putItem, putOutgoing, removeOutgoing, saveSettings, type Item, type Outgoing, type Settings as SettingsValue } from './lib/db.js';
+  import { startServiceWorker } from './lib/sw.js';
+  import Queued from './screens/Queued.svelte';
   import { errorText, passOn, receive, start, tree, type Node, type Rules as RulesValue } from './lib/flow.js';
   import Create from './screens/Create.svelte';
   import Finale from './screens/Finale.svelte';
@@ -24,7 +26,8 @@
     | { name: 'ready'; item: Item; started: boolean }
     | { name: 'turn'; item: Item }
     | { name: 'postcard'; item: Item }
-    | { name: 'tree'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number }
+    | { name: 'queued'; outgoing: Outgoing }
+    | { name: 'tree'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; stale?: number }
     | { name: 'finale'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; finalId: string }
     | { name: 'gone'; title: string; text: string };
 
@@ -36,8 +39,11 @@
   let busy = $state(false);
   let error = $state<string | null>(null);
   let online = $state(typeof navigator === 'undefined' ? true : navigator.onLine);
+  let outbox = $state<Outgoing[]>([]);
+  let sentNote = $state<string | null>(null);
+  let applyUpdate = $state<(() => void) | null>(null);
 
-  const blocked = $derived(relay === null ? 'Sending isn’t switched on yet: the relay has no home. Everything else works.' : !online ? 'You’re offline. Try again when you’re back.' : null);
+  const blocked = $derived(relay === null ? 'Sending isn’t switched on yet: the relay has no home. Everything else works.' : null);
   const waiting = $derived(items.filter((i) => i.status === 'your-turn' || i.status === 'postcard-in'));
 
   $effect(() => {
@@ -55,6 +61,45 @@
 
   async function refresh() {
     items = await listItems();
+    outbox = await listOutbox();
+  }
+
+  const isOffline = (e: unknown) => (e as { reason?: string }).reason === 'offline';
+
+  /** §6 Offline: keep it here, say so plainly, send it when the relay can be reached. */
+  async function enqueue(o: Outgoing) {
+    await putOutgoing(o);
+    await refresh();
+    await go({ name: 'queued', outgoing: o });
+  }
+
+  let flushing = false;
+  async function flush() {
+    if (!relay || flushing || !navigator.onLine) return;
+    flushing = true;
+    try {
+      for (const o of await listOutbox()) {
+        if (o.problem) continue;
+        try {
+          const item = o.kind === 'start' ? await start(relay, o.rules!, o.meme) : await passOn(relay, o.parent!, o.meme);
+          await putItem(item);
+          await removeOutgoing(o.id);
+          sentNote = item.kind === 'postcard' ? 'Your postcard was locked and sent to the relay. Its link is under Yours.' : 'Your Moin went out. Its link is under Yours.';
+          if (screen.name === 'queued' && screen.outgoing.id === o.id) await go({ name: 'ready', item, started: o.kind === 'start' });
+        } catch (e) {
+          if (isOffline(e)) break;
+          await putOutgoing({ ...o, problem: errorText(e) });
+        }
+      }
+    } finally {
+      flushing = false;
+      await refresh();
+    }
+  }
+
+  async function discard(o: Outgoing) {
+    await removeOutgoing(o.id);
+    await refresh();
   }
 
   let audio: AudioContext | null = null;
@@ -86,6 +131,8 @@
 
   async function make() {
     if (!relay || busy) return;
+    const outgoing: Outgoing = { id: crypto.randomUUID(), kind: 'start', meme: { ...draft, nick: tidy(draft.nick) }, rules, created: Date.now() };
+    if (!navigator.onLine) return enqueue(outgoing);
     busy = true;
     error = null;
     try {
@@ -98,12 +145,15 @@
       await go({ name: 'ready', item, started: true });
     } catch (e) {
       busy = false;
+      if (isOffline(e)) return enqueue(outgoing);
       error = errorText(e);
     }
   }
 
   async function pass(item: Item, meme: Meme) {
     if (!relay || busy) return;
+    const outgoing: Outgoing = { id: crypto.randomUUID(), kind: 'turn', meme, parent: item, created: Date.now() };
+    if (!navigator.onLine) return enqueue(outgoing);
     busy = true;
     error = null;
     try {
@@ -117,6 +167,7 @@
       else await go({ name: 'ready', item: mine, started: false });
     } catch (e) {
       busy = false;
+      if (isOffline(e)) return enqueue(outgoing);
       error = errorText(e);
     }
   }
@@ -126,15 +177,19 @@
     try {
       const t = await tree(relay, item);
       const finals = t.nodes.filter((n) => n.depth >= t.maxStops);
-      if (finals.length && item.status !== 'finale' && item.chainSecret) {
-        await putItem({ ...item, status: 'finale', expiresDay: t.expiresDay });
-        await refresh();
-      }
+      const status = finals.length && item.chainSecret && item.kind === 'chain' ? 'finale' : item.status;
+      item = { ...item, status, expiresDay: t.expiresDay, snapshot: { ...t, seen: Date.now() } };
+      await putItem(item);
+      await refresh();
       const finalId = finals.find((f) => f.hopId === item.hopId)?.hopId ?? finals[0]?.hopId;
       if (finale && finalId) await go({ name: 'finale', item, ...t, finalId });
       else await go({ name: 'tree', item, ...t });
     } catch (e) {
       const reason = (e as { reason?: string }).reason;
+      if (item.snapshot && reason !== 'not-found') {
+        const s = item.snapshot;
+        return go({ name: 'tree', item, nodes: [...s.nodes], maxStops: s.maxStops, expiresDay: s.expiresDay, stale: s.seen });
+      }
       await go({ name: 'gone', title: reason === 'not-found' ? 'Gone with the tide' : 'The tree won’t open', text: reason === 'not-found' ? goneText : errorText(e) });
     }
   }
@@ -159,8 +214,11 @@
       await openItem(item);
     } catch (e) {
       const reason = (e as { reason?: string }).reason;
+      // Offline: put the link back, key and all, so a reload when the network returns opens it.
+      if (reason === 'offline') history.replaceState(null, '', href);
       if (reason === 'not-found') await go({ name: 'gone', title: 'Gone with the tide', text: goneText });
-      else await go({ name: 'gone', title: reason === 'offline' ? 'Offline' : 'This link doesn’t open', text: errorText(e) });
+      else if (reason === 'offline') await go({ name: 'gone', title: 'Offline', text: 'This Moin is waiting on the relay, and you’re offline. Keep this page open, or open the link again when you’re back.' });
+      else await go({ name: 'gone', title: 'This link doesn’t open', text: errorText(e) });
     }
   }
 
@@ -174,8 +232,9 @@
   }
 
   $effect(() => {
-    void startUp();
-    const up = () => (online = true), down = () => (online = false);
+    void startUp().then(flush);
+    startServiceWorker((apply) => (applyUpdate = apply));
+    const up = () => { online = true; void flush(); }, down = () => (online = false);
     addEventListener('online', up);
     addEventListener('offline', down);
     return () => {
@@ -186,24 +245,26 @@
 </script>
 
 {#if screen.name === 'home'}
-  <Home {waiting} sendingOff={relay === null} onchain={() => newMeme('chain')} onsend={() => newMeme('postcard')}
-    onopen={openItem} onyours={() => go({ name: 'yours' })} onsettings={() => go({ name: 'settings' })} />
+  <Home {waiting} {outbox} {sentNote} sendingOff={relay === null} onchain={() => newMeme('chain')} onsend={() => newMeme('postcard')}
+    onopen={openItem} onyours={() => go({ name: 'yours' })} onsettings={() => go({ name: 'settings' })}
+    ondiscard={discard} ondismiss={() => (sentNote = null)} />
 {:else if screen.name === 'create'}
   <Create {draft} postcard={rules.kind === 'postcard'} onchange={(m) => (draft = m)} onback={() => go({ name: 'home' })} onnext={() => go({ name: 'rules' })} />
 {:else if screen.name === 'rules'}
-  <Rules {rules} {draft} {busy} {blocked} {error} onrules={(r) => (rules = r)} ondraft={(m) => (draft = m)} onback={() => go({ name: 'create' })} onmake={make} />
+  <Rules {rules} {draft} {busy} {blocked} {error} offline={!online} onrules={(r) => (rules = r)} ondraft={(m) => (draft = m)} onback={() => go({ name: 'create' })} onmake={make} />
 {:else if screen.name === 'ready'}
   {@const s = screen}
   <Ready item={s.item} started={s.started} onback={() => go({ name: 'home' })} ondone={() => go({ name: 'home' })} ontree={() => openTree(s.item)} />
 {:else if screen.name === 'turn'}
   {@const s = screen}
-  <Turn item={s.item} nick={settings.rememberNick ? settings.nick : ''} {busy} {error} {blocked} onback={() => go({ name: 'home' })} onpass={(m) => pass(s.item, m)} />
+  <Turn item={s.item} nick={settings.rememberNick ? settings.nick : ''} {busy} {error} {blocked} offline={!online} onback={() => go({ name: 'home' })} onpass={(m) => pass(s.item, m)} />
 {:else if screen.name === 'postcard'}
   {@const s = screen}
   <Postcard item={s.item} onback={() => go({ name: 'home' })} onreply={() => newMeme('postcard')} onlink={() => go({ name: 'ready', item: s.item, started: true })} />
 {:else if screen.name === 'tree'}
   {@const s = screen}
-  <Tree item={s.item} nodes={s.nodes} maxStops={s.maxStops} expiresDay={s.expiresDay} onback={() => go({ name: 'home' })}
+  <Tree item={s.item} nodes={s.nodes} maxStops={s.maxStops} expiresDay={s.expiresDay} stale={s.stale} onback={() => go({ name: 'home' })}
+    onlink={() => go({ name: 'ready', item: s.item, started: s.item.depth === 1 })}
     onfinale={(finalId) => go({ name: 'finale', item: s.item, nodes: s.nodes, maxStops: s.maxStops, expiresDay: s.expiresDay, finalId })} />
 {:else if screen.name === 'finale'}
   {@const s = screen}
@@ -212,6 +273,9 @@
   <Yours {items} onback={() => go({ name: 'home' })} onopen={openItem} />
 {:else if screen.name === 'settings'}
   <Settings {settings} onchange={changeSettings} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
+{:else if screen.name === 'queued'}
+  {@const s = screen}
+  <Queued outgoing={s.outgoing} {online} onhome={() => go({ name: 'home' })} />
 {:else if screen.name === 'gone'}
   {@const s = screen}
   <Gone title={s.title} text={s.text} onnew={() => newMeme('chain')} onhome={() => go({ name: 'home' })} />
@@ -222,6 +286,19 @@
   </main>
 {/if}
 
+{#if applyUpdate}
+  <div class="update" role="status">
+    <span>A new Moin Domi is ready.</span>
+    <button type="button" class="chip" onclick={() => applyUpdate?.()}>Reload</button>
+  </div>
+{/if}
+
 <style>
+  .update {
+    position: fixed; left: 50%; bottom: max(12px, env(safe-area-inset-bottom)); transform: translateX(-50%);
+    width: min(calc(100% - 24px), 28rem); display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 8px 8px 8px 16px; border-radius: 999px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--gold), 0 10px 30px #000;
+    font-size: 14px; font-weight: 700; z-index: 10;
+  }
   .opening { justify-content: center; gap: 10px; text-align: center; }
 </style>

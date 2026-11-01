@@ -25,6 +25,9 @@
     "svelte-check": "4.7.7",
     "typescript": "6.0.3",
     "vite": "8.3.5",
-    "@moin/cursus": "workspace:*"
+    "@moin/cursus": "workspace:*",
+    "vite-plugin-pwa": "2.0.0",
+    "workbox-build": "7.4.1",
+    "workbox-window": "7.4.1"
   }
 }

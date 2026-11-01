@@ -1,21 +1,25 @@
 <script lang="ts">
-  import keyart from '@moin/assets/art/harbour-night-wide.jpg';
+  import keyart from '@moin/assets/art/harbour-night.jpg';
   import { FIRST_MEME, memeTitle } from '@moin/meme';
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import { dayLabel } from '../lib/config.js';
-  import type { Item } from '../lib/db.js';
+  import type { Item, Outgoing } from '../lib/db.js';
 
   interface Props {
     waiting: readonly Item[];
+    outbox: readonly Outgoing[];
+    sentNote: string | null;
     sendingOff: boolean;
+    ondiscard: (o: Outgoing) => void;
+    ondismiss: () => void;
     onchain: () => void;
     onsend: () => void;
     onopen: (item: Item) => void;
     onyours: () => void;
     onsettings: () => void;
   }
-  let { waiting, sendingOff, onchain, onsend, onopen, onyours, onsettings }: Props = $props();
+  let { waiting, outbox, sentNote, sendingOff, onchain, onsend, onopen, onyours, onsettings, ondiscard, ondismiss }: Props = $props();
   const chainFaces = [{ ...FIRST_MEME, mood: 'grumpy' as const }, { ...FIRST_MEME, who: 'fisherman' as const, where: 'market' as const, bubble: 'none' as const }];
 </script>
 
@@ -48,6 +52,28 @@
       </span>
     </button>
   </nav>
+
+  {#if sentNote}
+    <p class="sent" role="status"><span>{sentNote}</span><button type="button" class="round" aria-label="Dismiss" onclick={ondismiss}>✕</button></p>
+  {/if}
+
+  {#if outbox.length}
+    <section aria-labelledby="outbox" class="waiting">
+      <h2 id="outbox" class="label">Waiting to send</h2>
+      <ul>
+        {#each outbox as o (o.id)}
+          <li class="out">
+            <Meme meme={o.meme} size={48} decorative />
+            <span class="words">
+              <strong>{o.kind === 'start' ? (o.rules?.kind === 'postcard' ? 'A postcard' : 'A new chain') : 'Your turn'} · {memeTitle(o.meme)}</strong>
+              <span class:problem={o.problem}>{o.problem ?? 'Goes out when you’re back online'}</span>
+            </span>
+            {#if o.problem}<button type="button" class="chip" onclick={() => ondiscard(o)}>Discard</button>{/if}
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {/if}
 
   <section aria-labelledby="waiting" class="waiting">
     <h2 id="waiting" class="label">Waiting for you</h2>
@@ -107,5 +133,11 @@
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--gold); flex: none; }
   .empty { padding: 12px 4px; font-size: 14px; line-height: 1.4; color: var(--mist); }
   .all { margin-top: 6px; width: 100%; min-height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px; border: 0; background: transparent; font-size: 15px; font-weight: 700; }
+  .sent { margin-top: 14px; display: flex; align-items: center; gap: 6px; padding: 4px 4px 4px 14px; border-radius: 16px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--gold); font-size: 14px; line-height: 1.35; }
+  .sent span { flex: 1; }
+  .out { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 8px 8px 8px; border-radius: 18px; background: #0e0e12; box-shadow: inset 0 0 0 1px var(--hair); }
+  .out strong { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .out .words span { font-size: 13px; color: var(--lilac); }
+  .out .problem { color: var(--gold); }
   .foot-note { margin-top: auto; padding: 18px 4px 0; text-align: center; color: #a9a3c2; }
 </style>
