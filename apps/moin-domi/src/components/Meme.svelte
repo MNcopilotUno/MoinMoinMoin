@@ -31,7 +31,8 @@
   <img class="bg" src={PAINTINGS[meme.where]} alt="" draggable="false" />
   <div class="face">{@html face}</div>
   {#if meme.gull}<div class="gull"><SeagullSprite /></div>{/if}
-  {#if meme.bubble !== 'none'}<span class="bubble">{bubbleText(meme.bubble)}</span>{/if}
+  <!-- Below 90 px the words would be ~4 px: the red bubble stays, its words go (a11y review). -->
+  {#if meme.bubble !== 'none'}<span class="bubble" class:mute={!words}>{words ? bubbleText(meme.bubble) : ''}</span>{/if}
   {#if words}
     <p class="cap top">{meme.top}</p>
     <p class="cap bottom">{meme.bottom}</p>
@@ -55,6 +56,7 @@
     background: var(--moin); color: #fbf6ea; font-family: var(--serif); font-style: italic; font-weight: 700;
     font-size: calc(var(--size) * 0.075); line-height: 1;
   }
+  .bubble.mute { width: calc(var(--size) * 0.2); height: calc(var(--size) * 0.12); padding: 0; }
   .cap {
     position: absolute; left: 4%; right: 4%; margin: 0; text-align: center; font-family: var(--sans); font-weight: 800;
     font-size: var(--fs); line-height: 1.02; text-transform: uppercase; letter-spacing: 0.01em; color: #fff;
