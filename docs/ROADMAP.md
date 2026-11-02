@@ -65,7 +65,9 @@ model or the lines before adding anything.
 - **Daily level** with a copyable emoji result — text only, no server.
 - 30 levels in three sets (harbour, market, ferry), level select, star totals, *reload to update*.
   *Later (owner: "more levels"): a fourth set, the lighthouse, makes it 40 —
-  `.agents/features/lighthouse.md`.*
+  `.agents/features/lighthouse.md`.
+  Then ("more puzzle content") a fifth, the mudflats, makes it 50 —
+  `.agents/features/mudflats.md`.*
 
 **Gate:** you, a month later, still open it for fun. If it's a chore to play your own game, it is
 done as a toy — ship what exists and stop.

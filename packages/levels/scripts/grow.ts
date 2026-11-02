@@ -1,5 +1,6 @@
-// Grow the story's levels along a curve (.agents/features/levels-progression.md, lighthouse.md).
-// `pnpm --filter @moin/levels grow [id …]` writes the 34 non-lesson levels from the schedule.
+// Grow the story's levels along a curve (.agents/features/levels-progression.md, lighthouse.md,
+// mudflats.md). `pnpm --filter @moin/levels grow [id …]` writes the 44 non-lesson levels from the
+// schedule.
 // Deterministic: seeds are searched from a fixed base, so a re-run on the same code writes the
 // same files. Par always comes from the solver; `pnpm validate:levels` re-checks every file.
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
@@ -22,6 +23,8 @@ interface Step {
   readonly promise?: Promised;
   /** A new level's title; a regenerated level keeps the title in its file. */
   readonly title?: string;
+  /** Seeds to try before giving up (each tries 60 boards); par-10 boards need more (mudflats.md). */
+  readonly budget?: number;
 }
 
 const r =(width: number, height: number, people: [number, number], par: [number, number], more: Partial<Recipe> = {}): Recipe => ({
@@ -34,6 +37,10 @@ const r =(width: number, height: number, people: [number, number], par: [number,
 /** The lighthouse's base: 7 × 7, 15–16 people, gulls and fenders, more taps that need thought. */
 const lh = (par: [number, number], more: Partial<Recipe> = {}): Recipe =>
   r(7, 7, [15, 16], par, { chatterboxes: [0, 1], gulls: [1, 2], fenders: [1, 3], minChoices: 3, maxForced: 5, ...more });
+
+/** The mudflats' base: the lighthouse's board, at least four captains, five taps that need thought. */
+const mf = (par: [number, number], more: Partial<Recipe> = {}): Recipe =>
+  r(7, 7, [15, 16], par, { captains: [4, 5], chatterboxes: [0, 1], gulls: [1, 2], fenders: [1, 3], minChoices: 5, maxForced: 5, ...more });
 
 export const SCHEDULE: readonly Step[] = [
   // The harbour, after its five lessons: fenders, then captain and gull, then all of it.
@@ -77,6 +84,20 @@ export const SCHEDULE: readonly Step[] = [
   { id: 'lighthouse-08', title: 'Fog bell', recipe: lh([9, 9], { captains: [4, 4], minChoices: 5 }), promise: { gulls: 1, fenders: 1 } },
   { id: 'lighthouse-09', title: 'Lamp room', recipe: lh([9, 9], { captains: [4, 5], minChoices: 5 }), promise: { gulls: 1, fenders: 1 } },
   { id: 'lighthouse-10', title: 'Every light on', recipe: lh([9, 9], { people: [16, 16], captains: [4, 5], minChoices: 5, maxMinimumSolutions: 1 }), promise: { gulls: 1, fenders: 1 } },
+  // The mudflats (mudflats.md): a Hallig out in the Wadden Sea, last to wake. The whole board and
+  // the people cap throughout; par 9 → 10 (par-10 boards pass the bar a few times in 100 000
+  // candidates, measured, hence the bigger budget), captains 4 → 6, five and then six taps that
+  // need thought.
+  { id: 'mudflats-01', title: 'Low tide', recipe: mf([9, 9], { captains: [4, 4] }), promise: { gulls: 1, fenders: 1 } },
+  { id: 'mudflats-02', title: 'The mound', recipe: mf([9, 9], { captains: [4, 4] }), promise: { gulls: 1, fenders: 1 } },
+  { id: 'mudflats-03', title: 'Sail trolley', recipe: mf([9, 9], { captains: [4, 4], fenders: [2, 3] }), promise: { gulls: 1, fenders: 2 } },
+  { id: 'mudflats-04', title: 'Gulls on the flats', recipe: mf([9, 9], { gulls: [2, 3] }), promise: { gulls: 2, fenders: 1 } },
+  { id: 'mudflats-05', title: 'Five captains', recipe: mf([9, 9], { captains: [5, 5] }), promise: { captains: 5, gulls: 1, fenders: 1 } },
+  { id: 'mudflats-06', title: 'Tide creek', recipe: mf([10, 10], { captains: [5, 6] }), promise: { gulls: 1, fenders: 1 }, budget: 12000 },
+  { id: 'mudflats-07', title: 'The mud postman', recipe: mf([10, 10], { captains: [5, 6], chatterboxes: [1, 1] }), promise: { chatterboxes: 1, gulls: 1, fenders: 1 }, budget: 12000 },
+  { id: 'mudflats-08', title: 'Birch twigs', recipe: mf([10, 10], { captains: [5, 6], minChoices: 6 }), promise: { gulls: 1, fenders: 1 }, budget: 12000 },
+  { id: 'mudflats-09', title: 'Storm tide', recipe: mf([10, 10], { captains: [6, 6], minChoices: 6 }), promise: { captains: 6, gulls: 1, fenders: 1 }, budget: 12000 },
+  { id: 'mudflats-10', title: 'High water', recipe: mf([10, 10], { people: [16, 16], captains: [5, 6], minChoices: 6 }), promise: { gulls: 1, fenders: 1 }, budget: 12000 },
 ];
 
 const count = (cells: readonly Cell[]) => ({
@@ -127,7 +148,7 @@ for (const step of SCHEDULE) {
   let found: { cells: Cell[]; par: number; seed: number } | null = null;
   // The first board found wins, so a bigger budget leaves every earlier find unchanged; the
   // lighthouse's par-9 boards are rare (about 1 in 900 candidates) and need it.
-  for (let k = 0; k < 3000 && !found; k++) {
+  for (let k = 0; k < (step.budget ?? 3000) && !found; k++) {
     const seed = mix(0x6d6f696e, k * 977 + step.id.length * 31 + step.id.charCodeAt(0) * 7 + Number(step.id.slice(-2)));
     const g = generate(seed, step.recipe, 60);
     if (g && keeps(g.cells, step.recipe, step.promise)) found = { cells: cast(g.cells), par: g.solution.par, seed };

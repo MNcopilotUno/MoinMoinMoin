@@ -8,15 +8,18 @@
   import marketUrl from '@moin/assets/art/market.jpg';
   import ferryUrl from '@moin/assets/art/ferry.jpg';
   import lighthouseUrl from '@moin/assets/art/lighthouse.jpg';
+  import mudflatsUrl from '@moin/assets/art/mudflats.jpg';
   import harbourNightUrl from '@moin/assets/art/harbour-night.jpg';
   import marketNightUrl from '@moin/assets/art/market-night.jpg';
   import ferryNightUrl from '@moin/assets/art/ferry-night.jpg';
   import lighthouseNightUrl from '@moin/assets/art/lighthouse-night.jpg';
+  import mudflatsNightUrl from '@moin/assets/art/mudflats-night.jpg';
 
-  const days: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl, lighthouse: lighthouseUrl };
-  const nights: Record<string, string> = { harbour: harbourNightUrl, market: marketNightUrl, ferry: ferryNightUrl, lighthouse: lighthouseNightUrl };
-  /** Where the banner looks into its painting: the lighthouse's lantern sits high (lighthouse.md). */
-  const focus: Record<string, string> = { lighthouse: '13%' };
+  const days: Record<string, string> = { harbour: harbourUrl, market: marketUrl, ferry: ferryUrl, lighthouse: lighthouseUrl, mudflats: mudflatsUrl };
+  const nights: Record<string, string> = { harbour: harbourNightUrl, market: marketNightUrl, ferry: ferryNightUrl, lighthouse: lighthouseNightUrl, mudflats: mudflatsNightUrl };
+  /** Where the banner looks into its painting: the lighthouse's lantern sits high (lighthouse.md),
+   *  the island's houses just above the horizon (mudflats.md). */
+  const focus: Record<string, string> = { lighthouse: '13%', mudflats: '26%' };
 
   interface Props {
     sets: readonly LevelSet[];

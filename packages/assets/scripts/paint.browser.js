@@ -1,7 +1,8 @@
 // The painter for Moin Moin Moin (.agents/features/north-german-art.md). Runs in the local
 // Chromium, loaded by render-art.mjs; build-time only, nothing here ships.
 // 1. Underpainting: a composed North German scene on a canvas — Speicherstadt gables, the Michel,
-//    a shrimp cutter, the fish auction hall, the dyke — with a real, rippled reflection.
+//    a shrimp cutter, the fish auction hall, the dyke, the lighthouse, a Hallig on the mudflats —
+//    with a real, rippled reflection.
 // 2. Brushwork: seeded strokes, coarse to fine, that take the underpainting's colour, follow the
 //    edge they sit on, stop where the colour changes and lie flat on the water; some are broken
 //    towards lilac, peach and sage. Same seed, same strokes on the same Chromium.
@@ -17,6 +18,7 @@ const DAY = {
   glass: '#4D5A7E', stone: '#7E7A92', quayTop: '#B9AFA6', water: ['#C6CADB', '#A3B6CC', '#8299B8', '#62789F'],
   hull: '#2F5A50', hullBand: '#EFEBE2', cabin: '#F2EEE6', rig: '#3A3F5C', net: '#4A5368', light: '#FFFFFF', night: false,
   dyke: ['#9DB58A', '#B9C79A'], sand: '#EBD6B4', thatch: '#9C8763', sheep: '#F4EFE6', ferry: '#F4F1EC', ferryBand: '#3D5A9C',
+  mud: ['#CDBDC2', '#B9A89F', '#A08C80'], mudDark: '#6E5E62',
 };
 const NIGHT = {
   sky: ['#0E1430', '#1A2147', '#2A2E5C', '#3E3A68', '#54496F'], sun: '#F6EFCF', glow: '#C9C3E6',
@@ -25,6 +27,7 @@ const NIGHT = {
   glass: '#FFC970', stone: '#2A2B48', quayTop: '#3E3F5E', water: ['#2D3460', '#222A50', '#1A2142', '#111731'],
   hull: '#16272F', hullBand: '#6C6E8E', cabin: '#5E6088', rig: '#0E1226', net: '#1A2036', light: '#FFE3A0', night: true,
   dyke: ['#22344A', '#2B3D52'], sand: '#4A4868', thatch: '#3A3446', sheep: '#8C8AA6', ferry: '#55597F', ferryBand: '#1F2D5A',
+  mud: ['#3A3C64', '#302F55', '#25243F'], mudDark: '#14142A',
 };
 
 function grad(ctx, x0, y0, x1, y1, stops) { const g = ctx.createLinearGradient(x0, y0, x1, y1); stops.forEach((c, i) => g.addColorStop(i / (stops.length - 1), c)); return g; }
@@ -324,6 +327,80 @@ function perched(ctx, x, y, s, P) {
   ctx.fillStyle = P.night ? '#B8A060' : '#F0C64A'; ctx.fillRect(x + 6.2 * s, y - 8 * s, 2.6 * s, 1 * s);
 }
 
+/**
+ * A warft (mudflats.md): the grass mound a Hallig family builds its houses on, so that at storm
+ * tide ("Land unter") only the warfts stand out of the sea. Whitewashed houses under reed roofs,
+ * wind-bent ash trees, sheep on the slopes. Returns the mound's top.
+ */
+function warft(ctx, x, base, s, P, r) {
+  const bw = 90 * s, tw = 52 * s, mh = 26 * s, top = base - mh;
+  // trees behind the houses: dark sage clumps, leaning away from the westerly wind
+  for (const [dx, k] of [[-40, 1], [-31, 0.8], [36, 0.9], [44, 0.7]]) {
+    const tx = x + dx * s, th = 34 * s * k;
+    ctx.fillStyle = P.night ? '#141A30' : '#4A5A4C'; ctx.fillRect(tx - 1 * s, top - th * 0.55, 2 * s, th * 0.55 + 1);
+    ctx.fillStyle = P.night ? '#1C2A38' : '#6E8A6A';
+    for (let j = 0; j < 4; j++) { ctx.beginPath(); ctx.ellipse(tx + (j - 1) * 4 * s * k + 4 * s * k, top - th * (0.6 + 0.12 * (j % 2)), 9 * s * k, 7 * s * k, -0.3, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = alpha(P.night ? '#2E4252' : '#A9C08A', 0.6); ctx.beginPath(); ctx.ellipse(tx + 1 * s * k, top - th * 0.82, 6 * s * k, 4 * s * k, -0.3, 0, Math.PI * 2); ctx.fill();
+  }
+  // the mound: grass, lit from the left, a darker flank on the right
+  ctx.fillStyle = grad(ctx, x - bw, 0, x + bw, 0, P.night ? ['#2B3D52', '#22344A', '#1A2A3E'] : ['#B9C79A', '#9DB58A', '#7F9A78']);
+  ctx.beginPath(); ctx.moveTo(x - bw, base); ctx.bezierCurveTo(x - bw * 0.7, base - mh * 0.15, x - tw * 1.05, top, x - tw, top);
+  ctx.lineTo(x + tw, top); ctx.bezierCurveTo(x + tw * 1.05, top, x + bw * 0.7, base - mh * 0.15, x + bw, base); ctx.closePath(); ctx.fill();
+  // houses on top: whitewashed, under deep reed roofs, one long house and one turned gable-on
+  halligHouse(ctx, x - 44 * s, top + 0.5 * s, s * 0.95, P, 46);
+  halligHouse(ctx, x + 6 * s, top + 0.5 * s, s * 0.95, P, 30);
+  // sheep grazing on the slopes
+  for (let j = 0; j < 6; j++) {
+    const t = r(), side = j % 2 ? 1 : -1, sx = x + side * (tw + (bw - tw) * (0.25 + 0.6 * t)), sy = base - mh * (0.75 - 0.6 * t) - 1 * s;
+    ctx.fillStyle = P.sheep; ctx.beginPath(); ctx.ellipse(sx, sy, 3.4 * s, 2.2 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = P.night ? '#141830' : '#3A3F5C'; ctx.fillRect(sx + side * 2.6 * s - 0.8 * s, sy - 1.6 * s, 1.8 * s, 1.8 * s);
+  }
+  return top;
+}
+
+/** A Hallig house: whitewashed walls, a deep reed roof with a dark ridge, sage shutters. */
+function halligHouse(ctx, x, base, s, P, len) {
+  const L = len * s, wh = 11 * s, rh = 19 * s;
+  ctx.fillStyle = grad(ctx, x, 0, x + L, 0, P.night ? ['#76789E', '#5A5C84'] : ['#F7F1E6', '#E2D8DC']); ctx.fillRect(x, base - wh, L, wh);
+  ctx.fillStyle = grad(ctx, 0, base - wh - rh, 0, base - wh, P.night ? ['#3A3446', '#2A2638'] : ['#A08C66', '#7E6C52']);
+  ctx.beginPath(); ctx.moveTo(x - 3 * s, base - wh + 1 * s); ctx.quadraticCurveTo(x + 2 * s, base - wh - rh * 0.9, x + 9 * s, base - wh - rh);
+  ctx.lineTo(x + L - 9 * s, base - wh - rh); ctx.quadraticCurveTo(x + L - 2 * s, base - wh - rh * 0.9, x + L + 3 * s, base - wh + 1 * s); ctx.fill();
+  ctx.fillStyle = P.night ? '#1E1A2E' : '#5A4A3A'; ctx.fillRect(x + 9 * s, base - wh - rh - 1.2 * s, L - 18 * s, 2 * s);
+  for (let wx = x + 4 * s; wx < x + L - 7 * s; wx += 9 * s) {
+    if (Math.abs(wx - (x + L * 0.5 - 2 * s)) < 4 * s) { ctx.fillStyle = P.night ? '#1E2246' : '#3E5A6E'; ctx.fillRect(wx, base - 8 * s, 4.5 * s, 8 * s); continue; }
+    ctx.fillStyle = P.night ? '#2E4252' : '#8FAE8A'; ctx.fillRect(wx - 1.6 * s, base - 8 * s, 1.4 * s, 5 * s); ctx.fillRect(wx + 4.2 * s, base - 8 * s, 1.4 * s, 5 * s);
+    ctx.fillStyle = P.night ? '#FFD27A' : P.glass; ctx.fillRect(wx, base - 8 * s, 4 * s, 5 * s);
+  }
+}
+
+/** A Hallig on the horizon: a flat sliver of marsh with one tiny warft, in the haze. */
+function farHallig(ctx, x, hy, s, P, wide) {
+  ctx.fillStyle = P.hazeDark; ctx.fillRect(x - wide / 2, hy - 2 * s, wide, 3 * s);
+  ctx.beginPath(); ctx.moveTo(x - 16 * s, hy - 1 * s); ctx.quadraticCurveTo(x, hy - 8 * s, x + 16 * s, hy - 1 * s); ctx.fill();
+  ctx.fillStyle = P.haze; ctx.fillRect(x - 7 * s, hy - 9 * s, 6 * s, 3 * s); ctx.fillRect(x + 1 * s, hy - 8 * s, 6 * s, 2 * s);
+  ctx.fillStyle = P.hazeDark; ctx.beginPath(); ctx.moveTo(x - 8 * s, hy - 8 * s); ctx.lineTo(x - 4 * s, hy - 12 * s); ctx.lineTo(x, hy - 8 * s); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x, hy - 7 * s); ctx.lineTo(x + 4 * s, hy - 11 * s); ctx.lineTo(x + 8 * s, hy - 7 * s); ctx.fill();
+  if (P.night) { ctx.fillStyle = 'rgba(255,214,140,.8)'; ctx.fillRect(x - 5 * s, hy - 8 * s, 1.4 * s, 1.4 * s); }
+}
+
+/** A sail trolley (Segellore): the Hallig's little rail wagon, pushed across the flats by a sail. */
+function lore(ctx, x, y, s, P) {
+  const ink = P.night ? '#141830' : '#2B3860';
+  ctx.fillStyle = ink; ctx.fillRect(x - 9 * s, y - 4 * s, 18 * s, 3 * s);
+  ctx.beginPath(); ctx.arc(x - 5 * s, y - 0.5 * s, 1.6 * s, 0, Math.PI * 2); ctx.arc(x + 5 * s, y - 0.5 * s, 1.6 * s, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = ink; ctx.lineWidth = 1 * s; ctx.beginPath(); ctx.moveTo(x - 2 * s, y - 4 * s); ctx.lineTo(x - 2 * s, y - 30 * s); ctx.stroke();
+  ctx.fillStyle = P.night ? '#8E8CB0' : '#F7F2E8'; ctx.beginPath(); ctx.moveTo(x - 1 * s, y - 29 * s); ctx.lineTo(x + 11 * s, y - 7 * s); ctx.lineTo(x - 1 * s, y - 6 * s); ctx.fill();
+  ctx.fillStyle = P.night ? '#6E6C92' : '#E4DCEA'; ctx.beginPath(); ctx.moveTo(x - 3 * s, y - 26 * s); ctx.lineTo(x - 3 * s, y - 7 * s); ctx.lineTo(x - 11 * s, y - 7 * s); ctx.fill();
+}
+
+/** A Pricke: a birch twig stuck in the mud to mark the way through the flats. */
+function pricke(ctx, x, y, k, P) {
+  ctx.strokeStyle = P.night ? '#141830' : '#4A4258'; ctx.lineCap = 'round'; ctx.lineWidth = Math.max(0.6, 1.3 * k);
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 0.6 * k, y - 16 * k);
+  ctx.moveTo(x + 0.3 * k, y - 9 * k); ctx.lineTo(x + 3.5 * k, y - 14 * k); ctx.moveTo(x + 0.4 * k, y - 12 * k); ctx.lineTo(x - 2.5 * k, y - 17 * k); ctx.stroke();
+  ctx.fillStyle = alpha(P.night ? '#0E1226' : '#4A4258', 0.3); ctx.fillRect(x - 2 * k, y, 4 * k, 1 * k);
+}
+
 function water(ctx, w, hy, h, P, r, sun, reflectFrom) {
   ctx.fillStyle = grad(ctx, 0, hy, 0, h, P.water); ctx.fillRect(0, hy, w, h - hy);
   const src = reflectFrom, k = src.width / w, band = Math.min(hy, h - hy);
@@ -456,6 +533,127 @@ const SCENES = {
     ctx.fillStyle = P.night ? '#141830' : '#2B3860'; ctx.beginPath(); ctx.moveTo(bx - 14 * s, by); ctx.lineTo(bx + 16 * s, by); ctx.lineTo(bx + 11 * s, by + 5 * s); ctx.lineTo(bx - 11 * s, by + 5 * s); ctx.fill();
     ctx.fillStyle = P.night ? '#8E8CB0' : '#F7F2E8'; ctx.beginPath(); ctx.moveTo(bx, by - 2 * s); ctx.lineTo(bx, by - 34 * s); ctx.lineTo(bx + 14 * s, by - 3 * s); ctx.fill();
     ctx.fillStyle = P.night ? '#6E6C92' : '#E4DCEA'; ctx.beginPath(); ctx.moveTo(bx - 1.5 * s, by - 4 * s); ctx.lineTo(bx - 1.5 * s, by - 26 * s); ctx.lineTo(bx - 12 * s, by - 4 * s); ctx.fill();
+  },
+  /**
+   * The mudflats (mudflats.md): a Hallig in the Wadden Sea at low tide. The warft with its
+   * thatched houses on the right, other Halligen on the horizon, the sea far out; in front the
+   * wet flats mirror the sky, a tidal creek winds towards us between birch-twig markers, and the
+   * Hallig's little railway runs off across the mud on its causeway, a sail trolley on the rails.
+   */
+  mudflats(ctx, w, h, P, r, o) {
+    const s = o.s, hy = h * o.horizon, sun = { x: w * o.sunX, y: h * o.sunY, r: 14 * s };
+    sky(ctx, w, hy, P, r, sun);
+    ctx.fillStyle = grad(ctx, 0, hy, 0, h, P.water); ctx.fillRect(0, hy, w, h - hy);
+    // far off: the mainland dyke as a pale line, two more Halligen
+    ctx.fillStyle = P.haze; ctx.fillRect(0, hy - 2 * s, w * o.mainland, 2.5 * s);
+    farHallig(ctx, w * o.farX, hy, s, P, 54 * s);
+    farHallig(ctx, w * o.farX2, hy, s * 0.7, P, 34 * s);
+    // the Hallig: a flat salt marsh with a low edge where the turf breaks off, and the warft
+    const hb = hy + o.halligY * s, mx = w * o.marshFrom;
+    const hallig = () => {
+      ctx.fillStyle = grad(ctx, 0, hb - 4 * s, 0, hb + 4 * s, P.night ? ['#2B3D52', '#22344A'] : ['#AFC197', '#93AD84']);
+      ctx.beginPath(); ctx.moveTo(mx, hb + 3 * s); ctx.quadraticCurveTo(mx + 14 * s, hb - 4 * s, mx + 40 * s, hb - 4 * s); ctx.lineTo(w + 10, hb - 5 * s); ctx.lineTo(w + 10, hb + 3 * s); ctx.fill();
+      ctx.fillStyle = P.night ? '#1A1C36' : '#6E6276'; ctx.beginPath(); ctx.moveTo(mx, hb + 3 * s); ctx.lineTo(w + 10, hb + 3 * s); ctx.lineTo(w + 10, hb + 5 * s); ctx.lineTo(mx + 6 * s, hb + 5 * s); ctx.fill();
+      return warft(ctx, w * o.warftX, hb - 3 * s, s * (o.warftS ?? 1), P, rng(o.seedWarft ?? 7));
+    };
+    hallig();
+    gulls(ctx, w, hy, s, r, o.gulls, P);
+    const above = document.createElement('canvas'); above.width = ctx.canvas.width; above.height = ctx.canvas.height; above.getContext('2d').drawImage(ctx.canvas, 0, 0);
+    water(ctx, w, hy + 1 * s, h, P, r, sun, above);
+    const wet = document.createElement('canvas'); wet.width = ctx.canvas.width; wet.height = ctx.canvas.height; wet.getContext('2d').drawImage(ctx.canvas, 0, 0);
+    // the flats: the tide is out to the horizon; wet mud, lilac where it mirrors the sky
+    const top = hy + o.flatsTop * s, near = (y) => Math.max(0, (y - top) / (h - top));
+    ctx.fillStyle = grad(ctx, 0, top, 0, h, P.mud); ctx.fillRect(0, top, w, h - top);
+    ctx.fillStyle = alpha(P.mud[0], 0.9); ctx.beginPath(); ctx.moveTo(0, top + 1 * s);
+    for (let x = 0; x <= w; x += 8 * s) ctx.lineTo(x, top - (0.5 + r() * 1.2) * s);
+    ctx.lineTo(w, top + 2 * s); ctx.fill();
+    for (let i = 0; i < 900; i++) {
+      const t = Math.pow(r(), 1.5), y = top + t * (h - top), k = 0.25 + t * 1.6;
+      ctx.fillStyle = alpha(r() < 0.6 ? P.sky[2 + Math.floor(r() * 3)] : P.glow, (P.night ? 0.16 : 0.3) * (0.5 + r()));
+      ctx.beginPath(); ctx.ellipse(r() * w, y, (8 + r() * 34) * k * s, (0.5 + r() * 1.4) * k * s, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    // ripple marks the tide left behind, bigger towards us
+    ctx.strokeStyle = alpha(P.mudDark, P.night ? 0.35 : 0.22); ctx.lineCap = 'round';
+    for (let i = 0; i < 700; i++) {
+      const t = Math.pow(r(), 0.8), y = top + t * (h - top), k = (0.3 + t * 1.5) * s, x = r() * w;
+      ctx.lineWidth = 0.7 * k; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 5 * k, y - 1.6 * k, x + 10 * k, y); ctx.stroke();
+    }
+    // sea lettuce and darker wet streaks: the flats are not one colour
+    for (let i = 0; i < 160; i++) {
+      const t = Math.pow(r(), 1.2), y = top + t * (h - top), k = (0.3 + t * 1.6) * s;
+      ctx.fillStyle = alpha(r() < 0.5 ? (P.night ? '#2E4252' : '#A9BFA0') : P.mudDark, P.night ? 0.3 : r() < 0.5 ? 0.35 : 0.14);
+      ctx.beginPath(); ctx.ellipse(r() * w, y, (6 + r() * 26) * k, (1 + r() * 2) * k, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    // the sun lies on the wet mud too
+    for (let i = 0; i < 260; i++) {
+      const t = Math.pow(r(), 0.9), y = top + 2 * s + t * (h - top) * 0.85, spread = 5 * s + t * w * 0.16;
+      ctx.fillStyle = alpha(r() < 0.5 ? P.sun : P.glow, (P.night ? 0.35 : 0.45) * (1 - t * 0.7));
+      ctx.fillRect(sun.x + (r() - 0.5) * spread * 2, y, (4 + r() * 10) * (0.5 + t), 1 + t * 2);
+    }
+    // the tidal creeks: a spline through (x, y, half-width) with the water — and its reflection — left in
+    const creek = (pts) => {
+      const P2 = pts.map(([fx, fy, hw]) => [w * fx, top + (h - top) * fy, hw * s]);
+      const at = (i) => P2[Math.max(0, Math.min(P2.length - 1, i))];
+      const line = [];
+      for (let i = 0; i < P2.length - 1; i++) for (let k = 0; k < 16; k++) {
+        const t = k / 16, [p0, p1, p2, p3] = [at(i - 1), at(i), at(i + 1), at(i + 2)];
+        const cr = (j) => 0.5 * (2 * p1[j] + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t * t + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t * t * t);
+        line.push([cr(0), cr(1), cr(2)]);
+      }
+      line.push(P2[P2.length - 1]);
+      const L = [], R = [];
+      // banks are never straight: each side wanders on its own
+      const wob = (i, ph) => 1 + 0.22 * Math.sin(i * 0.45 + ph) + 0.12 * Math.sin(i * 1.7 + ph * 2) + (r() - 0.5) * 0.12;
+      line.forEach(([x, y, hw], i) => {
+        const [ax, ay] = line[Math.max(0, i - 1)], [bx, by] = line[Math.min(line.length - 1, i + 1)];
+        const n = Math.hypot(bx - ax, by - ay) || 1, nx = -(by - ay) / n, ny = (bx - ax) / n * 0.35;
+        const a = hw * wob(i, 0.7), b = hw * wob(i, 2.9);
+        L.push([x + nx * a, y + ny * a]); R.push([x - nx * b, y - ny * b]);
+      });
+      const path = () => { ctx.beginPath(); ctx.moveTo(L[0][0], L[0][1]); L.forEach(([x, y]) => ctx.lineTo(x, y)); R.reverse().forEach(([x, y]) => ctx.lineTo(x, y)); R.reverse(); ctx.closePath(); };
+      ctx.save(); path(); ctx.clip(); ctx.drawImage(wet, 0, 0, w, h);
+      // at night the creek holds the moonlight, so it reads as water and not as a path
+      if (P.night) {
+        ctx.fillStyle = alpha('#7C7AB0', 0.22); ctx.fillRect(0, top, w, h - top);
+        for (let i = 0; i < 260; i++) { const [x, y, hw] = line[Math.floor(r() * line.length)], k = 0.3 + near(y) * 1.6; ctx.fillStyle = alpha('#D9D4F0', 0.25 + r() * 0.35); ctx.fillRect(x + (r() - 0.5) * hw * 1.6, y + (r() - 0.5) * 3 * k * s, (3 + r() * 8) * k * s, 0.8 * k * s); }
+      }
+      ctx.restore();
+      // wet banks: a dark lip on the near side, a pale shine on the far one
+      ctx.lineCap = 'round';
+      for (const [side, c, a, wd] of [[R, P.mudDark, P.night ? 0.6 : 0.45, 1.6], [L, P.night ? '#7C7AA6' : '#F4ECEE', P.night ? 0.35 : 0.6, 1]]) {
+        for (let i = 1; i < side.length; i++) {
+          const k = 0.3 + near(side[i][1]) * 1.6;
+          ctx.strokeStyle = alpha(c, a); ctx.lineWidth = wd * k * s; ctx.beginPath(); ctx.moveTo(side[i - 1][0], side[i - 1][1]); ctx.lineTo(side[i][0], side[i][1]); ctx.stroke();
+        }
+      }
+      return line;
+    };
+    const main = creek(o.creek);
+    if (o.creek2) creek(o.creek2);
+    // puddles left in the hollows, each with a piece of sky in it
+    for (let i = 0; i < o.pools; i++) {
+      const t = 0.15 + r() * 0.85, y = top + t * t * (h - top), k = (0.3 + t * 1.5) * s, x = r() * w;
+      ctx.save(); ctx.beginPath(); ctx.ellipse(x, y, (10 + r() * 22) * k, (1.5 + r() * 2.5) * k, 0, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(wet, 0, 0, w, h); ctx.restore();
+    }
+    // birch twigs mark the way along the creek, from the Hallig out into the flats
+    for (let i = 4; i < main.length; i += o.prickeStep) {
+      const [x, y, hw] = main[i], k = (0.3 + near(y) * 1.7) * s;
+      pricke(ctx, x - hw * 1.6 - 8 * k, y + 1 * k, k, P);
+    }
+    // the Hallig and warft again, over the mud, then the railway out on its causeway
+    hallig();
+    const [d0x, d0y] = [w * o.dam[0], hb + 3 * s], [d1x, d1y] = [w * o.dam[1], top + (h - top) * o.dam[2]];
+    const dam = (t) => [d0x + (d1x - d0x) * t, d0y + (d1y - d0y) * t];
+    const dw = (t) => (3 + 18 * t) * s;
+    ctx.fillStyle = P.night ? '#2A2B48' : '#8E8296';
+    ctx.beginPath(); ctx.moveTo(d0x, d0y); ctx.lineTo(d1x, d1y); ctx.lineTo(d1x, d1y + dw(1) * 0.55); ctx.lineTo(d0x, d0y + 1.5 * s); ctx.fill();
+    ctx.fillStyle = P.quayTop; ctx.beginPath(); ctx.moveTo(d0x, d0y - 1 * s); ctx.lineTo(d1x, d1y - dw(1) * 0.25); ctx.lineTo(d1x, d1y); ctx.lineTo(d0x, d0y); ctx.fill();
+    ctx.strokeStyle = P.night ? '#0E1226' : '#3A3F5C'; ctx.lineWidth = 0.9 * s;
+    for (const f of [0.35, 0.8]) { ctx.beginPath(); ctx.moveTo(d0x, d0y - 1 * s + f * 1 * s); ctx.lineTo(d1x, d1y - dw(1) * 0.25 * (1 - f)); ctx.stroke(); }
+    for (let t = 0.03; t < 1; t += 0.02 + 0.03 * t) { const [x, y] = dam(t); ctx.lineWidth = 0.6 * s; ctx.beginPath(); ctx.moveTo(x - 0.5 * s, y - dw(t) * 0.25 * 0.2); ctx.lineTo(x + 0.5 * s, y - dw(t) * 0.25 * 0.9); ctx.stroke(); }
+    { const [x, y] = dam(o.loreAt); lore(ctx, x, y - dw(o.loreAt) * 0.12, s * (0.6 + o.loreAt * 0.8), P); }
+    // gulls resting out on the flats
+    for (const [fx, fy, k] of o.perched) perched(ctx, w * fx, top + (h - top) * fy, s * k, P);
   },
 };
 

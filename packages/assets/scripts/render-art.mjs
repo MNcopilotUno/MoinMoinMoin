@@ -12,11 +12,17 @@ const painter = fileURLToPath(new URL('./paint.browser.js', import.meta.url));
 const PHONE = { w: 390, h: 844, scale: 2 };
 const brush = { radii: [14, 7, 3.5, 2], threshold: 26, len: 6, waterLen: 5, stop: 60, broken: 0.14, jitter: 18, opacity: 0.88, skyAngle: -0.12 };
 const harbour = { s: 1, horizon: 0.3, sunX: 0.74, sunY: 0.1, rowEnd: 0.55, rowScale: 1, cutterX: 0.74, cutterY: 52, cutterS: 0.95 };
+/** The mudflats' creeks (mudflats.md): [x, y down the flats, half-width] — wide where they come near. */
+const mudflats = {
+  creek: [[0.86, 0, 1.5], [0.8, 0.06, 4], [0.92, 0.18, 8], [0.66, 0.38, 16], [0.8, 0.62, 28], [0.5, 1, 48]],
+  creek2: [[1.02, 0.2, 2], [0.96, 0.32, 4], [0.84, 0.46, 8]],
+};
 const jobs = {
   harbour: { scene: 'harbour', ...PHONE, seed: 11, o: { ...harbour, gulls: 6 }, paint: { ...brush, waterY: 0.33 } },
   market: { scene: 'market', ...PHONE, seed: 23, o: { s: 1, horizon: 0.3, sunX: 0.8, sunY: 0.09, gulls: 5 }, paint: { ...brush, waterY: 0.33 } },
   ferry: { scene: 'ferry', ...PHONE, seed: 37, o: { s: 1, horizon: 0.3, sunX: 0.82, sunY: 0.1, gulls: 5 }, paint: { ...brush, waterY: 0.34 } },
   lighthouse: { scene: 'lighthouse', ...PHONE, seed: 43, o: { s: 1, horizon: 0.3, sunX: 0.22, sunY: 0.1, gulls: 5, towerX: 0.68, towerBase: 22, cottage: 84, moleNear: 78, sailX: 0.9, sailY: 64 }, paint: { ...brush, waterY: 0.33 } },
+  mudflats: { scene: 'mudflats', ...PHONE, seed: 53, o: { ...mudflats, s: 1, horizon: 0.3, sunX: 0.3, sunY: 0.1, gulls: 5, mainland: 0.3, farX: 0.1, farX2: 0.4, halligY: 14, marshFrom: 0.46, warftX: 0.74, warftS: 1.15, flatsTop: 5, pools: 40, prickeStep: 9, dam: [0.52, -0.05, 0.3], loreAt: 0.5, perched: [[0.2, 0.86, 1.3], [0.27, 0.9, 1.1]] }, paint: { ...brush, waterY: 0.31 } },
   water: { scene: 'water', w: 340, h: 230, scale: 2, seed: 5, o: {}, paint: { ...brush, radii: [10, 5, 2.5], waterY: 0 } },
 };
 // Wide windows (desktop, tablet landscape): the same parts of town composed for 1600 × 1000.
@@ -27,7 +33,8 @@ jobs['harbour-wide'] = { scene: 'harbour', ...WIDE, seed: 7, o: { s: 2.1, horizo
 jobs['market-wide'] = { scene: 'market', ...WIDE, seed: 23, o: { s: 2.1, horizon: 0.46, sunX: 0.8, sunY: 0.15, gulls: 8 }, paint: { ...wideBrush, waterY: 0.5 } };
 jobs['ferry-wide'] = { scene: 'ferry', ...WIDE, seed: 37, o: { s: 2.1, horizon: 0.46, sunX: 0.82, sunY: 0.15, gulls: 8 }, paint: { ...wideBrush, waterY: 0.5 } };
 jobs['lighthouse-wide'] = { scene: 'lighthouse', ...WIDE, seed: 43, o: { s: 2.1, horizon: 0.46, sunX: 0.2, sunY: 0.15, gulls: 8, towerX: 0.76, towerBase: 22, cottage: 84, moleNear: 70, sailX: 0.93, sailY: 60 }, paint: { ...wideBrush, waterY: 0.5 } };
-for (const name of ['harbour', 'market', 'ferry', 'lighthouse', 'water', 'harbour-wide', 'market-wide', 'ferry-wide', 'lighthouse-wide']) {
+jobs['mudflats-wide'] = { scene: 'mudflats', ...WIDE, seed: 53, o: { ...mudflats, s: 2.1, horizon: 0.46, sunX: 0.24, sunY: 0.15, gulls: 8, mainland: 0.22, farX: 0.08, farX2: 0.5, halligY: 12, marshFrom: 0.6, warftX: 0.8, flatsTop: 5, pools: 60, prickeStep: 9, dam: [0.62, -0.06, 0.5], loreAt: 0.62, perched: [[0.12, 0.8, 2.4], [0.17, 0.86, 2]] }, paint: { ...wideBrush, waterY: 0.47 } };
+for (const name of ['harbour', 'market', 'ferry', 'lighthouse', 'mudflats', 'water', 'harbour-wide', 'market-wide', 'ferry-wide', 'lighthouse-wide', 'mudflats-wide']) {
   jobs[name.replace(/(-wide)?$/, '-night$1')] = { ...jobs[name], night: true, o: { ...jobs[name].o, gulls: 2 } };
 }
 
