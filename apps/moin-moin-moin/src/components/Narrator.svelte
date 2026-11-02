@@ -6,8 +6,10 @@
     line: Line | null;
     /** Changes whenever a new line is spoken, even the same text later on. */
     key: number;
+    /** Tapped away: the voice (if any) stops too. */
+    ondismiss?: () => void;
   }
-  let { line, key }: Props = $props();
+  let { line, key, ondismiss }: Props = $props();
 
   /** Lines sit beside the play, auto-dismiss and never gate input (CLAUDE.md §8); longer lines
    *  stay longer (QA feel L4). */
@@ -25,7 +27,7 @@
 
 <div class="narrator" aria-live="polite">
   {#if visible && line}
-    <button type="button" class="line" onclick={() => (visible = false)} title={copy.narratorDismiss}>
+    <button type="button" class="line" onclick={() => { visible = false; ondismiss?.(); }} title={copy.narratorDismiss}>
       <svg class="bell" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2M7 17v-6a5 5 0 0 1 10 0v6l2 2H5z" /><path d="M10 21h4" /></svg>
       <span class="text">{line.text}</span>
     </button>

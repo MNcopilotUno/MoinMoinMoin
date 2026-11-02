@@ -18,8 +18,10 @@ unfinished platform. The gates are there to stop that.
 > at <https://mncopilotuno.github.io/MoinMoinMoin/>; their gates were **waived by the owner, not
 > passed**. Phase 3 (Moin Domi, `MOIN_DOMI.md`): S0 done and its gate met; S1–S3 built and tested,
 > live at `/domi/` but unable to send until the relay has a host; S4 = Phase 4 built, gate met by
-> test. **Next is people, not code:** [`PLAYTEST.md`](PLAYTEST.md) has a sheet for each open gate.
-> Building further before those answers is the scope creep §0 warns about. See `HANDOVER.md`.
+> test. **The owner waived the playtests too (2026-11-02: "continue roadmap without the
+> playtest")**; every listed item is now built — the narrator's voice last, as an opt-in. What
+> remains is the relay's host (`HOSTING.md`). [`PLAYTEST.md`](PLAYTEST.md) stays for whenever the
+> gates are run after all. See `HANDOVER.md`.
 
 ## Phase 0 — Design and foundations · ~1–2 weeks
 
@@ -60,7 +62,9 @@ model or the lines before adding anything.
 - Real art: flat SVG harbour cast, royal blue and red palette (red only for *Moin*).
 - **The chain plays a tune:** each greeting in a chain one note higher.
 - **The narrator's story:** a foggy, grumpy harbour morning brought back to life one part of town
-  at a time; voice for the narrator if the text version earned it.
+  at a time; voice for the narrator if the text version earned it. *Built 2026-11-02 as an opt-in
+  (the playtest that would answer "earned it" was waived): the phone's own on-device voice, off
+  by default — `.agents/features/narrator-voice.md`.*
 - **The chatterbox**, who says *Moin moin* and greets twice — the first new mechanic.
 - **Daily level** with a copyable emoji result — text only, no server.
 - 30 levels in three sets (harbour, market, ferry), level select, star totals, *reload to update*.
