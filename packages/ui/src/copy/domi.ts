@@ -397,7 +397,7 @@ export const domi = {
     gull: 'The gull',
   },
   /** By `Where`. */
-  places: { harbour: 'Harbour', market: 'Market', ferry: 'Ferry', lighthouse: 'Light', water: 'Water' },
+  places: { harbour: 'Harbour', market: 'Market', ferry: 'Ferry', lighthouse: 'Light', water: 'Water', mudflats: 'Flats' },
   /** By `Weather`. */
   weather: { clear: 'Clear sky', rain: 'Rain', fog: 'Fog', beam: 'The beam' },
   /** By `Mood`. */
@@ -441,6 +441,7 @@ export const domi = {
       ferry: 'When the whole ferry',
       lighthouse: 'When even the lighthouse',
       water: 'When the whole North Sea',
+      mudflats: 'When even the last island',
     },
     bottom: 'finally says Moin',
   },

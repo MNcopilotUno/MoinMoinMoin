@@ -2,6 +2,7 @@ import ferry from '@moin/assets/art/ferry-night.jpg';
 import harbour from '@moin/assets/art/harbour-night.jpg';
 import lighthouse from '@moin/assets/art/lighthouse-night.jpg';
 import market from '@moin/assets/art/market-night.jpg';
+import mudflats from '@moin/assets/art/mudflats-night.jpg';
 import water from '@moin/assets/art/water-night.jpg';
 import type { Bubble, Meme, Mood, Weather, Where, Who } from '@moin/meme';
 // Deep imports: the barrel pulls in the puzzle's scene and every day painting.
@@ -9,7 +10,7 @@ import type { PortraitOptions } from '@moin/ui/portrait';
 import { domi } from '@moin/ui/copy/domi';
 
 /** The night paintings (the style board: "always after dark"). */
-export const PAINTINGS: Readonly<Record<Where, string>> = { harbour, market, ferry, lighthouse, water };
+export const PAINTINGS: Readonly<Record<Where, string>> = { harbour, market, ferry, lighthouse, water, mudflats };
 export const PLACE_NAMES: Readonly<Record<Where, string>> = domi.places;
 export const WEATHER_NAMES: Readonly<Record<Weather, string>> = domi.weather;
 

@@ -30,12 +30,14 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Domi after S1 | Offline (worker, outbox, tree as last seen), relay rate limits + disk guard + deploy kit (`services/cursus/deploy/`), DSA contact + terms + *Report this chain* (`dsa.md`), S4 bridge from the puzzle's win card (`bridge.md`) |
 | Domi on the phone | Installable with its own icon; share target (Android) opens a Moin link shared from a messenger; Yours refreshes finales and gone chains; 1.2 MB build — `domi-install.md` |
 | Domi S3 | Password links and custom names on the A2 candidate (its defaults; owner's 4 questions open): Argon2id auth/wrap split, slowdown after 5 wrong, `locks` table, suggested passphrase, Unlock screen — `password-links.md` |
+| The mudflats | A fifth part of town (2026-11-02): ten 7×7 levels, par 9 → 10 (par 10 measured rare, not impossible; no unique answer found at 10), a new story finale, paintings day/night/wide; 150 stars — `.agents/features/mudflats.md` |
+| Domi, more | The gull as the star, harbour master, net mender; the open water and the mudflats as places; weather as a touch; a password for any link you hand on; all Domi copy in `packages/ui/src/copy/domi.ts` |
 | Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 81, narration 59, ui 59, tessera 55, meme 33, cursus 37; e2e puzzle
-45 + Domi 25 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+Test counts: core 60, levels 95, narration 70, ui 92, tessera 55, meme 37, cursus 37; e2e puzzle
+45 + Domi 27 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
 the offline suite, which Playwright's WebKit cannot navigate);
-`validate:levels` 40
+`validate:levels` 50
 levels ok, 14 fixtures fail as expected.
 
 ## Next
