@@ -4,6 +4,7 @@
   import { passwordProblem, slugify, isCustomName } from '@moin/tessera';
   import type { LinkChoice, Rules } from '../lib/flow.js';
   import { suggestPassphrase } from '../lib/passphrase.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props {
     rules: Rules;
@@ -20,22 +21,18 @@
     onmake: () => void;
   }
   let { rules, draft, busy, blocked, error, offline, link, onlink, onrules, ondraft, onback, onmake }: Props = $props();
-  const LINKS = [
-    { kind: 'plain', title: 'Private link', hint: 'The key lives only in the link' },
-    { kind: 'password', title: 'With a password', hint: 'For a link that might be forwarded' },
-    { kind: 'custom', title: 'A name you choose', hint: 'Always with a password' },
-  ] as const;
+  const t = domi.rules;
+  const LINKS = (['plain', 'password', 'custom'] as const).map((kind) => ({ kind, ...t.links[kind] }));
   const slug = $derived(slugify(link.name));
   const pwProblem = $derived(link.kind === 'plain' ? null : link.password === '' ? 'empty' : passwordProblem(link.password));
   const nameProblem = $derived(link.kind !== 'custom' ? null : !isCustomName(slug) ? 'bad' : null);
   const linkReady = $derived(pwProblem === null && nameProblem === null);
-  const pwHint = $derived(pwProblem === 'common' ? 'Too common — anyone would guess it.' : pwProblem === 'too-short' ? 'Three words, or twelve characters.' : pwProblem === 'empty' ? 'Choose one, or take the suggestion.' : 'Good. Send it another way than the link.');
+  const pwHint = $derived(pwProblem === 'common' ? domi.lock.tooCommon : pwProblem === 'too-short' ? domi.lock.tooShort : pwProblem === 'empty' ? t.pwEmpty : t.pwGood);
   const chain = $derived(rules.kind === 'chain');
-  const say = (v: number, one: string, many: string) => (v === 1 ? one : `${v} ${many}`);
   const steppers = $derived([
-    { key: 'maxStops', label: 'Stops', hint: 'How many people before the reveal', value: rules.maxStops, min: 3, max: 12, spoken: `${rules.maxStops} people` },
-    { key: 'maxBranches', label: 'Each passes to', hint: '1 is a straight line, classic Stille Post', value: rules.maxBranches, min: 1, max: 3, spoken: say(rules.maxBranches, 'one person', 'people') },
-    { key: 'budget', label: 'Words to change', hint: 'How many words each person may swap', value: draft.budget, min: 1, max: 3, spoken: say(draft.budget, 'one word', 'words') },
+    { key: 'maxStops', label: t.stops.label, hint: t.stops.hint, value: rules.maxStops, min: 3, max: 12, spoken: t.stops.spoken(rules.maxStops) },
+    { key: 'maxBranches', label: t.branches.label, hint: t.branches.hint, value: rules.maxBranches, min: 1, max: 3, spoken: t.branches.spoken(rules.maxBranches) },
+    { key: 'budget', label: t.budget.label, hint: t.budget.hint, value: draft.budget, min: 1, max: 3, spoken: t.budget.spoken(draft.budget) },
   ] as const);
   function step(key: 'maxStops' | 'maxBranches' | 'budget', by: number, min: number, max: number) {
     if (key === 'budget') ondraft({ ...draft, budget: Math.min(max, Math.max(min, draft.budget + by)) });
@@ -45,45 +42,43 @@
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Back to the meme" onclick={onback}><Icon name="back" /></button>
-    <h1 tabindex="-1">How it travels</h1>
-    <span class="step">2 of 3</span>
+    <button type="button" class="round" aria-label={t.back} onclick={onback}><Icon name="back" /></button>
+    <h1 tabindex="-1">{t.title}</h1>
+    <span class="step">{domi.common.step(2)}</span>
   </div>
 
-  <div class="seg" role="radiogroup" aria-label="Kind">
-    <button type="button" role="radio" aria-checked={chain} onclick={() => onrules({ ...rules, kind: 'chain' })}>A chain</button>
-    <button type="button" role="radio" aria-checked={!chain} onclick={() => onrules({ ...rules, kind: 'postcard' })}>Just send</button>
+  <div class="seg" role="radiogroup" aria-label={t.kind}>
+    <button type="button" role="radio" aria-checked={chain} onclick={() => onrules({ ...rules, kind: 'chain' })}>{t.chain}</button>
+    <button type="button" role="radio" aria-checked={!chain} onclick={() => onrules({ ...rules, kind: 'postcard' })}>{t.postcard}</button>
   </div>
 
   {#if chain}
-    <section class="panel rules" aria-label="Rules of the chain">
+    <section class="panel rules" aria-label={t.rules}>
       {#each steppers as r (r.key)}
         <div class="rule">
           <div class="txt"><strong>{r.label}</strong><span>{r.hint}</span></div>
-          <button type="button" class="pm" aria-label={`Fewer: ${r.label}, now ${r.spoken}`} disabled={r.value <= r.min} onclick={() => step(r.key, -1, r.min, r.max)}>−</button>
+          <button type="button" class="pm" aria-label={t.fewer(r.label, r.spoken)} disabled={r.value <= r.min} onclick={() => step(r.key, -1, r.min, r.max)}>−</button>
           <output aria-live="polite">{r.value}</output>
-          <button type="button" class="pm" aria-label={`More: ${r.label}, now ${r.spoken}`} disabled={r.value >= r.max} onclick={() => step(r.key, 1, r.min, r.max)}>+</button>
+          <button type="button" class="pm" aria-label={t.more(r.label, r.spoken)} disabled={r.value >= r.max} onclick={() => step(r.key, 1, r.min, r.max)}>+</button>
         </div>
       {/each}
     </section>
-    <p class="hint">Each stop also gets <strong>one small touch</strong>. Passing it on unchanged is fine too. At most 100 stops in a whole tree.</p>
+    <p class="hint">{t.touchHint[0]}<strong>{t.touchHint[1]}</strong>{t.touchHint[2]}</p>
   {:else}
     <section class="panel card">
-      <strong>A meme postcard</strong>
+      <strong>{t.postcardTitle}</strong>
       <ul>
-        <li>Whoever has the link sees your meme exactly as you made it.</li>
-        <li>Nobody can change it or pass a new version on.</li>
-        <li>Send the same link to one person or to a small group.</li>
+        {#each t.postcardPoints as point (point)}<li>{point}</li>{/each}
       </ul>
     </section>
   {/if}
 
-  <label class="field sign"><span class="soft">Sign it</span>
-    <input value={draft.nick} maxlength={NICK_MAX} placeholder="a nickname, or leave it blank" autocomplete="nickname"
+  <label class="field sign"><span class="soft">{domi.common.signIt}</span>
+    <input value={draft.nick} maxlength={NICK_MAX} placeholder={t.nickPlaceholder} autocomplete="nickname"
       oninput={(e) => ondraft({ ...draft, nick: e.currentTarget.value })} onblur={() => ondraft({ ...draft, nick: tidy(draft.nick) })} /></label>
 
   <section aria-labelledby="lk" class="links">
-    <h2 id="lk" class="label">The link</h2>
+    <h2 id="lk" class="label">{t.link}</h2>
     <div role="radiogroup" aria-labelledby="lk">
       {#each LINKS as l (l.kind)}
         <button type="button" role="radio" aria-checked={link.kind === l.kind} class="link" class:on={link.kind === l.kind}
@@ -93,17 +88,17 @@
       {/each}
     </div>
     {#if link.kind === 'custom'}
-      <label class="field lockfield"><span class="soft">Name</span>
-        <input value={link.name} maxlength={40} placeholder="kapitaen-hein" autocomplete="off" autocapitalize="none" spellcheck="false"
+      <label class="field lockfield"><span class="soft">{domi.common.name}</span>
+        <input value={link.name} maxlength={40} placeholder={t.namePlaceholder} autocomplete="off" autocapitalize="none" spellcheck="false"
           aria-describedby="name-hint" oninput={(e) => onlink({ ...link, name: e.currentTarget.value })} /></label>
-      <p id="name-hint" class="hint" class:bad={nameProblem && link.name}>{slug ? `…/m/${slug}` : 'Letters, numbers and hyphens, 3 to 32.'}{nameProblem && link.name ? ' — too short or not allowed' : ''}</p>
+      <p id="name-hint" class="hint" class:bad={nameProblem && link.name}>{t.nameHint(slug, Boolean(nameProblem && link.name))}</p>
     {/if}
     {#if link.kind !== 'plain'}
       <div class="field lockfield">
-        <label for="lock-pw" class="soft">Password</label>
+        <label for="lock-pw" class="soft">{domi.common.password}</label>
         <input id="lock-pw" value={link.password} autocomplete="new-password" autocapitalize="none" spellcheck="false"
           aria-describedby="pw-hint" oninput={(e) => onlink({ ...link, password: e.currentTarget.value })} />
-        <button type="button" class="chip suggest" onclick={() => onlink({ ...link, password: suggestPassphrase() })}>New</button>
+        <button type="button" class="chip suggest" onclick={() => onlink({ ...link, password: suggestPassphrase() })}>{domi.common.suggest}</button>
       </div>
       <p id="pw-hint" class="hint" class:bad={pwProblem && pwProblem !== 'empty'} aria-live="polite">{pwHint}</p>
     {/if}
@@ -111,11 +106,11 @@
 
   <div class="foot">
     <p class="warn" role={error || blocked ? 'alert' : undefined}>
-      {error ?? blocked ?? (offline ? 'You’re offline. It will be locked and sent when you’re back.' : chain ? 'Everyone after you will see your version.' : 'Anyone with the link can open it, for 30 days.')}
+      {error ?? blocked ?? (offline ? t.offline : chain ? t.chainWarn : t.postcardWarn)}
     </p>
     <button type="button" class="primary" disabled={busy || blocked !== null || !linkReady} onclick={onmake}>
       <Icon name="lock" size={20} />
-      {busy ? 'Locking it…' : offline ? 'Send it when I’m back online' : chain ? 'Lock it and make the first link' : 'Lock it and make the link'}
+      {busy ? domi.common.locking : offline ? t.sendLater : chain ? t.makeChain : t.makePostcard}
     </button>
   </div>
 </main>

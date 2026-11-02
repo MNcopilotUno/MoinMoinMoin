@@ -1,6 +1,7 @@
 <script lang="ts">
   import keyart from '@moin/assets/art/harbour-night.jpg';
   import { FIRST_MEME, memeTitle } from '@moin/meme';
+  import { domi } from '@moin/ui/copy/domi';
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import { dayLabel } from '../lib/config.js';
@@ -20,55 +21,57 @@
     onsettings: () => void;
   }
   let { waiting, outbox, sentNote, sendingOff, onchain, onsend, onopen, onyours, onsettings, ondiscard, ondismiss }: Props = $props();
+  const t = domi.home;
+  const kindOf = (o: Outgoing) => (o.kind === 'start' ? (o.rules?.kind === 'postcard' ? domi.common.outgoing.postcard : domi.common.outgoing.chain) : domi.common.outgoing.turn);
   const chainFaces = [{ ...FIRST_MEME, mood: 'grumpy' as const }, { ...FIRST_MEME, who: 'fisherman' as const, where: 'market' as const, bubble: 'none' as const }];
 </script>
 
 <main class="screen home">
   <div class="hero">
-    <img src={keyart} alt="The harbour at night: lamp-lit warehouses, a moon and the lighthouse beam." />
-    <button type="button" class="round dim gear" aria-label="Settings" onclick={onsettings}><Icon name="gear" size={20} /></button>
+    <img src={keyart} alt={t.art} />
+    <button type="button" class="round dim gear" aria-label={t.settings} onclick={onsettings}><Icon name="gear" size={20} /></button>
   </div>
   <header>
-    <p class="label">A private Stille Post</p>
-    <h1 tabindex="-1">Moin Domi</h1>
+    <p class="label">{t.kicker}</p>
+    <h1 tabindex="-1">{domi.name}</h1>
   </header>
 
-  <nav aria-label="Start something" class="choices">
+  <nav aria-label={t.start} class="choices">
     <button type="button" class="choice chain" onclick={onchain}>
       <span class="stack" aria-hidden="true">
         <span class="a"><Meme meme={chainFaces[0]!} size={56} decorative /></span>
         <span class="b"><Meme meme={chainFaces[1]!} size={56} decorative /></span>
       </span>
       <span class="words">
-        <strong>Start a chain</strong>
-        <span>Make a meme. Each friend changes one word and one touch. At the last stop, see how far it drifted.</span>
+        <strong>{t.chainTitle}</strong>
+        <span>{t.chainBody}</span>
       </span>
     </button>
     <button type="button" class="choice send" onclick={onsend}>
       <span class="icon" aria-hidden="true"><Icon name="mail" size={34} /></span>
       <span class="words">
-        <strong>Just send</strong>
-        <span>A private meme postcard for one person or a few. No game, no changes, gone in 30 days.</span>
+        <strong>{t.sendTitle}</strong>
+        <span>{t.sendBody}</span>
       </span>
     </button>
   </nav>
 
   {#if sentNote}
-    <p class="sent" role="status"><span>{sentNote}</span><button type="button" class="round" aria-label="Dismiss" onclick={ondismiss}>✕</button></p>
+    <p class="sent" role="status"><span>{sentNote}</span><button type="button" class="round" aria-label={domi.common.dismiss} onclick={ondismiss}>✕</button></p>
   {/if}
 
   {#if outbox.length}
     <section aria-labelledby="outbox" class="waiting">
-      <h2 id="outbox" class="label">Waiting to send</h2>
+      <h2 id="outbox" class="label">{t.outbox}</h2>
       <ul>
         {#each outbox as o (o.id)}
           <li class="out">
             <Meme meme={o.meme} size={48} decorative />
             <span class="words">
-              <strong>{o.kind === 'start' ? (o.rules?.kind === 'postcard' ? 'A postcard' : 'A new chain') : 'Your turn'} · {memeTitle(o.meme)}</strong>
-              <span class:problem={o.problem}>{o.problem ?? 'Goes out when you’re back online'}</span>
+              <strong>{t.outLine(kindOf(o), memeTitle(o.meme))}</strong>
+              <span class:problem={o.problem}>{o.problem ?? t.outPending}</span>
             </span>
-            {#if o.problem}<button type="button" class="chip" onclick={() => ondiscard(o)}>Discard</button>{/if}
+            {#if o.problem}<button type="button" class="chip" onclick={() => ondiscard(o)}>{t.discard}</button>{/if}
           </li>
         {/each}
       </ul>
@@ -76,9 +79,9 @@
   {/if}
 
   <section aria-labelledby="waiting" class="waiting">
-    <h2 id="waiting" class="label">Waiting for you</h2>
+    <h2 id="waiting" class="label">{t.waiting}</h2>
     {#if waiting.length === 0}
-      <p class="empty">Nothing yet. When someone sends you a Moin, it opens here.</p>
+      <p class="empty">{t.empty}</p>
     {:else}
       <ul>
         {#each waiting.slice(0, 2) as item (item.chainId)}
@@ -86,8 +89,8 @@
             <button type="button" class="wait" onclick={() => onopen(item)}>
               <Meme meme={item.meme} size={48} decorative />
               <span class="words">
-                <strong>{item.kind === 'postcard' ? 'Sent just to you' : 'Your turn in a chain'}</strong>
-                <span>{item.kind === 'postcard' ? `${memeTitle(item.meme)} · until ${dayLabel(item.expiresDay)}` : `Stop ${item.depth + 1} of ${item.maxStops} · ${memeTitle(item.meme)}`}</span>
+                <strong>{item.kind === 'postcard' ? t.postcardFor : t.chainTurn}</strong>
+                <span>{item.kind === 'postcard' ? t.postcardLine(memeTitle(item.meme), dayLabel(item.expiresDay)) : t.chainLine(item.depth + 1, item.maxStops, memeTitle(item.meme))}</span>
               </span>
               {#if item.kind === 'chain'}<span class="dot" aria-hidden="true"></span>{/if}
             </button>
@@ -95,12 +98,11 @@
         {/each}
       </ul>
     {/if}
-    <button type="button" class="all" onclick={onyours}>All your chains and postcards <Icon name="chevron" size={18} /></button>
+    <button type="button" class="all" onclick={onyours}>{t.all} <Icon name="chevron" size={18} /></button>
   </section>
 
   <p class="note foot-note">
-    {#if sendingOff}Sending isn’t switched on yet: the relay has no home. You can make memes and look around.
-    {:else}No accounts, no feed. Memes are locked on your phone; the relay can’t read them.{/if}
+    {sendingOff ? t.footOff : t.foot}
   </p>
 </main>
 

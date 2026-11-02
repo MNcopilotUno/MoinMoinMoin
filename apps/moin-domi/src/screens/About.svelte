@@ -1,42 +1,42 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
   import { contact } from '../lib/config.js';
+  import { domi } from '@moin/ui/copy/domi';
 
+  const t = domi.about;
   let { onback }: { onback: () => void } = $props();
 </script>
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Back to settings" onclick={onback}><Icon name="back" /></button>
-    <h1 tabindex="-1">About and the rules</h1>
+    <button type="button" class="round" aria-label={t.back} onclick={onback}><Icon name="back" /></button>
+    <h1 tabindex="-1">{t.title}</h1>
   </div>
 
   <section class="panel">
-    <h2 class="label">What Moin Domi is</h2>
-    <p>A private Stille Post for memes between friends, from the cast of the Moin harbour. No accounts, no feed, no search: a meme reaches only the people its link is sent to, and every chain is deleted 30 days after its last stop.</p>
+    <h2 class="label">{t.whatTitle}</h2>
+    <p>{t.what}</p>
   </section>
 
   <section class="panel">
-    <h2 class="label">Not allowed</h2>
+    <h2 class="label">{t.notAllowed}</h2>
     <ul>
-      <li>anything illegal where you or the people you send it to live;</li>
-      <li>threats, harassment, or hounding someone;</li>
-      <li>someone else’s private details — addresses, numbers, secrets.</li>
+      {#each t.rules as rule (rule)}<li>{rule}</li>{/each}
     </ul>
   </section>
 
   <section class="panel">
-    <h2 class="label">How we look after it</h2>
-    <p>The relay that passes memes on cannot read them. We see a chain only when someone sends us its full link. If it breaks these rules, we delete the whole chain, for everyone, and nobody can open it again. We don’t know who was in it, so we can’t tell anyone it went.</p>
+    <h2 class="label">{t.careTitle}</h2>
+    <p>{t.care}</p>
   </section>
 
   <section class="panel">
-    <h2 class="label">Contact and reports</h2>
+    <h2 class="label">{t.contactTitle}</h2>
     {#if contact}
-      <p>People answer, not a machine. To report a chain, use <em>Report this chain</em> under a meme: it puts the full link in the mail for you.</p>
+      <p>{t.people} {t.reportHow[0]}<em>{t.reportHow[1]}</em>{t.reportHow[2]}</p>
       <a class="mail" href={`mailto:${contact}`}>{contact}</a>
     {:else}
-      <p>No contact address yet: the relay isn’t public, so there is nothing to report. One will be here before anyone can send a Moin.</p>
+      <p>{t.noContact}</p>
     {/if}
   </section>
 </main>

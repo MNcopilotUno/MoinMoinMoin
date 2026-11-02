@@ -5,26 +5,28 @@
   import Meme from '../components/Meme.svelte';
   import SeagullSprite from '@moin/ui/SeagullSprite.svelte';
   import { WEATHER } from '@moin/meme';
+  import { domi } from '@moin/ui/copy/domi';
   import { CAST, PAINTINGS, PLACE_NAMES, portraitOf, WEATHER_NAMES } from '../lib/look.js';
 
   interface Props { draft: MemeValue; onchange: (m: MemeValue) => void; onback: () => void; onnext: () => void; postcard: boolean }
   let { draft, onchange, onback, onnext, postcard }: Props = $props();
   const set = (patch: Partial<MemeValue>) => onchange({ ...draft, ...patch });
   const faces = CAST.map((c) => ({ ...c, svg: c.who === 'gull' ? '' : portrait({ ...portraitOf(c.who, 'smiling'), id: `pick-${c.who}` }) }));
+  const t = domi.create;
   const ready = $derived(tidy(draft.top) !== '' || tidy(draft.bottom) !== '');
 </script>
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Back" onclick={onback}><Icon name="back" /></button>
-    <h1 tabindex="-1">Make the meme</h1>
-    <span class="step">1 of 3</span>
+    <button type="button" class="round" aria-label={domi.common.back} onclick={onback}><Icon name="back" /></button>
+    <h1 tabindex="-1">{t.title}</h1>
+    <span class="step">{domi.common.step(1)}</span>
   </div>
 
   <div class="preview"><Meme meme={draft} size={250} /></div>
 
   <section aria-labelledby="who">
-    <h2 id="who" class="label">Who</h2>
+    <h2 id="who" class="label">{t.who}</h2>
     <div class="pick" role="radiogroup" aria-labelledby="who">
       {#each faces as f (f.who)}
         <button type="button" role="radio" aria-checked={draft.who === f.who} aria-label={f.name} class="face" class:bird={f.who === 'gull'} onclick={() => set({ who: f.who })}>
@@ -35,7 +37,7 @@
   </section>
 
   <section aria-labelledby="where">
-    <h2 id="where" class="label">Where</h2>
+    <h2 id="where" class="label">{t.where}</h2>
     <div class="pick" role="radiogroup" aria-labelledby="where">
       {#each WHERE as w (w)}
         <button type="button" role="radio" aria-checked={draft.where === w} class="place" onclick={() => set({ where: w })}>
@@ -45,31 +47,31 @@
     </div>
   </section>
 
-  <section aria-label="Captions" class="caps">
-    <label class="field"><span class="what">Top</span>
-      <input value={draft.top} maxlength={CAPTION_MAX} placeholder="Top caption" autocomplete="off" oninput={(e) => set({ top: e.currentTarget.value })} onblur={() => set({ top: tidy(draft.top) })} /></label>
-    <label class="field"><span class="what">Bottom</span>
-      <input value={draft.bottom} maxlength={CAPTION_MAX} placeholder="Bottom caption" autocomplete="off" oninput={(e) => set({ bottom: e.currentTarget.value })} onblur={() => set({ bottom: tidy(draft.bottom) })} /></label>
+  <section aria-label={t.captions} class="caps">
+    <label class="field"><span class="what">{t.top}</span>
+      <input value={draft.top} maxlength={CAPTION_MAX} placeholder={t.topPlaceholder} autocomplete="off" oninput={(e) => set({ top: e.currentTarget.value })} onblur={() => set({ top: tidy(draft.top) })} /></label>
+    <label class="field"><span class="what">{t.bottom}</span>
+      <input value={draft.bottom} maxlength={CAPTION_MAX} placeholder={t.bottomPlaceholder} autocomplete="off" oninput={(e) => set({ bottom: e.currentTarget.value })} onblur={() => set({ bottom: tidy(draft.bottom) })} /></label>
   </section>
 
   <section aria-labelledby="touch">
-    <h2 id="touch" class="label">A touch</h2>
+    <h2 id="touch" class="label">{t.touch}</h2>
     <div class="touches">
-      <button type="button" class="chip" aria-pressed={draft.bubble === 'moin'} onclick={() => set({ bubble: draft.bubble === 'moin' ? 'none' : 'moin' })}>Moin</button>
-      <button type="button" class="chip" aria-pressed={draft.bubble === 'moinmoin'} onclick={() => set({ bubble: draft.bubble === 'moinmoin' ? 'none' : 'moinmoin' })}>Moin moin</button>
-      <button type="button" class="chip" aria-pressed={draft.gull} onclick={() => set({ gull: !draft.gull })}>A gull</button>
-      <button type="button" class="chip" aria-pressed={draft.mood === 'smiling'} onclick={() => set({ mood: draft.mood === 'smiling' ? 'grumpy' : 'smiling' })}>Smile</button>
+      <button type="button" class="chip" aria-pressed={draft.bubble === 'moin'} onclick={() => set({ bubble: draft.bubble === 'moin' ? 'none' : 'moin' })}>{t.moin}</button>
+      <button type="button" class="chip" aria-pressed={draft.bubble === 'moinmoin'} onclick={() => set({ bubble: draft.bubble === 'moinmoin' ? 'none' : 'moinmoin' })}>{t.moinmoin}</button>
+      <button type="button" class="chip" aria-pressed={draft.gull} onclick={() => set({ gull: !draft.gull })}>{t.gull}</button>
+      <button type="button" class="chip" aria-pressed={draft.mood === 'smiling'} onclick={() => set({ mood: draft.mood === 'smiling' ? 'grumpy' : 'smiling' })}>{t.smile}</button>
     </div>
-    <div class="touches weather" role="radiogroup" aria-label="Weather">
+    <div class="touches weather" role="radiogroup" aria-label={t.weather}>
       {#each WEATHER as w (w)}
-        <button type="button" class="chip" role="radio" aria-checked={draft.weather === w} onclick={() => set({ weather: w })}>{w === 'clear' ? 'Clear' : WEATHER_NAMES[w]}</button>
+        <button type="button" class="chip" role="radio" aria-checked={draft.weather === w} onclick={() => set({ weather: w })}>{w === 'clear' ? t.clear : WEATHER_NAMES[w]}</button>
       {/each}
     </div>
   </section>
 
   <div class="foot">
     <button type="button" class="primary" disabled={!ready} onclick={() => { set({ top: tidy(draft.top), bottom: tidy(draft.bottom) }); onnext(); }}>
-      {ready ? (postcard ? 'Next: who can open it' : 'Next: how it travels') : 'Write a caption first'}
+      {ready ? (postcard ? t.nextPostcard : t.nextChain) : t.noCaption}
     </button>
   </div>
 </main>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Item } from '../lib/db.js';
   import { reportHref } from '../lib/flow.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   let { item }: { item: Pick<Item, 'hopId' | 'secret'> } = $props();
   const href = $derived(reportHref(item));
@@ -8,8 +9,8 @@
 </script>
 
 {#if href}
-  <a class="report" {href} onclick={() => (sent = true)}>Report this chain</a>
-  {#if sent}<p class="sent" role="status">Your mail app has the report with the full link. A person reads every report and answers by mail; a chain that breaks the rules is deleted for everyone.</p>{/if}
+  <a class="report" {href} onclick={() => (sent = true)}>{domi.report.link}</a>
+  {#if sent}<p class="sent" role="status">{domi.report.sent}</p>{/if}
 {/if}
 
 <style>

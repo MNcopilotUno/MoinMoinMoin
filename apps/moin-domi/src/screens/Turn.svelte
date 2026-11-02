@@ -5,11 +5,13 @@
   import Meme from '../components/Meme.svelte';
   import { bubbleText, WEATHER_NAMES } from '../lib/look.js';
   import type { Item } from '../lib/db.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { item: Item; nick: string; busy: boolean; error: string | null; blocked: string | null; offline: boolean; onback: () => void; onpass: (m: MemeValue) => void }
   let { item, nick, busy, error, blocked, offline, onback, onpass }: Props = $props();
 
-  const IDEAS = ['gull', 'herring', 'Oma', 'Moin', 'Fischbrötchen', 'rain', 'ferry', 'tide', 'never', 'secretly', 'loudly', 'sings', 'steals', 'eats', 'captain', 'Hamburg'];
+  const c = domi.turn;
+  const IDEAS = c.ideas;
   const received = $derived(item.meme);
   let swaps = $state<Record<number, string>>({});
   let touch = $state<'none' | 'bubble' | 'gull' | 'mood' | 'weather'>('none');
@@ -36,10 +38,10 @@
   const changed = $derived(used > 0 || touch !== 'none');
   const ideas = $derived(IDEAS.filter((w) => w.toLowerCase() !== (base[picked] ?? '').toLowerCase()).slice(0, 4));
   const touches = $derived([
-    { id: 'none', label: 'None' },
-    { id: 'bubble', label: received.bubble === 'none' ? 'Moin bubble' : received.bubble === 'moin' ? 'Moin moin' : 'No bubble' },
-    { id: 'gull', label: received.gull ? 'No gull' : 'A gull' },
-    { id: 'mood', label: received.mood === 'smiling' ? 'A frown' : 'A smile' },
+    { id: 'none', label: c.touches.none },
+    { id: 'bubble', label: received.bubble === 'none' ? c.touches.bubbleOn : received.bubble === 'moin' ? c.touches.bubbleMore : c.touches.bubbleOff },
+    { id: 'gull', label: received.gull ? c.touches.gullOff : c.touches.gullOn },
+    { id: 'mood', label: received.mood === 'smiling' ? c.touches.frown : c.touches.smile },
     { id: 'weather', label: WEATHER_NAMES[nextWeather(received.weather)] },
   ] as const);
 
@@ -65,14 +67,14 @@
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Back" onclick={onback}><Icon name="back" /></button>
+    <button type="button" class="round" aria-label={domi.common.back} onclick={onback}><Icon name="back" /></button>
     <div class="head">
-      <h1 tabindex="-1">Your turn</h1>
-      <p>Someone passed you this. Who changed what, nobody knows.</p>
+      <h1 tabindex="-1">{c.title}</h1>
+      <p>{c.intro}</p>
     </div>
   </div>
 
-  <div class="stops" role="img" aria-label={`You are stop ${item.depth + 1} of ${item.maxStops}`}>
+  <div class="stops" role="img" aria-label={c.youAre(item.depth + 1, item.maxStops)}>
     {#each Array.from({ length: item.maxStops }, (_, i) => i + 1) as n (n)}
       <span class:done={n <= item.depth} class:you={n === item.depth + 1}></span>
     {/each}
@@ -82,29 +84,29 @@
 
   <section aria-labelledby="w">
     <div class="h">
-      <h2 id="w" class="label">Tap a word to swap it</h2>
-      <span class="left" aria-live="polite">{received.budget - used} of {received.budget} {received.budget === 1 ? 'word' : 'words'} left</span>
+      <h2 id="w" class="label">{c.tapWord}</h2>
+      <span class="left" aria-live="polite">{c.left(received.budget - used, received.budget)}</span>
     </div>
     <div class="words">
       {#each base as w, i (i)}
         {@const swapped = swaps[i] !== undefined}
         {@const locked = !swapped && used >= received.budget}
         <button type="button" class="word" class:swapped aria-pressed={picked === i} disabled={locked}
-          aria-label={swapped ? `${swaps[i]}, was ${w}: tap to undo` : locked ? `${w}, no swaps left` : w} onclick={() => tap(i)}>{swapped ? swaps[i] : w}</button>
+          aria-label={swapped ? c.swapped(swaps[i] ?? '', w) : locked ? c.noSwaps(w) : w} onclick={() => tap(i)}>{swapped ? swaps[i] : w}</button>
       {/each}
     </div>
     {#if picked >= 0}
       <div class="panel alts">
-        <p>Swap “{base[picked]}” for…</p>
+        <p>{c.swapFor(base[picked] ?? '')}</p>
         <div class="row-wrap">
           {#each ideas as idea (idea)}<button type="button" class="alt" onclick={() => use(idea)}>{idea}</button>{/each}
-          {#if !typed}<button type="button" class="chip" onclick={() => (typed = true)}>Type your own</button>{/if}
+          {#if !typed}<button type="button" class="chip" onclick={() => (typed = true)}>{c.typeOwn}</button>{/if}
         </div>
         {#if typed}
           <form class="field own" onsubmit={(e) => { e.preventDefault(); use(typing); }}>
             <!-- svelte-ignore a11y_autofocus -->
-            <input bind:value={typing} maxlength={WORD_MAX} placeholder="One word" aria-label={`A new word for “${base[picked]}”`} autocomplete="off" autofocus />
-            <button type="submit" class="chip">Use it</button>
+            <input bind:value={typing} maxlength={WORD_MAX} placeholder={c.oneWord} aria-label={c.newWordFor(base[picked] ?? '')} autocomplete="off" autofocus />
+            <button type="submit" class="chip">{c.useIt}</button>
           </form>
         {/if}
       </div>
@@ -112,7 +114,7 @@
   </section>
 
   <section aria-labelledby="t">
-    <h2 id="t" class="label">One touch</h2>
+    <h2 id="t" class="label">{c.oneTouch}</h2>
     <div class="touches" role="radiogroup" aria-labelledby="t">
       {#each touches as t (t.id)}
         <button type="button" class="chip" role="radio" aria-checked={touch === t.id} onclick={() => (touch = t.id)}>{t.label}</button>
@@ -120,16 +122,16 @@
     </div>
   </section>
 
-  <label class="field sign"><span class="soft">Sign it</span><input bind:value={sign} maxlength={24} placeholder="or stay anonymous" autocomplete="nickname" /></label>
+  <label class="field sign"><span class="soft">{domi.common.signIt}</span><input bind:value={sign} maxlength={24} placeholder={c.nickPlaceholder} autocomplete="nickname" /></label>
 
   <div class="foot">
     <Report {item} />
-    <p class="warn" role={error || blocked ? 'alert' : undefined}>{error ?? blocked ?? (offline ? 'You’re offline. It goes out when you’re back.' : 'Everyone after you will see your version.')}</p>
+    <p class="warn" role={error || blocked ? 'alert' : undefined}>{error ?? blocked ?? (offline ? c.offline : c.warn)}</p>
     <button type="button" class="primary" disabled={busy || problem !== null || blocked !== null} onclick={() => onpass(version)}>
-      {busy ? 'Passing it on…' : offline ? 'Pass it on when I’m back online' : item.depth + 1 >= item.maxStops ? (changed ? 'Add the last version' : 'Add it unchanged as the last') : changed ? 'Pass it on' : 'Pass it on unchanged'}
+      {busy ? c.passing : offline ? c.passLater : item.depth + 1 >= item.maxStops ? (changed ? c.lastChanged : c.lastUnchanged) : changed ? c.pass : c.passUnchanged}
     </button>
   </div>
-  <p class="sr" aria-live="polite">{touch === 'bubble' ? `The bubble now says ${bubbleText(version.bubble) || 'nothing'}` : ''}</p>
+  <p class="sr" aria-live="polite">{touch === 'bubble' ? c.bubbleSays(bubbleText(version.bubble)) : ''}</p>
 </main>
 
 <style>

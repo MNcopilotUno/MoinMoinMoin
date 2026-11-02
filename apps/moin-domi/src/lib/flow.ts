@@ -7,6 +7,7 @@ import {
   formatLink, formatLockLink, lockHop, openHop, parseLink, readTree, secretFromText, secretToText, startChain, takeTurn,
   TesseraError, unlockHop, type HopKey, type Relay,
 } from '@moin/tessera';
+import { domi } from '@moin/ui/copy/domi';
 import { appBase, contact, today } from './config.js';
 import type { Item } from './db.js';
 
@@ -128,18 +129,7 @@ export function pathTo(nodes: readonly Node[], hopId: string): Node[] {
  */
 export function reportHref(item: Pick<Item, 'hopId' | 'secret'>): string | null {
   if (!contact) return null;
-  const body = [
-    'The Moin Domi link (keep all of it, with the part after #, or we cannot open it):',
-    linkFor(item),
-    '',
-    'Why it should come down:',
-    '',
-    '',
-    'Your name:',
-    '',
-    'I believe in good faith that this report is accurate and complete.',
-  ].join('\n');
-  return `mailto:${contact}?subject=${encodeURIComponent('Moin Domi: report a chain')}&body=${encodeURIComponent(body)}`;
+  return `mailto:${contact}?subject=${encodeURIComponent(domi.report.subject)}&body=${encodeURIComponent(domi.report.body(linkFor(item)))}`;
 }
 
 /**
@@ -156,17 +146,18 @@ export function linkInShare(...parts: readonly (string | null)[]): string | null
 
 export function errorText(error: unknown): string {
   const reason = error instanceof TesseraError ? error.reason : '';
+  const e = domi.errors;
   switch (reason) {
-    case 'offline': return 'You’re offline. Try again when you’re back.';
-    case 'not-found': return 'This Moin is gone, or it never existed.';
-    case 'not-a-link': case 'no-key': case 'bad-key': case 'bad-id': return 'This link is broken. Ask for it again, all of it.';
-    case 'locked': return 'This link doesn’t open. Ask for it again, all of it.';
-    case 'rejected': return 'Someone was quicker: this stop is already taken.';
-    case 'slow-down': return 'The relay needs a breather. Try again in a few minutes.';
-    case 'wrong-password': return 'That isn’t it. Check the spelling and try again.';
-    case 'weak-password': return 'Choose a longer password: three words, or twelve characters.';
-    case 'bad-name': return 'That name can’t be used: 3 to 32 letters, numbers and single hyphens.';
-    case 'conflict': return 'That name is taken while its chain lives. Pick another.';
-    default: return 'The relay didn’t answer. Try again in a moment.';
+    case 'offline': return e.offline;
+    case 'not-found': return e.notFound;
+    case 'not-a-link': case 'no-key': case 'bad-key': case 'bad-id': return e.broken;
+    case 'locked': return e.locked;
+    case 'rejected': return e.rejected;
+    case 'slow-down': return e.slowDown;
+    case 'wrong-password': return e.wrongPassword;
+    case 'weak-password': return e.weakPassword;
+    case 'bad-name': return e.badName;
+    case 'conflict': return e.conflict;
+    default: return e.noAnswer;
   }
 }

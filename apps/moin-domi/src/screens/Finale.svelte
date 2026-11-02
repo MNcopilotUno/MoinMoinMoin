@@ -8,9 +8,11 @@
   import { pathTo, type Node } from '../lib/flow.js';
   import { saveImage } from '../lib/save.js';
   import { localVoice, onVoices, say } from '../lib/speech.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { nodes: readonly Node[]; finalId: string; maxStops: number; onback: () => void; onnew: () => void }
   let { nodes, finalId, maxStops, onback, onnew }: Props = $props();
+  const t = domi.finale;
   const path = $derived(pathTo(nodes, finalId));
   const first = $derived(path[0]?.meme ?? null);
   const last = $derived(path[path.length - 1]?.meme ?? null);
@@ -29,36 +31,36 @@
 
 <main class="screen finale">
   <img class="sky" src={keyart} alt="" />
-  <div class="bar"><button type="button" class="round dim" aria-label="Back to the tree" onclick={onback}><Icon name="back" /></button></div>
+  <div class="bar"><button type="button" class="round dim" aria-label={t.back} onclick={onback}><Icon name="back" /></button></div>
 
   <section class="say">
-    <p class="label gold">Stop {maxStops} of {maxStops} · the last stop</p>
-    <h1 tabindex="-1">Look how far it drifted</h1>
+    <p class="label gold">{t.kicker(maxStops)}</p>
+    <h1 tabindex="-1">{t.title}</h1>
   </section>
 
   <div class="pair">
-    {#if first}<figure><Meme meme={first} size={166} bind:element={firstEl} /><figcaption>The first</figcaption></figure>{/if}
-    {#if last}<figure><Meme meme={last} size={166} bind:element={lastEl} /><figcaption class="gold">The last</figcaption></figure>{/if}
+    {#if first}<figure><Meme meme={first} size={166} bind:element={firstEl} /><figcaption>{t.first}</figcaption></figure>{/if}
+    {#if last}<figure><Meme meme={last} size={166} bind:element={lastEl} /><figcaption class="gold">{t.last}</figcaption></figure>{/if}
   </div>
 
-  <ol class="panel drift" aria-label="How the words changed">
+  <ol class="panel drift" aria-label={t.drift}>
     {#each path as n, i (n.hopId)}
       <li>
         <span class="n">{n.depth}</span>
         {#if n.meme}
-          <span>{#each marked(i ? (path[i - 1]?.meme ?? null) : null, n.meme) as p, j (j)}{j ? ' ' : ''}{#if p.changed}<strong>{p.text}</strong>{:else}{p.text}{/if}{/each}{#if i && touchNote(path[i - 1]?.meme ?? null, n.meme)}<em>{` · ${touchNote(path[i - 1]?.meme ?? null, n.meme)}`}</em>{/if}</span>
-        {:else}<span class="lost">unreadable</span>{/if}
+          <span>{#each marked(i ? (path[i - 1]?.meme ?? null) : null, n.meme) as p, j (j)}{j ? ' ' : ''}{#if p.changed}<strong>{p.text}</strong>{:else}{p.text}{/if}{/each}{#if i && touchNote(path[i - 1]?.meme ?? null, n.meme)}<em>{t.touch(touchNote(path[i - 1]?.meme ?? null, n.meme))}</em>{/if}</span>
+        {:else}<span class="lost">{t.unreadable}</span>{/if}
       </li>
     {/each}
   </ol>
 
   <div class="foot">
-    <button type="button" class="outline" disabled={!voice || !last} onclick={() => last && say(memeTitle(last))}><Icon name="speaker" size={20} /> Say it out loud</button>
+    <button type="button" class="outline" disabled={!voice || !last} onclick={() => last && say(memeTitle(last))}><Icon name="speaker" size={20} /> {t.say}</button>
     <div class="row">
-      <button type="button" class="outline quiet" onclick={saveBoth}>Save both</button>
-      <button type="button" class="primary" onclick={onnew}>Start a new chain</button>
+      <button type="button" class="outline quiet" onclick={saveBoth}>{t.saveBoth}</button>
+      <button type="button" class="primary" onclick={onnew}>{domi.common.startNewChain}</button>
     </div>
-    <p class="note c">{voice ? 'The voice is your phone’s own; nothing is sent to read it.' : 'This phone has no voice of its own, and we won’t use one from the internet.'}</p>
+    <p class="note c">{voice ? t.voice : t.noVoice}</p>
   </div>
 </main>
 

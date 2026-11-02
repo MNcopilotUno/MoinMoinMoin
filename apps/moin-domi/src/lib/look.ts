@@ -3,24 +3,25 @@ import harbour from '@moin/assets/art/harbour-night.jpg';
 import lighthouse from '@moin/assets/art/lighthouse-night.jpg';
 import market from '@moin/assets/art/market-night.jpg';
 import water from '@moin/assets/art/water-night.jpg';
-import type { Bubble, Meme, Weather, Where, Who } from '@moin/meme';
+import type { Bubble, Meme, Mood, Weather, Where, Who } from '@moin/meme';
 // Deep imports: the barrel pulls in the puzzle's scene and every day painting.
 import type { PortraitOptions } from '@moin/ui/portrait';
+import { domi } from '@moin/ui/copy/domi';
 
 /** The night paintings (the style board: "always after dark"). */
 export const PAINTINGS: Readonly<Record<Where, string>> = { harbour, market, ferry, lighthouse, water };
-export const PLACE_NAMES: Readonly<Record<Where, string>> = { harbour: 'Harbour', market: 'Market', ferry: 'Ferry', lighthouse: 'Light', water: 'Water' };
-export const WEATHER_NAMES: Readonly<Record<Weather, string>> = { clear: 'Clear sky', rain: 'Rain', fog: 'Fog', beam: 'The beam' };
+export const PLACE_NAMES: Readonly<Record<Where, string>> = domi.places;
+export const WEATHER_NAMES: Readonly<Record<Weather, string>> = domi.weather;
 
 export const CAST: readonly { who: Who; name: string }[] = [
-  { who: 'captain', name: 'The grumpy captain' },
-  { who: 'fisherman', name: 'A fisherman' },
-  { who: 'market', name: 'The market woman' },
-  { who: 'kid', name: 'A kid in a raincoat' },
-  { who: 'chatterbox', name: 'The chatterbox' },
-  { who: 'harbourmaster', name: 'The harbour master' },
-  { who: 'netmender', name: 'The net mender' },
-  { who: 'gull', name: 'The gull' },
+  { who: 'captain', name: domi.cast.captain },
+  { who: 'fisherman', name: domi.cast.fisherman },
+  { who: 'market', name: domi.cast.market },
+  { who: 'kid', name: domi.cast.kid },
+  { who: 'chatterbox', name: domi.cast.chatterbox },
+  { who: 'harbourmaster', name: domi.cast.harbourmaster },
+  { who: 'netmender', name: domi.cast.netmender },
+  { who: 'gull', name: domi.cast.gull },
 ];
 
 /** A portrait for everyone but the gull, who is drawn as itself (`SeagullSprite`). */
@@ -37,12 +38,14 @@ export function portraitOf(who: Exclude<Who, 'gull'>, mood: Meme['mood']): Portr
   }
 }
 
-export const bubbleText = (b: Bubble): string => (b === 'moin' ? 'Moin' : b === 'moinmoin' ? 'Moin moin' : '');
+const BUBBLE_TEXT: Readonly<Record<Bubble, string>> = domi.bubble;
+const MOOD_NAMES: Readonly<Record<Mood, string>> = domi.moods;
+export const bubbleText = (b: Bubble): string => BUBBLE_TEXT[b];
 
 export function describe(meme: Meme): string {
-  const who = (CAST.find((c) => c.who === meme.who)?.name ?? 'Someone').toLowerCase();
-  const extras = [meme.bubble !== 'none' ? `a “${bubbleText(meme.bubble)}” bubble` : '', meme.gull ? 'a gull' : '', meme.weather !== 'clear' ? WEATHER_NAMES[meme.weather].toLowerCase() : ''].filter(Boolean);
-  const caption = [meme.top, meme.bottom].filter(Boolean).join(' / ') || 'no words';
-  const place = meme.where === 'water' ? 'on the open water' : `at the ${PLACE_NAMES[meme.where].toLowerCase()}`;
-  return `Meme: ${who}, ${meme.mood}, ${place}${extras.length ? `, with ${extras.join(' and ')}` : ''}. “${caption}”`;
+  const m = domi.meme;
+  const who = (CAST.find((c) => c.who === meme.who)?.name ?? m.someone).toLowerCase();
+  const extras = [meme.bubble !== 'none' ? m.bubble(bubbleText(meme.bubble)) : '', meme.gull ? m.gull : '', meme.weather !== 'clear' ? WEATHER_NAMES[meme.weather].toLowerCase() : ''].filter(Boolean);
+  const place = meme.where === 'water' ? m.onWater : m.at(PLACE_NAMES[meme.where].toLowerCase());
+  return m.label(who, MOOD_NAMES[meme.mood], place, extras, m.caption(meme.top, meme.bottom));
 }

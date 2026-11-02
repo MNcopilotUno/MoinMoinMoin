@@ -22,6 +22,7 @@
   import Turn from './screens/Turn.svelte';
   import Yours from './screens/Yours.svelte';
   import Icon from './components/Icon.svelte';
+  import { domi } from '@moin/ui/copy/domi';
 
   type Screen =
     | { name: 'home' } | { name: 'create' } | { name: 'rules' } | { name: 'yours' } | { name: 'settings' }
@@ -49,7 +50,7 @@
   let sentNote = $state<string | null>(null);
   let applyUpdate = $state<(() => void) | null>(null);
 
-  const blocked = $derived(relay === null ? 'Sending isn’t switched on yet: the relay has no home. Everything else works.' : null);
+  const blocked = $derived(relay === null ? domi.blocked : null);
   const waiting = $derived(items.filter((i) => i.status === 'your-turn' || i.status === 'postcard-in'));
 
   $effect(() => {
@@ -105,7 +106,7 @@
           await putItem(item);
           await removeOutgoing(o.id);
           retryIn = 2000;
-          sentNote = item.kind === 'postcard' ? 'Your postcard was locked and sent to the relay. Its link is under Yours.' : 'Your Moin went out. Its link is under Yours.';
+          sentNote = item.kind === 'postcard' ? domi.sent.postcard : domi.sent.chain;
           if (screen.name === 'queued' && screen.outgoing.id === o.id) await go({ name: 'ready', item, started: o.kind === 'start' });
         } catch (e) {
           if (isOffline(e)) {
@@ -151,7 +152,7 @@
       if (e instanceof LockRefusal) {
         screen = { name: 'unlock', lockName, waitUntil: e.waitUntil };
         error = e.reason === 'wait' ? null : errorText(e);
-      } else if ((e as { reason?: string }).reason === 'not-found') await go({ name: 'gone', title: 'Gone with the tide', text: goneText });
+      } else if ((e as { reason?: string }).reason === 'not-found') await go({ name: 'gone', title: domi.gone.tide, text: domi.gone.tideText });
       else error = errorText(e);
     }
   }
@@ -198,7 +199,7 @@
     try {
       return await lock(relay, item, request.password, request.name);
     } catch (e) {
-      lockNote = `The password couldn’t be set (${errorText(e)}) This link opens with its key instead.`;
+      lockNote = domi.ready.lockFailed(errorText(e));
       return item;
     }
   }
@@ -208,12 +209,12 @@
 
   /** D12/D13 for any link you hand on — also after a turn — from the Ready screen. */
   async function addLock(item: Item, started: boolean, password: string, rawName: string): Promise<string | null> {
-    if (!relay) return 'Sending isn’t switched on yet.';
+    if (!relay) return domi.ready.lockOff;
     const name = rawName.trim() ? slugify(rawName) : undefined;
     try {
       if (name) {
         const taken = await relay.getLock(name).then(() => true, (e: unknown) => ((e as { reason?: string }).reason === 'not-found' ? false : Promise.reject(e)));
-        if (taken) return 'That name is taken while its chain lives. Pick another.';
+        if (taken) return domi.errors.conflict;
       }
       const locked = await lock(relay, item, password, name);
       await putItem(locked);
@@ -239,7 +240,7 @@
         const taken = await relay.getLock(request.name).then(() => true, (e: unknown) => ((e as { reason?: string }).reason === 'not-found' ? false : Promise.reject(e)));
         if (taken) {
           busy = false;
-          error = 'That name is taken while its chain lives. Pick another.';
+          error = domi.errors.conflict;
           return;
         }
       }
@@ -299,11 +300,9 @@
         const s = item.snapshot;
         return go({ name: 'tree', item, nodes: [...s.nodes], maxStops: s.maxStops, expiresDay: s.expiresDay, stale: s.seen });
       }
-      await go({ name: 'gone', title: reason === 'not-found' ? 'Gone with the tide' : 'The tree won’t open', text: reason === 'not-found' ? goneText : errorText(e) });
+      await go({ name: 'gone', title: reason === 'not-found' ? domi.gone.tide : domi.gone.tree, text: reason === 'not-found' ? domi.gone.tideText : errorText(e) });
     }
   }
-
-  const goneText = 'Nothing answers to this link any more. Chains vanish 30 days after their last stop — every version, everywhere — and then nobody can open them, not even us.';
 
   /**
    * Yours, kept honest: a chain you are in may have reached its finale or gone since you looked.
@@ -339,7 +338,7 @@
   }
 
   async function openItem(item: Item) {
-    if (item.status === 'gone') return go({ name: 'gone', title: 'Gone with the tide', text: goneText });
+    if (item.status === 'gone') return go({ name: 'gone', title: domi.gone.tide, text: domi.gone.tideText });
     if (item.status === 'your-turn') return go({ name: 'turn', item });
     if (item.kind === 'postcard' || !item.chainSecret) return go({ name: 'postcard', item });
     return openTree(item);
@@ -354,7 +353,7 @@
     }
     await go({ name: 'opening' });
     history.replaceState(null, '', import.meta.env.BASE_URL);
-    if (!relay) return go({ name: 'gone', title: 'Not yet', text: 'This Moin needs the relay, and the relay isn’t switched on yet.' });
+    if (!relay) return go({ name: 'gone', title: domi.gone.notYet, text: domi.gone.notYetText });
     try {
       const item = await receive(relay, href, (chainId) => items.find((i) => i.chainId === chainId) ?? null);
       await putItem(item);
@@ -364,9 +363,9 @@
       const reason = (e as { reason?: string }).reason;
       // Offline: put the link back, key and all, so a reload when the network returns opens it.
       if (reason === 'offline' && new URL(href).origin === location.origin) history.replaceState(null, '', href);
-      if (reason === 'not-found') await go({ name: 'gone', title: 'Gone with the tide', text: goneText });
-      else if (reason === 'offline') await go({ name: 'gone', title: 'Offline', text: 'This Moin is waiting on the relay, and you’re offline. Keep this page open, or open the link again when you’re back.' });
-      else await go({ name: 'gone', title: 'This link doesn’t open', text: errorText(e) });
+      if (reason === 'not-found') await go({ name: 'gone', title: domi.gone.tide, text: domi.gone.tideText });
+      else if (reason === 'offline') await go({ name: 'gone', title: domi.gone.offline, text: domi.gone.offlineText });
+      else await go({ name: 'gone', title: domi.gone.broken, text: errorText(e) });
     }
   }
 
@@ -375,8 +374,7 @@
     history.replaceState(null, '', import.meta.env.BASE_URL);
     const part = levelId.split('-')[0] ?? '';
     const where: Where = (WHERE as readonly string[]).includes(part) ? (part as Where) : 'harbour';
-    const top = { harbour: 'When the whole harbour', market: 'When the whole market', ferry: 'When the whole ferry', lighthouse: 'When even the lighthouse', water: 'When the whole North Sea' }[where];
-    draft = { ...FIRST_MEME, where, top, bottom: 'finally says Moin', nick: settings.rememberNick ? settings.nick : '' };
+    draft = { ...FIRST_MEME, where, top: domi.bridge.top[where], bottom: domi.bridge.bottom, nick: settings.rememberNick ? settings.nick : '' };
     rules = { ...rules, kind: 'chain' };
     await go({ name: 'create' });
   }
@@ -394,7 +392,7 @@
       if (shared) await openLink(shared);
       else {
         history.replaceState(null, '', import.meta.env.BASE_URL);
-        await go({ name: 'gone', title: 'No Moin in that', text: 'What was shared has no Moin Domi link in it. Share the whole link — the part after # is its key.' });
+        await go({ name: 'gone', title: domi.gone.noLink, text: domi.gone.noLinkText });
       }
     }
     else document.querySelector<HTMLElement>('main h1')?.focus();
@@ -457,15 +455,15 @@
   <Gone title={s.title} text={s.text} onnew={() => newMeme('chain')} onhome={() => go({ name: 'home' })} />
 {:else}
   <main class="screen opening" aria-busy="true">
-    <h1 tabindex="-1" class="title">Opening your Moin…</h1>
-    <p class="soft">Unlocking it here on your phone. <Icon name="lock" size={16} color="#F2C46B" /></p>
+    <h1 tabindex="-1" class="title">{domi.opening.title}</h1>
+    <p class="soft">{domi.opening.body} <Icon name="lock" size={16} color="#F2C46B" /></p>
   </main>
 {/if}
 
 {#if applyUpdate}
   <div class="update" role="status">
-    <span>A new Moin Domi is ready.</span>
-    <button type="button" class="chip" onclick={() => applyUpdate?.()}>Reload</button>
+    <span>{domi.update.ready}</span>
+    <button type="button" class="chip" onclick={() => applyUpdate?.()}>{domi.update.reload}</button>
   </div>
 {/if}
 
