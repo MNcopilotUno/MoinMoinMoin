@@ -9,6 +9,20 @@ What runs where afterwards:
 - **Cursus**: your home server, behind a TLS reverse proxy, at a name like `relay.<your-domain>`
   (for example a subdomain of the domain your Gitea already uses).
 
+## The short way (one command)
+On the server, with Node.js 22.18+ installed and the repository cloned anywhere:
+```bash
+sudo services/cursus/deploy/install.sh relay.<your-domain>        # Caddy; or --proxy nginx / none
+```
+It copies Cursus to `/opt/moin/services/cursus`, installs and starts the service, writes the proxy
+site (Caddy: an `import`ed file, your Caddyfile otherwise untouched), and prints what is still yours
+(DNS, router). Add `--dry-run` first to see every change it would make. Then, from any computer:
+```bash
+services/cursus/deploy/install.sh check relay.<your-domain>
+```
+which tests health and CORS from outside and tells you the two GitHub variables to set. Updating
+later: `git pull`, run the install line again. The long way below is the same, step by step.
+
 ## 0. What you need
 - A Linux machine that is on all the time (a Raspberry Pi 4 is plenty: Cursus is a few hundred
   lines and a SQLite file).
