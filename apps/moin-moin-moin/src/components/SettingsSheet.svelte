@@ -11,6 +11,10 @@
     haptics: boolean;
     theme: ThemeSetting;
     narrator: boolean;
+    voice: boolean;
+    /** Whether this phone has an on-device voice at all. */
+    voiceAvailable: boolean;
+    onvoice: (on: boolean) => void;
     /** Calm motion as shown: the setting, or the phone's reduce-motion. */
     calm: boolean;
     stars: number;
@@ -25,8 +29,8 @@
     onreset: () => void;
     onclose: () => void;
   }
-  let { sound, volume, haptics, theme, narrator, calm, stars, maxStars, solved,
-    onsound, onvolume, onhaptics, ontheme, onnarrator, oncalm, onreset, onclose }: Props = $props();
+  let { sound, volume, haptics, theme, narrator, voice, voiceAvailable, calm, stars, maxStars, solved,
+    onsound, onvolume, onhaptics, ontheme, onnarrator, onvoice, oncalm, onreset, onclose }: Props = $props();
 
   const t = copy.settings;
   const themes: ThemeSetting[] = ['light', 'auto', 'dark'];
@@ -42,8 +46,12 @@
     { id: 'haptics', label: t.haptics, hint: t.hapticsHint, on: haptics, flip: () => onhaptics(!haptics) },
   ]);
   const playSwitches = $derived([
-    { id: 'narrator', label: t.narrator, hint: t.narratorHint, on: narrator, flip: () => onnarrator(!narrator) },
-    { id: 'calm', label: t.calm, hint: t.calmHint, on: calm, flip: () => oncalm(!calm) },
+    { id: 'narrator', label: t.narrator, hint: t.narratorHint, on: narrator, flip: () => onnarrator(!narrator), disabled: false },
+    {
+      id: 'voice', label: t.voice, on: voice && narrator && voiceAvailable, flip: () => onvoice(!voice),
+      hint: !narrator ? t.voiceNoNarrator : !voiceAvailable ? t.voiceNone : t.voiceHint, disabled: !narrator || !voiceAvailable,
+    },
+    { id: 'calm', label: t.calm, hint: t.calmHint, on: calm, flip: () => oncalm(!calm), disabled: false },
   ]);
 
   onMount(() => sheet.querySelector<HTMLElement>('.close')?.focus());
@@ -126,7 +134,7 @@
 
       <h3>{t.play}</h3>
       {#each playSwitches as s (s.id)}
-        <button type="button" class="switch-row" role="switch" aria-checked={s.on} aria-labelledby={`${s.id}-label`} aria-describedby={`${s.id}-hint`} onclick={s.flip}>
+        <button type="button" class="switch-row" role="switch" aria-checked={s.on} aria-labelledby={`${s.id}-label`} aria-describedby={`${s.id}-hint`} disabled={s.disabled} onclick={s.flip}>
           <span class="text"><strong id={`${s.id}-label`}>{s.label}</strong><span id={`${s.id}-hint`}>{s.hint}</span></span>
           <span class="track" class:on={s.on} aria-hidden="true"><span class="knob"></span></span>
         </button>
@@ -201,6 +209,8 @@
     border: 0; border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
     background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer;
   }
+  .switch-row:disabled { cursor: default; }
+  .switch-row:disabled strong, .switch-row:disabled .track { opacity: 0.55; }
   .text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
   .text strong { font-size: 1rem; }
   .text span { font-size: 0.82rem; color: var(--ink-soft); }

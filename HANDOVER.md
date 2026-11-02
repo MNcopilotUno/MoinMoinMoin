@@ -32,10 +32,11 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Domi S3 | Password links and custom names on the A2 candidate (its defaults; owner's 4 questions open): Argon2id auth/wrap split, slowdown after 5 wrong, `locks` table, suggested passphrase, Unlock screen — `password-links.md` |
 | The mudflats | A fifth part of town (2026-11-02): ten 7×7 levels, par 9 → 10 (par 10 measured rare, not impossible; no unique answer found at 10), a new story finale, paintings day/night/wide; 150 stars — `.agents/features/mudflats.md` |
 | Domi, more | The gull as the star, harbour master, net mender; the open water and the mudflats as places; weather as a touch; a password for any link you hand on; all Domi copy in `packages/ui/src/copy/domi.ts` |
-| Not done | Narrator voice (ROADMAP: only if the text earned it — needs a playtest); a recorded *Moin* (synthesised); illustrator-grade art |
+| Narrator voice | Opt-in *Read it aloud* (off by default): on-device voices only, after the first tap, silent when muted — `.agents/features/narrator-voice.md` |
+| Not done | a recorded *Moin* (synthesised); illustrator-grade art |
 
 Test counts: core 60, levels 95, narration 70, ui 92, tessera 55, meme 37, cursus 37; e2e puzzle
-45 + Domi 27 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+49 + Domi 27 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
 the offline suite, which Playwright's WebKit cannot navigate);
 `validate:levels` 50
 levels ok, 14 fixtures fail as expected.
@@ -45,8 +46,7 @@ levels ok, 14 fixtures fail as expected.
 **Every roadmap phase is built; what is left is gates and the owner's choices** — see
 [`docs/PLAYTEST.md`](docs/PLAYTEST.md) for a sheet per open gate.
 
-1. **Phase 1 playtest** (sheet A): three people, a phone, no explanation.
-2. **Phase 2 check** on 2026-12-01 (sheet B).
+1. Playtests (sheets A, B) — **waived by the owner on 2026-11-02**; the kit stays for later.
 3. **Cursus on the owner's home server** (chosen 2026-11-01): follow `docs/HOSTING.md`, set the
    repository variables `CURSUS_URL` and `DOMI_CONTACT`, push → run sheets C (S1, S2) and D (S3).
 4. Decided 2026-11-01 (MOIN_DOMI.md A6, A7): postcards, the red bubble, mood as a touch, the

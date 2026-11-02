@@ -27,11 +27,13 @@ export interface Settings {
   readonly volume: number;
   readonly haptics: boolean;
   readonly narrator: boolean;
+  /** The narrator read aloud (narrator-voice.md); off until switched on. */
+  readonly voice: boolean;
   /** `null` follows the phone's reduce-motion setting until the player switches it. */
   readonly calm: boolean | null;
 }
 
-export const defaultSettings: Settings = { muted: null, theme: 'auto', volume: 100, haptics: true, narrator: true, calm: null };
+export const defaultSettings: Settings = { muted: null, theme: 'auto', volume: 100, haptics: true, narrator: true, voice: false, calm: null };
 
 export interface Progress extends Settings {
   readonly levels: Readonly<Record<string, LevelProgress>>;
@@ -88,13 +90,14 @@ function current(levels: Record<string, LevelProgress> | undefined): Record<stri
 }
 
 export async function loadProgress(): Promise<Progress> {
-  const [levels, muted, theme, volume, haptics, narrator, calm] = await Promise.all([
+  const [levels, muted, theme, volume, haptics, narrator, voice, calm] = await Promise.all([
     get<Record<string, LevelProgress>>('levels'),
     get<unknown>('muted'),
     get<unknown>('theme'),
     get<unknown>('volume'),
     get<unknown>('haptics'),
     get<unknown>('narrator'),
+    get<unknown>('voice'),
     get<unknown>('calm'),
   ]);
   return {
@@ -104,6 +107,7 @@ export async function loadProgress(): Promise<Progress> {
     volume: typeof volume === 'number' && volume >= 0 && volume <= 100 ? Math.round(volume) : defaultSettings.volume,
     haptics: bool(haptics) ?? defaultSettings.haptics,
     narrator: bool(narrator) ?? defaultSettings.narrator,
+    voice: bool(voice) ?? defaultSettings.voice,
     calm: bool(calm),
   };
 }

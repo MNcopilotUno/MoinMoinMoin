@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, tick as nextDom } from 'svelte';
+  import { onMount, tick as nextDom, untrack } from 'svelte';
   import { createGame, initialState, isSolved, stars, tap } from '@moin/core';
   import type { Game, MoinEvent, State } from '@moin/core';
   import { dailyLevel, dayId, levels, sets, setOf, toBoard } from '@moin/levels';
@@ -11,6 +11,7 @@
   import Icons from './components/Icons.svelte';
   import LevelSelect from './components/LevelSelect.svelte';
   import Narrator from './components/Narrator.svelte';
+  import { hush, localVoice, onVoices, speak } from './lib/voice';
   import SettingsSheet from './components/SettingsSheet.svelte';
   import UpdateToast from './components/UpdateToast.svelte';
   import WinCard from './components/WinCard.svelte';
@@ -57,6 +58,14 @@
   let volume = $state(defaultSettings.volume);
   let haptics = $state(defaultSettings.haptics);
   let narratorOn = $state(defaultSettings.narrator);
+  // The narrator's voice (narrator-voice.md): opt-in, on-device only, never before the first tap.
+  let voiceOn = $state(defaultSettings.voice);
+  let voiceAvailable = $state(false);
+  let tapped = $state(false);
+  $effect(() => {
+    voiceAvailable = localVoice() !== null;
+    return onVoices(() => (voiceAvailable = localVoice() !== null));
+  });
   let calmSetting = $state<boolean | null>(null);
   let systemTick = $state(0);
   let motionTick = $state(0);
@@ -306,8 +315,27 @@
     void saveSetting('haptics', on);
   }
 
+  // Speak each new line — only when asked for, after a tap, with sound on. Only a new line
+  // triggers it: moving the volume or opening settings must not repeat the line.
+  $effect(() => {
+    void lineKey;
+    untrack(() => {
+      if (line && narratorOn && voiceOn && tapped && muted !== true) speak(line.text, volume);
+    });
+  });
+  $effect(() => {
+    if (muted === true) hush();
+  });
+
+  function changeVoice(on: boolean) {
+    voiceOn = on;
+    if (!on) hush();
+    void saveSetting('voice', on);
+  }
+
   function changeNarrator(on: boolean) {
     narratorOn = on;
+    if (!on) hush();
     void saveSetting('narrator', on);
   }
 
@@ -365,6 +393,7 @@
     const stopWatchingMotion = watchSystemMotion(() => (motionTick += 1));
     // Create the AudioContext on the very first touch, before click handlers run (QA feel M7).
     document.addEventListener('pointerdown', unlockAudio, { capture: true, once: true });
+    document.addEventListener('pointerdown', () => (tapped = true), { capture: true, once: true });
     const applySettings = (p: Settings) => {
       themeSetting = p.theme;
       volume = p.volume;
@@ -372,6 +401,7 @@
       haptics = p.haptics;
       setHaptics(p.haptics);
       narratorOn = p.narrator;
+      voiceOn = p.voice;
       calmSetting = p.calm;
     };
     const begin = (progress: Progress) => {
@@ -413,7 +443,7 @@
     night={theme === 'dark'} />
 {/if}
 {#if settingsOpen}
-  <SettingsSheet sound={muted !== true} {volume} {haptics} theme={themeSetting} narrator={narratorOn} {calm}
+  <SettingsSheet sound={muted !== true} {volume} {haptics} theme={themeSetting} narrator={narratorOn} voice={voiceOn} {voiceAvailable} onvoice={changeVoice} {calm}
     stars={totalStars} maxStars={levels.length * 3} solved={levels.filter((l) => best[l.id]).length}
     onsound={setSound} onvolume={changeVolume} onhaptics={changeHaptics} ontheme={setTheme}
     onnarrator={changeNarrator} oncalm={changeCalm} onreset={startOver} onclose={closeSettings} />
@@ -455,7 +485,7 @@
   </div>
 
   <!-- On a win the line moves into the card; its space is kept so the board never shifts. -->
-  {#if !showWin}{#if narratorOn}<Narrator {line} key={lineKey} />{/if}{:else}<div class="narrator-space" aria-hidden="true"></div>{/if}
+  {#if !showWin}{#if narratorOn}<Narrator {line} key={lineKey} ondismiss={hush} />{/if}{:else}<div class="narrator-space" aria-hidden="true"></div>{/if}
   {#if showWin && solved}
     <WinCard autofocus={!picking && !settingsOpen} stars={stars(current.taps, level.par)} taps={current.taps} par={level.par}
       last={!isDaily && levelIndex === levels.length - 1} {nextLabel} onnext={next} onreplay={restart}
