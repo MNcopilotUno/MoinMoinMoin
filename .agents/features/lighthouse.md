@@ -35,6 +35,10 @@ captain is itself rejected. The validator raises the same rule as a warning and
 board or more people (the contract) or a weaker quality bar (a toy); neither is honest.
 Par 9 passes at roughly 1 in 900 candidates (27 in 24 000), enough for a schedule.
 
+*Later (mudflats.md): a sample of 500 000 found par 10 passing about once in 38 000 candidates —
+the 60 000 above were too few to call it a ceiling. What does hold: none of those boards had a
+unique answer.*
+
 ### The curve (as generated; par from the solver)
 
 "Forced" = taps on people no Moin can reach; "choices" = par − forced (taps that need thought);

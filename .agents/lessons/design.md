@@ -30,3 +30,9 @@
   banner (which looks in at 30 % height) showed only the tower's foot. Screenshots at 390 × 844
   and 1440 × 900 found both; the tower moved to 76 % of the width and the banner got a per-set
   focus (13 %).
+- **Flat water at night reads as a path.** The mudflats' creek was right by day and a dark road
+  by night: the nocturne's water and mud are nearly the same value. A moonlight wash and glints
+  inside the creek made it water again. Look at the night render on its own, not only the day.
+- **A German place, English words.** The mudflats painting carries Hallig, Warft, Pricken and the
+  sail trolley; the titles and narrator say island, mound, birch twigs — and a test keeps the
+  German out of the lines.

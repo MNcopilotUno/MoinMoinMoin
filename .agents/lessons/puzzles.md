@@ -27,7 +27,8 @@
   boards; on big ones read minimum solutions and `minChoices` instead.
 - **Keep what the intro promises.** Regenerating a level keeps its title and intro, so the
   schedule enforces what they say (13 people, 3 captains, a gull at the bakery).
-- **The quality bar caps par on a fixed board.** At 7 × 7 with ≤ 16 people, par 10 never passed
+- **The quality bar caps par on a fixed board.** *(Corrected by the mudflats, below: par 10 is
+  rare, not impossible.)* At 7 × 7 with ≤ 16 people, par 10 never passed
   the random-tapping rule (first taps to par ≤ half the people): 0 of ~12 000 par-10 candidates,
   ~97 % failing exactly that. Par 9 passes about 1 in 900. With size and crowd at the contract's
   ceiling, "harder" has to come from other axes — more captains, more taps that need thought
@@ -38,3 +39,11 @@
 - **Promise what you name, for new sets too.** The lighthouse's titles and intros ("Four
   captains", "Gulls on the gallery", a *Moin moin* at tea) are enforced by the schedule, and the
   narration test now also checks captains ("four captains" → at least four).
+- **"None in N" is a rate bound, not a ceiling.** The lighthouse called par 10 impossible at 16
+  people after 60 000 candidates; the mudflats sampled 500 000 and found it passes about once in
+  38 000 (more often with more captains). Zero hits in N says the rate is below ~3/N — quote it
+  that way, and sample at least ten times the budget you would spend before calling it a wall.
+  The real wall it found instead: every passing par-10 board had exactly two minimum solutions.
+- **At the people cap, the random-tapping rule decides the shape of par.** Every passing par-10
+  board sat on exactly 8 of 16 first taps: ten taps over eight people, i.e. two captains tapped
+  twice. More captains raise the rate (1 in 100 000 at four, 1 in 50 000 at six).

@@ -31,7 +31,7 @@ export const copy = {
   /** Phase 4 / Moin Domi S4: the bridge from a solved level to a real Moin chain. */
   startChain: 'Start a Moin chain with friends',
   startChainOffline: 'Needs the internet: Moin Domi passes it on through a relay.',
-  allDone: 'The whole town is awake, from the quay to the lamp room.',
+  allDone: 'The whole town is awake, from the quay to the last island.',
   fromTheTop: 'Back to the first level',
 
   levels: 'Levels',
