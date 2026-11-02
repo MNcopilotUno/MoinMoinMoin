@@ -3,7 +3,7 @@
  * captions and a few touches. Pure data — rendering lives in the app. This is what Tessera seals.
  */
 export const WHO = ['captain', 'fisherman', 'market', 'kid', 'chatterbox', 'gull', 'harbourmaster', 'netmender'] as const;
-export const WHERE = ['harbour', 'market', 'ferry', 'lighthouse', 'water'] as const;
+export const WHERE = ['harbour', 'market', 'ferry', 'lighthouse', 'water', 'mudflats'] as const;
 /** A touch over the painting (D4 "and similar"): clear sky, rain, fog, or the lighthouse beam. */
 export const WEATHER = ['clear', 'rain', 'fog', 'beam'] as const;
 export const BUBBLES = ['none', 'moin', 'moinmoin'] as const;

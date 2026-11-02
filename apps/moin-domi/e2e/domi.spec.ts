@@ -238,3 +238,8 @@ test('yours keeps up: a chain you started shows its finale without opening the t
   await creator.getByRole('button', { name: /All your chains/ }).click();
   await expect(creator.getByRole('button', { name: /^Finale When the captain finally says Moin/ })).toBeVisible();
 });
+
+test('from a mudflats level (S4): the meme is on the flats', async ({ page }) => {
+  await page.goto('./?from=mudflats-04');
+  await expect(page.getByRole('img', { name: /at the flats.*When even the last island \/ finally says Moin/ })).toBeVisible();
+});

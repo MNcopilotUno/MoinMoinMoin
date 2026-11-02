@@ -195,7 +195,7 @@ Adding a rule without its fixture is a review **blocker**.
   `@moin/ui/copy/domi`, never the barrel). Interface in plain English; *Moin* stays *Moin*.
 - **Look:** a touch of Monet on the North German coast — generated paintings behind the play
   (`packages/assets/scripts/paint.browser.js`: a composed underpainting of Speicherstadt gables,
-  the fish auction hall, the dyke or the lighthouse on its mole, then seeded brush strokes that
+  the fish auction hall, the dyke, the lighthouse on its mole or the island on the mudflats, then seeded brush strokes that
   follow its edges) and small
   gouache portraits with real faces in northern dress (`packages/ui/src/portrait.ts`); the smile
   is still the reward you see. Palette: lilac, dawn

@@ -45,6 +45,7 @@ describe('the meme value', () => {
   it('knows the whole cast and every place', () => {
     for (const who of ['gull', 'harbourmaster', 'netmender'] as const) expect(toMeme({ ...FIRST_MEME, who }).who).toBe(who);
     expect(toMeme({ ...FIRST_MEME, where: 'water' }).where).toBe('water');
+    expect(toMeme({ ...FIRST_MEME, where: 'mudflats' }).where).toBe('mudflats');
   });
   it('tidies whitespace and control characters', () => {
     expect(tidy('  When\tthe\n\ncaptain\u2028 ')).toBe('When the captain');
