@@ -23,8 +23,8 @@ art and the shared *Moin* sound.
   **This is built first.**
 - **Moin Domi** — a real *Moin* passed between real people via a link, in the Domi ecosystem.
   A private Stille Post for memes: specified in `docs/MOIN_DOMI.md` (stages S0–S4, decisions
-  D1–D16, amendments A1–A6). S0 done; S1 and the S2 tree are built and tested but the relay has no
-  host yet, so the live app cannot send. Domi never adds a network call to
+  D1–D16, amendments A1–A7). S0–S4 are built and tested; the relay (Cursus) waits for the
+  owner's home server (`docs/HOSTING.md`), so the live app cannot send yet. Domi never adds a network call to
   the puzzle, and the puzzle keeps working with `services/cursus` deleted.
 
 Properties that are not negotiable:
@@ -86,7 +86,7 @@ The name *Moin Moin Moin* appears in source only in `packages/core/src/constants
 pnpm install --frozen-lockfile
 pnpm --filter @moin/moin-moin-moin dev     # 127.0.0.1:5173 — never --host
 pnpm build
-pnpm test                                  # vitest: core, levels, narration, ui
+pnpm test                                  # vitest: core, levels, narration, ui, tessera, meme, cursus
 pnpm test:e2e                              # Playwright against the BUILT app, never the dev server
 pnpm test:offline                          # load once, cut the network, solve a level, reload, progress survives
 pnpm validate:levels                       # schema + solver on every level; negative fixtures must FAIL
