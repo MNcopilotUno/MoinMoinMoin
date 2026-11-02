@@ -5,40 +5,37 @@
   import { dayLabel } from '../lib/config.js';
   import type { Item } from '../lib/db.js';
   import { saveImage } from '../lib/save.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { item: Item; onback: () => void; onreply: () => void; onlink: () => void }
   let { item, onback, onreply, onlink }: Props = $props();
+  const t = domi.postcard;
   let el = $state<HTMLElement | undefined>();
-  const kicker = $derived(item.kind === 'postcard' ? 'A meme postcard' : item.status === 'last-stop' ? 'The last stop' : 'A chain');
+  const kicker = $derived(item.kind === 'postcard' ? t.kicker.postcard : item.status === 'last-stop' ? t.kicker.lastStop : t.kicker.chain);
 </script>
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Home" onclick={onback}><Icon name="back" /></button>
+    <button type="button" class="round" aria-label={domi.common.home} onclick={onback}><Icon name="back" /></button>
     <p class="label grow">{kicker}</p>
   </div>
   <section class="say">
-    <h1 tabindex="-1">{#if item.mine}Your postcard{:else if item.meme.nick}Moin from <em>{item.meme.nick}</em>{:else}A Moin for you{/if}</h1>
-    <p>
-      {#if item.status === 'last-stop'}This chain has reached its last stop; only the people in it see the finale.
-      {:else if item.status === 'full'}Someone already passed this one on, so it can’t take another turn.
-      {:else if item.mine}Only people who have the link can open it.
-      {:else}Sent to you as a private link. Only people who have the link can open it.{/if}
-    </p>
+    <h1 tabindex="-1">{#if item.mine}{t.yours}{:else if item.meme.nick}{@const from = t.from(item.meme.nick)}{from[0]}<em>{from[1]}</em>{:else}{t.anonymous}{/if}</h1>
+    <p>{item.status === 'last-stop' ? t.lastStop : item.status === 'full' ? t.full : item.mine ? t.mine : t.received}</p>
   </section>
   <div class="card"><Meme meme={item.meme} size={330} bind:element={el} /></div>
   <dl>
-    <div class="panel"><dt>Opens until</dt><dd>{dayLabel(item.expiresDay)}</dd></div>
-    <div class="panel"><dt>Who can see it</dt><dd>Only this link</dd></div>
+    <div class="panel"><dt>{t.until}</dt><dd>{dayLabel(item.expiresDay)}</dd></div>
+    <div class="panel"><dt>{t.who}</dt><dd>{t.onlyLink}</dd></div>
   </dl>
   <div class="foot">
     <div class="row">
-      {#if item.mine}<button type="button" class="primary" onclick={onlink}>Show the link</button>
-      {:else}<button type="button" class="primary" onclick={onreply}>Send one back</button>{/if}
-      <button type="button" class="outline" onclick={() => el && saveImage(el, item.meme)}>Save image</button>
+      {#if item.mine}<button type="button" class="primary" onclick={onlink}>{t.showLink}</button>
+      {:else}<button type="button" class="primary" onclick={onreply}>{t.reply}</button>{/if}
+      <button type="button" class="outline" onclick={() => el && saveImage(el, item.meme)}>{t.save}</button>
     </div>
     {#if !item.mine}<Report {item} />{/if}
-    <p class="note c">A saved image leaves the private link: it is yours to share, and it won’t expire.</p>
+    <p class="note c">{t.note}</p>
   </div>
 </main>
 

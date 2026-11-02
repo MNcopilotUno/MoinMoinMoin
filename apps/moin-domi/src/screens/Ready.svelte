@@ -6,9 +6,11 @@
   import { passwordProblem, slugify } from '@moin/tessera';
   import { sendLinkFor } from '../lib/flow.js';
   import { suggestPassphrase } from '../lib/passphrase.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { item: Item; started: boolean; password?: string | null; canLock?: boolean; onlock?: (password: string, name: string) => Promise<string | null>; onback: () => void; ondone: () => void; ontree: () => void }
   let { item, started, password = null, canLock = false, onlock, onback, ondone, ontree }: Props = $props();
+  const t = domi.ready;
   let locking = $state(false);
   let lockPw = $state('');
   let lockName = $state('');
@@ -64,59 +66,59 @@
 <main class="screen ready">
   <img class="sky" src={lighthouse} alt="" />
   <div class="bar">
-    <button type="button" class="round dim" aria-label="Back" onclick={onback}><Icon name="back" /></button>
+    <button type="button" class="round dim" aria-label={domi.common.back} onclick={onback}><Icon name="back" /></button>
     <span class="grow"></span>
-    {#if started}<span class="step">3 of 3</span>{/if}
+    {#if started}<span class="step">{domi.common.step(3)}</span>{/if}
   </div>
 
   <div class="card"><Meme meme={item.meme} size={210} /></div>
 
   <section class="say">
-    <h1 tabindex="-1">{postcard ? 'Your postcard is ready' : started ? 'Your chain is ready' : 'Passed on'}</h1>
-    <p>{postcard ? 'Send the link to whoever should see it.' : `Send it to one person. They are stop ${item.depth + 1} of ${item.maxStops}.`}</p>
+    <h1 tabindex="-1">{postcard ? t.postcardTitle : started ? t.chainTitle : t.passedTitle}</h1>
+    <p>{postcard ? t.postcardBody : t.chainBody(item.depth + 1, item.maxStops)}</p>
   </section>
 
   <figure class="panel link" data-link={link}>
-    <p class="url" aria-label="The link"><span class="d">…/m/</span>{parts.id}<span class="k">{parts.key}</span></p>
+    <p class="url" aria-label={t.link}><span class="d">{domi.lock.prefix}</span>{parts.id}<span class="k">{parts.key}</span></p>
     {#if locked}
-      <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>Locked with your password. Send the password another way — say it, or use a different app — never in the same message.</span></figcaption>
+      <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>{t.locked}</span></figcaption>
     {:else}
-      <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>The gold part is the key. It stays in the link and never reaches the relay.</span></figcaption>
+      <figcaption><Icon name="lock" size={16} color="#F2C46B" /><span>{t.key}</span></figcaption>
     {/if}
   </figure>
 
   {#if locked && password}
-    <section class="panel pwbox" aria-label="The password">
-      <p class="label">The password — shown only now</p>
+    <section class="panel pwbox" aria-label={t.password}>
+      <p class="label">{t.passwordOnce}</p>
       <p class="pw">{password}</p>
-      <button type="button" class="chip" onclick={copyPassword} aria-live="polite">{pwCopied ? 'Copied' : 'Copy password'}</button>
+      <button type="button" class="chip" onclick={copyPassword} aria-live="polite">{pwCopied ? domi.common.copied : t.copyPassword}</button>
     </section>
   {/if}
 
   {#if canLock && !locked}
     {#if locking}
-      <section class="panel lockbox" aria-label="Send it with a password">
-        <div class="field"><label for="ready-pw" class="soft">Password</label>
+      <section class="panel lockbox" aria-label={t.lockBox}>
+        <div class="field"><label for="ready-pw" class="soft">{domi.common.password}</label>
           <input id="ready-pw" bind:value={lockPw} autocomplete="new-password" autocapitalize="none" spellcheck="false" aria-describedby="ready-pw-hint" />
-          <button type="button" class="chip mini" onclick={() => (lockPw = suggestPassphrase())}>New</button></div>
-        <div class="field"><label for="ready-name" class="soft">Name</label>
-          <input id="ready-name" bind:value={lockName} placeholder="optional, e.g. kapitaen-hein" autocapitalize="none" spellcheck="false" /></div>
-        <p id="ready-pw-hint" class="hint" role={lockError ? 'alert' : undefined}>{lockError ?? (lockProblem === 'common' ? 'Too common — anyone would guess it.' : lockProblem === 'too-short' ? 'Three words, or twelve characters.' : lockName ? `…/m/${slugify(lockName)}` : 'The link will carry no key; the password opens it.')}</p>
-        <button type="button" class="primary" disabled={lockBusy || lockProblem !== null} onclick={addLock}>{lockBusy ? 'Locking it…' : 'Lock it with this password'}</button>
+          <button type="button" class="chip mini" onclick={() => (lockPw = suggestPassphrase())}>{domi.common.suggest}</button></div>
+        <div class="field"><label for="ready-name" class="soft">{domi.common.name}</label>
+          <input id="ready-name" bind:value={lockName} placeholder={t.namePlaceholder} autocapitalize="none" spellcheck="false" /></div>
+        <p id="ready-pw-hint" class="hint" role={lockError ? 'alert' : undefined}>{lockError ?? (lockProblem === 'common' ? domi.lock.tooCommon : lockProblem === 'too-short' ? domi.lock.tooShort : lockName ? domi.lock.path(slugify(lockName)) : t.noKey)}</p>
+        <button type="button" class="primary" disabled={lockBusy || lockProblem !== null} onclick={addLock}>{lockBusy ? domi.common.locking : t.lockIt}</button>
       </section>
     {:else}
-      <button type="button" class="ghost" onclick={() => { locking = true; lockPw = suggestPassphrase(); }}>Send it with a password instead</button>
+      <button type="button" class="ghost" onclick={() => { locking = true; lockPw = suggestPassphrase(); }}>{t.withPassword}</button>
     {/if}
   {/if}
 
   <div class="foot">
     <div class="row">
-      {#if canShare}<button type="button" class="primary" onclick={share}><Icon name="share" size={20} /> Send it</button>{/if}
-      <button type="button" class={canShare ? 'outline' : 'primary'} onclick={copy} aria-live="polite">{copied ? 'Copied' : 'Copy link'}</button>
+      {#if canShare}<button type="button" class="primary" onclick={share}><Icon name="share" size={20} /> {t.share}</button>{/if}
+      <button type="button" class={canShare ? 'outline' : 'primary'} onclick={copy} aria-live="polite">{copied ? domi.common.copied : t.copyLink}</button>
     </div>
-    {#if !postcard && !started}<button type="button" class="ghost" onclick={ontree}>See the tree</button>{/if}
-    <button type="button" class="ghost" onclick={ondone}>Done</button>
-    <p class="note c">Gone 30 days after its last stop. You’ll find it under Yours.</p>
+    {#if !postcard && !started}<button type="button" class="ghost" onclick={ontree}>{t.tree}</button>{/if}
+    <button type="button" class="ghost" onclick={ondone}>{t.done}</button>
+    <p class="note c">{t.note}</p>
   </div>
 </main>
 

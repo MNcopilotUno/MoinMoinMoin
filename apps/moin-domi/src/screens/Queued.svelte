@@ -2,25 +2,25 @@
   import ferry from '@moin/assets/art/ferry-night.jpg';
   import Meme from '../components/Meme.svelte';
   import type { Outgoing } from '../lib/db.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { outgoing: Outgoing; online: boolean; onhome: () => void }
   let { outgoing, online, onhome }: Props = $props();
+  const t = domi.queued;
+  const k = domi.common.outgoing;
 </script>
 
 <main class="screen queued">
   <img class="sky" src={ferry} alt="" />
   <div class="card"><Meme meme={outgoing.meme} size={200} /></div>
   <section aria-live="polite">
-    <p class="label">{outgoing.kind === 'start' ? (outgoing.rules?.kind === 'postcard' ? 'A postcard' : 'A new chain') : 'Your turn'}</p>
-    <h1 tabindex="-1">Waiting for the tide</h1>
-    <p class="t">
-      {#if online}Back online — sending it now…
-      {:else}You’re offline. It’s kept on this phone and goes out the moment you’re back, while Moin Domi is open. Nothing is sent before then.{/if}
-    </p>
+    <p class="label">{outgoing.kind === 'start' ? (outgoing.rules?.kind === 'postcard' ? k.postcard : k.chain) : k.turn}</p>
+    <h1 tabindex="-1">{t.title}</h1>
+    <p class="t">{online ? t.online : t.offline}</p>
   </section>
   <div class="foot">
-    <button type="button" class="primary" onclick={onhome}>Home</button>
-    <p class="note c">You’ll find it on Home under “Waiting to send”.</p>
+    <button type="button" class="primary" onclick={onhome}>{domi.common.home}</button>
+    <p class="note c">{t.note}</p>
   </div>
 </main>
 

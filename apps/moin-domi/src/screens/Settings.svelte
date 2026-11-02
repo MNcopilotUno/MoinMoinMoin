@@ -1,15 +1,17 @@
 <script lang="ts">
   import Icon from '../components/Icon.svelte';
   import type { Settings } from '../lib/db.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { settings: Settings; onchange: (s: Settings) => void; onforget: () => void; onback: () => void; onabout: () => void }
   let { settings, onchange, onforget, onback, onabout }: Props = $props();
+  const t = domi.settings;
   let confirming = $state(false);
   const calm = $derived(settings.calm ?? (typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches));
   const rows = $derived([
-    { key: 'rememberNick', label: 'Remember my nickname', hint: settings.nick ? `Keeps “${settings.nick}” here, so you needn’t type it each time` : 'Keeps the name you sign with here, on this phone', on: settings.rememberNick },
-    { key: 'sound', label: 'The Moin sound', hint: 'Plays when you pass a Moin on', on: settings.sound },
-    { key: 'calm', label: 'Calm motion', hint: 'No wave, no drifting; the tree simply appears', on: calm },
+    { key: 'rememberNick', label: t.rememberNick, hint: t.rememberNickHint(settings.nick), on: settings.rememberNick },
+    { key: 'sound', label: t.sound, hint: t.soundHint, on: settings.sound },
+    { key: 'calm', label: t.calm, hint: t.calmHint, on: calm },
   ] as const);
   function flip(key: 'rememberNick' | 'sound' | 'calm', on: boolean) {
     onchange(key === 'rememberNick' ? { ...settings, rememberNick: !on, nick: on ? '' : settings.nick } : { ...settings, [key]: !on });
@@ -18,11 +20,11 @@
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Home" onclick={onback}><Icon name="back" /></button>
-    <h1 tabindex="-1">Settings</h1>
+    <button type="button" class="round" aria-label={domi.common.home} onclick={onback}><Icon name="back" /></button>
+    <h1 tabindex="-1">{t.title}</h1>
   </div>
 
-  <section class="panel prefs" aria-label="Preferences">
+  <section class="panel prefs" aria-label={t.prefs}>
     {#each rows as r (r.key)}
       <button type="button" role="switch" aria-checked={r.on} onclick={() => flip(r.key, r.on)}>
         <span class="txt"><strong>{r.label}</strong><span>{r.hint}</span></span>
@@ -32,32 +34,32 @@
   </section>
 
   <section aria-labelledby="pv" class="pv">
-    <h2 id="pv" class="label">What the relay sees</h2>
+    <h2 id="pv" class="label">{t.relay}</h2>
     <div class="cols">
-      <div class="panel"><p class="gold">Never</p><ul><li>your memes</li><li>the captions</li><li>nicknames</li><li>the keys in links</li></ul></div>
-      <div class="panel"><p class="soft">Only this</p><ul><li>how the tree branches</li><li>how big each stop is</li><li>the day of each stop</li><li>when a phone asks for a stop</li></ul></div>
+      <div class="panel"><p class="gold">{t.never}</p><ul>{#each t.neverList as line (line)}<li>{line}</li>{/each}</ul></div>
+      <div class="panel"><p class="soft">{t.only}</p><ul>{#each t.onlyList as line (line)}<li>{line}</li>{/each}</ul></div>
     </div>
-    <p class="note">Like any website it sees your connection while you use it, and keeps no record of it. No accounts, no cookies, no tracking.</p>
+    <p class="note">{t.relayNote}</p>
   </section>
 
-  <section class="data" aria-label="Your data">
+  <section class="data" aria-label={t.data}>
     {#if confirming}
       <div class="panel ask" role="alertdialog" aria-labelledby="forget-q">
-        <p id="forget-q"><strong>Forget everything?</strong> Your list and every saved key leave this phone. Chains you’re in carry on without you.</p>
+        <p id="forget-q"><strong>{t.forgetAsk}</strong> {t.forgetBody}</p>
         <div class="row">
-          <button type="button" class="primary" onclick={() => (confirming = false)}>Keep it</button>
-          <button type="button" class="outline" onclick={() => { confirming = false; onforget(); }}>Forget</button>
+          <button type="button" class="primary" onclick={() => (confirming = false)}>{t.keep}</button>
+          <button type="button" class="outline" onclick={() => { confirming = false; onforget(); }}>{t.forget}</button>
         </div>
       </div>
     {:else}
-      <button type="button" class="forget" onclick={() => (confirming = true)}><Icon name="trash" size={18} color="#F2C46B" /> Forget everything on this phone</button>
-      <p class="note">Removes your list and saved keys from this phone. Chains you’re in carry on without you.</p>
+      <button type="button" class="forget" onclick={() => (confirming = true)}><Icon name="trash" size={18} color="#F2C46B" /> {t.forgetAll}</button>
+      <p class="note">{t.forgetNote}</p>
     {/if}
   </section>
 
-  <button type="button" class="about" onclick={onabout}>About and the rules <Icon name="chevron" size={18} /></button>
+  <button type="button" class="about" onclick={onabout}>{t.about} <Icon name="chevron" size={18} /></button>
 
-  <footer class="note foot"><span>Always after dark</span><span>Moin Domi 0.1 · relay v1</span></footer>
+  <footer class="note foot"><span>{t.tagline}</span><span>{t.version}</span></footer>
 </main>
 
 <style>

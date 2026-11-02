@@ -8,10 +8,12 @@
   import { marked, touchNote } from '../lib/diff.js';
   import type { Node } from '../lib/flow.js';
   import { layout } from '../lib/layout.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { item: Item; nodes: readonly Node[]; maxStops: number; expiresDay: number; stale?: number | undefined; onback: () => void; onlink: () => void; onfinale: (hopId: string) => void }
   let { item, nodes, maxStops, expiresDay, stale, onback, onlink, onfinale }: Props = $props();
 
+  const t = domi.tree;
   const TILE = 56, COL = 72, ROW = 96, PAD = 44;
   const grid = $derived(layout(nodes));
   const width = $derived(Math.max(358, PAD * 2 + (grid.width - 1) * COL + TILE));
@@ -31,16 +33,16 @@
     const x0 = p.left + TILE / 2, y0 = p.top + TILE, x1 = c.left + TILE / 2, y1 = c.top, my = (y0 + y1) / 2;
     return { id: n.hopId, d: `M${x0} ${y0} C${x0} ${my} ${x1} ${my} ${x1} ${y1}`, delay: (order.get(n.hopId) ?? 0) * STEP - 150 };
   }));
-  const label = $derived(`A tree of ${nodes.length} ${nodes.length === 1 ? 'version' : 'versions'} over ${Math.max(...nodes.map((n) => n.depth), 1)} of ${maxStops} stops.`);
+  const label = $derived(t.label(nodes.length, Math.max(...nodes.map((n) => n.depth), 1), maxStops));
 </script>
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Back" onclick={onback}><Icon name="back" /></button>
+    <button type="button" class="round" aria-label={domi.common.back} onclick={onback}><Icon name="back" /></button>
     <div class="head">
-      <h1 tabindex="-1">The tree opens</h1>
-      <p>{item.mine ? 'You’re in. Now you see every version.' : 'Every version so far.'} Gone after {dayLabel(expiresDay)}.</p>
-      {#if stale}<p class="stale" role="status">Offline: this is the tree as you saw it on {new Date(stale).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })}.</p>{/if}
+      <h1 tabindex="-1">{t.title}</h1>
+      <p>{t.intro(item.mine, dayLabel(expiresDay))}</p>
+      {#if stale}<p class="stale" role="status">{t.stale(new Date(stale).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }))}</p>{/if}
     </div>
   </div>
 
@@ -58,11 +60,11 @@
           {#each nodes as n (n.hopId)}
             {@const p = pos(n)}
             <button type="button" class="node" class:mine={n.hopId === item.hopId} aria-pressed={selected === n.hopId}
-              aria-label={`Stop ${n.depth}${n.hopId === item.hopId ? ', yours' : ''}${n.meme ? `: ${n.meme.top} ${n.meme.bottom}` : ': unreadable'}`}
+              aria-label={t.node(n.depth, n.hopId === item.hopId, n.meme)}
               style:left={`${p.left}px`} style:top={`${p.top}px`} style:animation-delay={`${(order.get(n.hopId) ?? 0) * STEP}ms`}
               onclick={() => (selected = n.hopId)}>
-              {#if n.meme}<Meme meme={n.meme} size={TILE} decorative />{:else}<span class="lost">?</span>{/if}
-              {#if n.hopId === item.hopId}<span class="you">You</span>{/if}
+              {#if n.meme}<Meme meme={n.meme} size={TILE} decorative />{:else}<span class="lost">{t.unreadableTile}</span>{/if}
+              {#if n.hopId === item.hopId}<span class="you">{t.you}</span>{/if}
             </button>
           {/each}
         </div>
@@ -75,24 +77,24 @@
       {#if sel.meme}
         <Meme meme={sel.meme} size={96} />
         <div class="txt">
-          <p class="label gold">Stop {sel.depth}{sel.hopId === item.hopId ? ' · yours' : ''}{sel.meme.nick ? ` · ${sel.meme.nick}` : ''}</p>
+          <p class="label gold">{t.detail(sel.depth, sel.hopId === item.hopId, sel.meme.nick)}</p>
           <p class="cap">“{#each marked(parent?.meme ?? null, sel.meme) as piece, i (i)}{i ? ' ' : ''}{#if piece.changed}<strong>{piece.text}</strong>{:else}{piece.text}{/if}{/each}”</p>
-          <p class="sub">{sel.depth === 1 ? 'Where it started.' : touchNote(parent?.meme ?? null, sel.meme) || (marked(parent?.meme ?? null, sel.meme).some((p) => p.changed) ? '' : 'Passed on unchanged.')}</p>
+          <p class="sub">{sel.depth === 1 ? t.started : touchNote(parent?.meme ?? null, sel.meme) || (marked(parent?.meme ?? null, sel.meme).some((p) => p.changed) ? '' : t.unchanged)}</p>
         </div>
       {:else}
-        <p class="sub">This version won’t open: someone sent something that isn’t a meme.</p>
+        <p class="sub">{t.unreadable}</p>
       {/if}
     </section>
   {/if}
 
   <div class="foot">
     <div class="row">
-      <button type="button" class="outline" onclick={() => (wave += 1)}><Icon name="wave" size={20} /> Replay the wave</button>
-      {#if finals.length}<button type="button" class="primary" onclick={() => onfinale(finals.find((f) => f.hopId === selected)?.hopId ?? finals[0]!.hopId)}>The finale</button>{/if}
+      <button type="button" class="outline" onclick={() => (wave += 1)}><Icon name="wave" size={20} /> {t.replay}</button>
+      {#if finals.length}<button type="button" class="primary" onclick={() => onfinale(finals.find((f) => f.hopId === selected)?.hopId ?? finals[0]!.hopId)}>{t.finale}</button>{/if}
     </div>
     <Report {item} />
-    {#if item.mine && item.status === 'travelling' && item.depth < maxStops}<button type="button" class="ghost" onclick={onlink}>Your link, to send it on</button>{/if}
-    {#if !finals.length}<p class="note c">The finale opens when a branch reaches stop {maxStops}.</p>{/if}
+    {#if item.mine && item.status === 'travelling' && item.depth < maxStops}<button type="button" class="ghost" onclick={onlink}>{t.yourLink}</button>{/if}
+    {#if !finals.length}<p class="note c">{t.finaleLater(maxStops)}</p>{/if}
   </div>
 </main>
 

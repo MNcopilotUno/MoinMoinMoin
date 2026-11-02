@@ -1,22 +1,23 @@
 <script lang="ts">
   import lighthouse from '@moin/assets/art/lighthouse-night.jpg';
   import SeagullSprite from '@moin/ui/SeagullSprite.svelte';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { title: string; text: string; onnew: () => void; onhome: () => void }
   let { title, text, onnew, onhome }: Props = $props();
 </script>
 
 <main class="screen gone">
-  <img class="sky" src={lighthouse} alt="The lighthouse on its mole at night, the tide far out." />
+  <img class="sky" src={lighthouse} alt={domi.gone.art} />
   <div class="gull" aria-hidden="true"><SeagullSprite /></div>
   <section>
     <h1 tabindex="-1">{title}</h1>
     <p class="t">{text}</p>
-    <p class="aside">The gull says it wasn’t him.</p>
+    <p class="aside">{domi.gone.aside}</p>
   </section>
   <div class="foot">
-    <button type="button" class="primary" onclick={onnew}>Start a new chain</button>
-    <button type="button" class="ghost" onclick={onhome}>Home</button>
+    <button type="button" class="primary" onclick={onnew}>{domi.common.startNewChain}</button>
+    <button type="button" class="ghost" onclick={onhome}>{domi.common.home}</button>
   </div>
 </main>
 

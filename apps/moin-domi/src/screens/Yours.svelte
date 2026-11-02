@@ -4,44 +4,47 @@
   import Meme from '../components/Meme.svelte';
   import { dayLabel, today } from '../lib/config.js';
   import type { Item } from '../lib/db.js';
+  import { domi } from '@moin/ui/copy/domi';
 
   interface Props { items: readonly Item[]; onback: () => void; onopen: (item: Item) => void; onforget: (item: Item) => void }
   let { items, onback, onopen, onforget }: Props = $props();
+  const y = domi.yours;
+  const TABS = ['all', 'chain', 'postcard'] as const;
   let show = $state<'all' | 'chain' | 'postcard'>('all');
   const list = $derived(items.filter((i) => show === 'all' || i.kind === show));
   function tag(i: Item): { text: string; tone: 'gold' | 'paper' | 'lilac' | 'quiet' } {
-    if (i.status === 'gone') return { text: 'Gone', tone: 'quiet' };
-    if (i.expiresDay - today() <= 3) return { text: 'Ending soon', tone: 'quiet' };
+    if (i.status === 'gone') return { text: y.tag.gone, tone: 'quiet' };
+    if (i.expiresDay - today() <= 3) return { text: y.tag.ending, tone: 'quiet' };
     switch (i.status) {
-      case 'your-turn': return { text: 'Your turn', tone: 'gold' };
-      case 'finale': return { text: 'Finale', tone: 'paper' };
-      case 'postcard-in': return { text: 'Postcard', tone: 'lilac' };
-      case 'postcard-out': return { text: 'Postcard', tone: 'quiet' };
-      case 'last-stop': case 'full': return { text: 'Seen', tone: 'quiet' };
-      default: return { text: 'Travelling', tone: 'quiet' };
+      case 'your-turn': return { text: y.tag.turn, tone: 'gold' };
+      case 'finale': return { text: y.tag.finale, tone: 'paper' };
+      case 'postcard-in': return { text: y.tag.postcard, tone: 'lilac' };
+      case 'postcard-out': return { text: y.tag.postcard, tone: 'quiet' };
+      case 'last-stop': case 'full': return { text: y.tag.seen, tone: 'quiet' };
+      default: return { text: y.tag.travelling, tone: 'quiet' };
     }
   }
   function meta(i: Item): string {
-    if (i.status === 'gone') return 'Gone with the tide · nobody can open it now';
-    const until = `gone after ${dayLabel(i.expiresDay)}`;
-    if (i.kind === 'postcard') return `${i.mine ? 'You sent it' : i.meme.nick ? `From ${i.meme.nick}` : 'Sent to you'} · ${until}`;
-    if (i.status === 'your-turn') return `Stop ${i.depth + 1} of ${i.maxStops} · ${until}`;
-    return `${i.mine && i.depth === 1 ? `You started it · ${i.maxStops} stops` : `You were stop ${i.depth} of ${i.maxStops}`} · ${until}`;
+    if (i.status === 'gone') return y.gone;
+    const until = y.until(dayLabel(i.expiresDay));
+    if (i.kind === 'postcard') return y.line(i.mine ? y.sent : i.meme.nick ? y.from(i.meme.nick) : y.toYou, until);
+    if (i.status === 'your-turn') return y.line(y.stop(i.depth + 1, i.maxStops), until);
+    return y.line(i.mine && i.depth === 1 ? y.started(i.maxStops) : y.were(i.depth, i.maxStops), until);
   }
 </script>
 
 <main class="screen">
   <div class="bar">
-    <button type="button" class="round" aria-label="Home" onclick={onback}><Icon name="back" /></button>
-    <h1 tabindex="-1">Yours</h1>
+    <button type="button" class="round" aria-label={domi.common.home} onclick={onback}><Icon name="back" /></button>
+    <h1 tabindex="-1">{y.title}</h1>
   </div>
-  <div class="tabs" role="tablist" aria-label="Show">
-    {#each [['all', 'All'], ['chain', 'Chains'], ['postcard', 'Postcards']] as [id, label] (id)}
-      <button type="button" role="tab" aria-selected={show === id} onclick={() => (show = id as typeof show)}>{label}</button>
+  <div class="tabs" role="tablist" aria-label={y.show}>
+    {#each TABS as id (id)}
+      <button type="button" role="tab" aria-selected={show === id} onclick={() => (show = id)}>{y.tabs[id]}</button>
     {/each}
   </div>
   {#if list.length === 0}
-    <p class="empty">{items.length ? 'Nothing here.' : 'Nothing yet. Chains you start or receive, and postcards, are kept here — on this phone only.'}</p>
+    <p class="empty">{items.length ? y.emptyFilter : y.empty}</p>
   {:else}
     <ul>
       {#each list as i (i.chainId)}
@@ -56,12 +59,12 @@
             </span>
             <Icon name="chevron" size={18} color="#7D7894" />
           </button>
-          {#if i.status === 'gone'}<button type="button" class="chip forget" onclick={() => onforget(i)}>Remove from this phone</button>{/if}
+          {#if i.status === 'gone'}<button type="button" class="chip forget" onclick={() => onforget(i)}>{y.forget}</button>{/if}
         </li>
       {/each}
     </ul>
   {/if}
-  <p class="note foot c">This list lives only on this phone. Everything goes 30 days after its last stop.</p>
+  <p class="note foot c">{y.note}</p>
 </main>
 
 <style>

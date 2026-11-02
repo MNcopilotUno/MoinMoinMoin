@@ -191,7 +191,8 @@ Adding a rule without its fixture is a review **blocker**.
 - **Accessible from the first commit.** Every person is a focusable button with a label ("Grumpy
   fisherman, facing east, needs two greetings"); the ripple is also announced as text.
 - **Sound is optional and never blocking.** Start muted until the first tap; respect a mute toggle.
-- **Copy** lives in `packages/ui/src/copy/`. Interface in plain English; *Moin* stays *Moin*.
+- **Copy** lives in `packages/ui/src/copy/` (Domi's in `copy/domi.ts`, imported as
+  `@moin/ui/copy/domi`, never the barrel). Interface in plain English; *Moin* stays *Moin*.
 - **Look:** a touch of Monet on the North German coast — generated paintings behind the play
   (`packages/assets/scripts/paint.browser.js`: a composed underpainting of Speicherstadt gables,
   the fish auction hall, the dyke or the lighthouse on its mole, then seeded brush strokes that
