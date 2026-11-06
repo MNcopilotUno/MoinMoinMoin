@@ -1,4 +1,5 @@
 <script lang="ts">
+  import domiIcon from '@moin/assets/icons/domi/icon-192.png';
   import { onMount } from 'svelte';
   import { stars as starsFor } from '@moin/core';
   import type { Level, LevelSet } from '@moin/levels';
@@ -32,8 +33,10 @@
     onclose: () => void;
     /** Night theme: the banners show the moonlit paintings (QA M6). */
     night?: boolean;
+    /** Moin Domi beside the puzzle: a plain link (nothing fetched until pressed); `null` offline. */
+    domiHref?: string | null;
   }
-  let { sets, best, daily, current, onpick, ondaily, onclose, night = false }: Props = $props();
+  let { sets, best, daily, current, onpick, ondaily, onclose, night = false, domiHref = 'domi/' }: Props = $props();
   const paintings = $derived(night ? nights : days);
 
   const starsOf = (l: Level): 0 | 1 | 2 | 3 => (best[l.id] ? starsFor(best[l.id]!.bestTaps, l.par) : 0);
@@ -76,6 +79,18 @@
     </button>
   {:else}
     <p class="note">{copy.dailyUnavailable}</p>
+  {/if}
+
+  {#if domiHref}
+    <a class="domi" href={domiHref}>
+      <img src={domiIcon} alt="" width="40" height="40" />
+      <span><strong>{copy.domiCard.title}</strong><span>{copy.domiCard.body}</span></span>
+    </a>
+  {:else}
+    <p class="domi off" aria-disabled="true">
+      <img src={domiIcon} alt="" width="40" height="40" />
+      <span><strong>{copy.domiCard.title}</strong><span>{copy.domiCard.offline}</span></span>
+    </p>
   {/if}
 
   {#each sets as set, s (set.id)}
@@ -124,6 +139,18 @@
   .daily strong { font-family: var(--serif); font-size: 1.45rem; font-weight: 700; }
   .daily span { opacity: 0.9; font-size: 0.9rem; }
   .note { color: var(--ink-soft); font-style: italic; }
+  /* Moin Domi keeps its own look — black, after dark — so it reads as the sister app, not a level. */
+  .domi {
+    margin: 0.6rem 0 0; min-height: 56px; display: flex; align-items: center; gap: 0.7rem;
+    border-radius: 18px; background: #000; color: #f6efdf; padding: 0.55rem 0.9rem 0.55rem 0.6rem;
+    text-decoration: none; box-shadow: 0 8px 18px var(--shadow);
+  }
+  .domi img { flex: none; border-radius: 10px; }
+  .domi > span { display: flex; flex-direction: column; gap: 1px; }
+  .domi strong { font-family: var(--serif); font-size: 1.3rem; font-weight: 700; }
+  .domi > span span { font-size: 0.85rem; color: #c9c3e2; }
+  .domi.off { opacity: 0.6; }
+  .domi:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   .banner {
     position: relative; margin: 1rem 0 0.5rem; height: 68px; border-radius: 16px; overflow: hidden;
     background: var(--painting) center var(--focus, 30%) / cover;

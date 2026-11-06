@@ -21,3 +21,21 @@ test('a solved level offers a Moin chain: a plain link, nothing fetched, disable
   await expect(page.getByRole('link', { name: 'Start a Moin chain with friends' })).toBeVisible();
   expect(domi).toEqual([]);
 });
+
+test('Moin Domi sits beside the puzzle in the level menu: a plain link, nothing fetched, disabled offline', async ({ page, context }) => {
+  const domi: string[] = [];
+  page.on('request', (r) => { if (r.url().includes('/domi/')) domi.push(r.url()); });
+  await freshStart(page);
+  await page.getByRole('button', { name: 'Levels' }).click();
+  const menu = page.getByRole('dialog');
+  const card = menu.getByRole('link', { name: /^Moin Domi/ });
+  await expect(card).toHaveAttribute('href', 'domi/');
+  expect((await card.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  expect(domi).toEqual([]);
+  await context.setOffline(true);
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Levels' }).click();
+  await expect(page.getByRole('dialog').getByRole('link', { name: /^Moin Domi/ })).toHaveCount(0);
+  await expect(page.getByRole('dialog').getByText('Needs the internet the first time.')).toBeVisible();
+  await context.setOffline(false);
+});

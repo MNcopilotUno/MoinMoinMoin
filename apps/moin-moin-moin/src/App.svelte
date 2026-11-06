@@ -440,7 +440,7 @@
 {#if picking}
   <LevelSelect {sets} {best} daily={daily ? { day: dayId(today), level: daily } : null}
     current={level.id} onpick={(i) => startLevel(i, true)} ondaily={startDaily} onclose={closeLevels}
-    night={theme === 'dark'} />
+    night={theme === 'dark'} domiHref={online ? 'domi/' : null} />
 {/if}
 {#if settingsOpen}
   <SettingsSheet sound={muted !== true} {volume} {haptics} theme={themeSetting} narrator={narratorOn} voice={voiceOn} {voiceAvailable} onvoice={changeVoice} {calm}

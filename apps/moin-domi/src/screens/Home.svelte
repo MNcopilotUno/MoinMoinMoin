@@ -2,6 +2,8 @@
   import keyart from '@moin/assets/art/harbour-night.jpg';
   import { FIRST_MEME, memeTitle } from '@moin/meme';
   import { domi } from '@moin/ui/copy/domi';
+  import { GAME_NAME } from '@moin/core';
+  import puzzleIcon from '@moin/assets/icons/icon-192.png';
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import { dayLabel } from '../lib/config.js';
@@ -99,6 +101,11 @@
       </ul>
     {/if}
     <button type="button" class="all" onclick={onyours}>{t.all} <Icon name="chevron" size={18} /></button>
+    <a class="puzzle" href="../">
+      <img src={puzzleIcon} alt="" width="40" height="40" />
+      <span class="words"><strong>{GAME_NAME}</strong><span>{t.puzzleBody}</span></span>
+      <Icon name="chevron" size={18} />
+    </a>
   </section>
 
   <p class="note foot-note">
@@ -142,4 +149,9 @@
   .out .words span { font-size: 13px; color: var(--lilac); }
   .out .problem { color: var(--gold); }
   .foot-note { margin-top: auto; padding: 18px 4px 0; text-align: center; color: #a9a3c2; }
+  /* The sister app: Moin Moin Moin, the puzzle, at the site's root. */
+  .puzzle { margin-top: 10px; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 12px 8px 8px; border-radius: 18px; background: #0e0e12; box-shadow: inset 0 0 0 1px var(--hair); text-decoration: none; }
+  .puzzle img { flex: none; border-radius: 10px; }
+  .puzzle strong { font-family: var(--serif); font-size: 20px; }
+  .puzzle .words span { font-size: 13px; color: var(--lilac); }
 </style>
