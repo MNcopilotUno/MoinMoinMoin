@@ -57,6 +57,7 @@ export const domi = {
     postcardLine: (title: string, day: string) => `${title} · until ${day}`,
     chainLine: (stop: number, of: number, title: string) => `Stop ${stop} of ${of} · ${title}`,
     all: 'All your chains and postcards',
+    puzzleBody: 'The puzzle beside it: wake the grumpy harbour, one Moin at a time.',
     footOff: 'Sending isn’t switched on yet: the relay has no home. You can make memes and look around.',
     foot: 'No accounts, no feed. Memes are locked on your phone; the relay can’t read them.',
   },

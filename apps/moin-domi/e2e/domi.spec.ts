@@ -1,4 +1,5 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
+import { GAME_NAME } from '@moin/core';
 import { NO_RELAY, RELAY } from '../playwright.config';
 
 /** Every request stays on the app's origin or goes to the relay (CLAUDE.md §1, domi-app.md). */
@@ -242,4 +243,11 @@ test('yours keeps up: a chain you started shows its finale without opening the t
 test('from a mudflats level (S4): the meme is on the flats', async ({ page }) => {
   await page.goto('./?from=mudflats-04');
   await expect(page.getByRole('img', { name: /at the flats.*When even the last island \/ finally says Moin/ })).toBeVisible();
+});
+
+test('the puzzle is one tap away from Domi’s Home, at the site’s root', async ({ page }) => {
+  await page.goto('./');
+  const puzzle = page.getByRole('link', { name: new RegExp(`^${GAME_NAME}`) });
+  await expect(puzzle).toHaveAttribute('href', '../');
+  expect((await puzzle.boundingBox())!.height).toBeGreaterThanOrEqual(44);
 });

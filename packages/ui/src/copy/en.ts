@@ -28,6 +28,12 @@ export const copy = {
     taps <= par ? `${taps} ${taps === 1 ? 'tap' : 'taps'} — that is par.` : `${taps} taps. Par is ${par}.`,
   next: 'Next level',
   replay: 'Play again',
+  /** The sister app, beside the puzzle in the level menu (side-by-side.md). */
+  domiCard: {
+    title: 'Moin Domi',
+    body: 'Pass a real Moin on: a private Stille Post for memes, with friends.',
+    offline: 'Needs the internet the first time.',
+  },
   /** Phase 4 / Moin Domi S4: the bridge from a solved level to a real Moin chain. */
   startChain: 'Start a Moin chain with friends',
   startChainOffline: 'Needs the internet: Moin Domi passes it on through a relay.',
