@@ -65,3 +65,19 @@ the quotes above should be checked against it once).
 - **Not built**: a confirmation of receipt (Art. 16(4)) and a decision notice (16(5)) by the
   system — answered by mail, by a person. Since `feature/domi-gaps` the app tells the reporter
   exactly that, right after *Report this chain*.
+
+## With the public feed (A8, 2026-11-20)
+The feed publishes posts "to a potentially unlimited number of third parties" (Art. 3(k)), so for
+that part Domi is an **online platform** (Art. 3(i)). Private chains and postcards stay what they
+were (recital 14: finite recipients chosen by the sender).
+- **Section 3 (Arts. 20–28, online platforms) does not apply** to micro and small enterprises
+  (Art. 19(1)), except Art. 24(3) — on request of the Digital Services Coordinator, report the
+  average monthly active recipients. Cursus counts nothing; the honest answer is the number of
+  distinct posts/hops per month, which the operator can count from the database.
+- Arts. 11–18 stay as above, now with posts: *Report* on every post (mail with the post's link),
+  the operator **hides** a post (`node src/cli.ts hide <postId>`) or deletes it with the chain
+  takedown. Art. 17 (statement of reasons) still needs contact details the relay does not have.
+- **Risk kept small by design**: public posts cannot carry uploaded images (A8), only captions
+  over our cast, our paintings and the open-licensed library; captions are ≤ 140 characters.
+- Terms (Art. 14) in *About and the rules* gain the public feed: what is public, for how long, who
+  can read it, and that the relay reads public posts.

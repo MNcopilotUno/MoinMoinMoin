@@ -40,7 +40,23 @@ Agreed after a review of this file; each overrides the text it names.
     five-word passphrase suggested by default.
   - **Cursus runs on the owner's home server** (systemd + Caddy, `docs/HOSTING.md`).
 
-Still open from that review (superseded by A6–A7 where they answer it): whether a touch may recolour the *Moin* bubble (D4) — the project
+- **A8 — Decided by the owner, 2026-11-20: more to make memes from, and a public feed.**
+  Overrides D1 ("our own cast only"), §8 ("photo uploads, public feeds") and CLAUDE.md §1's
+  "not a social network" *for Domi only*; the puzzle is unchanged.
+  - **Own photos and GIFs** (JPEG, PNG, WebP, GIF; ≤ 2 MB after the phone shrinks it, metadata
+    stripped on the phone). **Encrypted like everything else**: a random media key sealed inside
+    the hop, the file stored on the relay as an opaque box tied to the chain, deleted with it.
+    The uploader confirms they may share it. Allowed in chains and postcards only.
+  - **An open-licensed template library**: public-domain and CC0 images, licence checked per file
+    at its source, credited in the app (`packages/assets/library/`).
+  - **A public feed**: posts anyone can read at `…/domi/p/<id>`, newest first, gone after 30 days.
+    Public posts are **not encrypted** (that is what public means; the relay reads them) and may
+    use the cast, the paintings and the library — **not uploaded photos** (lead's call, so that
+    strangers' images are never published from the owner's home server). No accounts, no follows,
+    no ranking: a nickname per post, as in chains. Report on every post; the operator hides posts.
+    Under the DSA the feed makes Domi an online platform (`.agents/features/dsa.md`).
+
+Still open from that review (superseded by A6–A8 where they answer it): whether a touch may recolour the *Moin* bubble (D4) — the project
 rule is that red means *Moin*; hosting and domain for Cursus (needed before S1); the ROADMAP's
 Phase 2 gate was waived by the owner on 2026-10-24/30.
 
@@ -66,7 +82,8 @@ account system.
 
 ### The meme
 
-- **D1 — Templates are our own cast only.** Fishermen, the grumpy captain, the market woman, kids,
+- **D1 — Templates are our own cast only.** *(Widened by A8: own photos and GIFs in private
+  chains, and an open-licensed library.)* Fishermen, the grumpy captain, the market woman, kids,
   seagulls. No photo uploads in v1. This keeps us clear of copyrighted meme images and keeps the
   relay free of uploaded media.
 - **D2 — Captions are free text**, up to 140 characters, top and/or bottom.
@@ -257,8 +274,9 @@ reason when offline.
 
 ## 8. Out of scope
 
-Photo uploads, video, voice recordings, public feeds, discovery, accounts, push notifications,
-moderation tooling beyond takedown of a reported chain, and any analytics.
+Video, voice recordings, discovery beyond the one public feed (no search, no ranking, no
+"for you"), accounts, follows, push notifications, and any analytics. *(Photo uploads and a
+public feed moved in with A8.)*
 
 ## 9. Open questions
 
