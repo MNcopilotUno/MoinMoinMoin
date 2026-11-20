@@ -99,6 +99,8 @@ the "Sending isn't switched on yet" line is gone, and *About and the rules* show
   part after `/m/` (an id or a name) and run
   `sudo -u nobody CURSUS_DB=/var/lib/cursus/cursus.sqlite node /opt/moin/services/cursus/src/cli.ts takedown <it>`
   — or stop the service, run it as root, start it again. Answer the reporter by mail.
+- **Hide a reported public post** (the feed, A8): the part after `/p/` in the reported link, then
+  the same command with `hide <it>` instead of `takedown <it>` (`takedown` on a post deletes it).
 - **Logs**: `journalctl -u cursus` shows starts, stops and internal errors — never requests.
 - **Backups**: none, on purpose. Every chain deletes itself 30 days after its last stop; a backup
   would keep what was promised to vanish. If the disk dies, chains are gone — said in the app.

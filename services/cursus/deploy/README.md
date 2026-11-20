@@ -32,7 +32,8 @@ Moin Domi with that relay (`VITE_CURSUS_URL`), and its page may talk to that ori
 ## Before telling anyone (DSA, `.agents/features/dsa.md`)
 - set `VITE_DOMI_CONTACT` (repository variable `DOMI_CONTACT`) to an address you read: it is the
   point of contact (Arts. 11–12) and where reports go (Art. 16);
-- to take a reported chain down: `CURSUS_DB=/var/lib/cursus/cursus.sqlite node src/cli.ts takedown <hopId>`.
+- to take a reported chain down: `CURSUS_DB=/var/lib/cursus/cursus.sqlite node src/cli.ts takedown <hopId>`;
+- to hide a reported public post (A8): `… node src/cli.ts hide <postId>` (the 8 characters after `/domi/p/`); `takedown <postId>` deletes it.
 
 ## Check it
 `curl https://relay.example.org/v1/health` → `{"ok":true,"api":1}`.

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { NICK_MAX, tidy, type Meme } from '@moin/meme';
+  import { isPublishable, NICK_MAX, tidy, type Meme } from '@moin/meme';
   import Icon from '../components/Icon.svelte';
   import { passwordProblem, slugify, isCustomName } from '@moin/tessera';
   import type { LinkChoice, Rules } from '../lib/flow.js';
@@ -29,6 +29,8 @@
   const linkReady = $derived(pwProblem === null && nameProblem === null);
   const pwHint = $derived(pwProblem === 'common' ? domi.lock.tooCommon : pwProblem === 'too-short' ? domi.lock.tooShort : pwProblem === 'empty' ? t.pwEmpty : t.pwGood);
   const chain = $derived(rules.kind === 'chain');
+  const post = $derived(rules.kind === 'post');
+  const postBlocked = $derived(post && !isPublishable(draft));
   const steppers = $derived([
     { key: 'maxStops', label: t.stops.label, hint: t.stops.hint, value: rules.maxStops, min: 3, max: 12, spoken: t.stops.spoken(rules.maxStops) },
     { key: 'maxBranches', label: t.branches.label, hint: t.branches.hint, value: rules.maxBranches, min: 1, max: 3, spoken: t.branches.spoken(rules.maxBranches) },
@@ -49,7 +51,8 @@
 
   <div class="seg" role="radiogroup" aria-label={t.kind}>
     <button type="button" role="radio" aria-checked={chain} onclick={() => onrules({ ...rules, kind: 'chain' })}>{t.chain}</button>
-    <button type="button" role="radio" aria-checked={!chain} onclick={() => onrules({ ...rules, kind: 'postcard' })}>{t.postcard}</button>
+    <button type="button" role="radio" aria-checked={rules.kind === 'postcard'} onclick={() => onrules({ ...rules, kind: 'postcard' })}>{t.postcard}</button>
+    <button type="button" role="radio" aria-checked={post} onclick={() => onrules({ ...rules, kind: 'post' })}>{t.post}</button>
   </div>
 
   {#if chain}
@@ -64,6 +67,13 @@
       {/each}
     </section>
     <p class="hint">{t.touchHint[0]}<strong>{t.touchHint[1]}</strong>{t.touchHint[2]}</p>
+  {:else if post}
+    <section class="panel card public">
+      <strong>{t.postTitle}</strong>
+      <ul>
+        {#each t.postPoints as point (point)}<li>{point}</li>{/each}
+      </ul>
+    </section>
   {:else}
     <section class="panel card">
       <strong>{t.postcardTitle}</strong>
@@ -77,6 +87,7 @@
     <input value={draft.nick} maxlength={NICK_MAX} placeholder={t.nickPlaceholder} autocomplete="nickname"
       oninput={(e) => ondraft({ ...draft, nick: e.currentTarget.value })} onblur={() => ondraft({ ...draft, nick: tidy(draft.nick) })} /></label>
 
+  {#if !post}
   <section aria-labelledby="lk" class="links">
     <h2 id="lk" class="label">{t.link}</h2>
     <div role="radiogroup" aria-labelledby="lk">
@@ -103,8 +114,17 @@
       <p id="pw-hint" class="hint" class:bad={pwProblem && pwProblem !== 'empty'} aria-live="polite">{pwHint}</p>
     {/if}
   </section>
+  {/if}
 
   <div class="foot">
+    {#if post}
+      <p class="warn" role={error || blocked || postBlocked ? 'alert' : undefined}>
+        {error ?? blocked ?? (postBlocked ? t.postPicture : offline ? t.postOffline : t.postWarn)}
+      </p>
+      <button type="button" class="primary" disabled={busy || blocked !== null || postBlocked || offline} onclick={onmake}>
+        {busy ? domi.feed.loading : t.makePost}
+      </button>
+    {:else}
     <p class="warn" role={error || blocked ? 'alert' : undefined}>
       {error ?? blocked ?? (offline ? t.offline : chain ? t.chainWarn : t.postcardWarn)}
     </p>
@@ -112,6 +132,7 @@
       <Icon name="lock" size={20} />
       {busy ? domi.common.locking : offline ? t.sendLater : chain ? t.makeChain : t.makePostcard}
     </button>
+    {/if}
   </div>
 </main>
 
@@ -132,6 +153,7 @@
   .hint strong { color: var(--paper); }
   .card { margin-top: 12px; padding: 16px; }
   .card strong { font-family: var(--serif); font-size: 24px; }
+  .card.public { box-shadow: inset 0 0 0 1.5px var(--gold); }
   .card ul { margin: 10px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; line-height: 1.4; color: #d9d3e9; }
   .sign { margin-top: 12px; }
   .sign .soft { font-size: 14px; font-weight: 700; }

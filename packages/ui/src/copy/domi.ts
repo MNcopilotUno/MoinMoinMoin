@@ -59,7 +59,9 @@ export const domi = {
     all: 'All your chains and postcards',
     puzzleBody: 'The puzzle beside it: wake the grumpy harbour, one Moin at a time.',
     footOff: 'Sending isn’t switched on yet: the relay has no home. You can make memes and look around.',
-    foot: 'No accounts, no feed. Memes are locked on your phone; the relay can’t read them.',
+    feedTitle: 'The public feed',
+    feedBody: 'Memes anyone can post and anyone can see. No likes, no follows; each is gone after 30 days.',
+    foot: 'No accounts. Chains and postcards are locked on your phone; the relay can’t read them. Only what you post to the feed is public.',
   },
 
   create: {
@@ -130,6 +132,17 @@ export const domi = {
     sendLater: 'Send it when I’m back online',
     makeChain: 'Lock it and make the first link',
     makePostcard: 'Lock it and make the link',
+    post: 'Public',
+    postTitle: 'A public post',
+    postPoints: [
+      'Anyone can see it in the public feed, for 30 days.',
+      'It is not encrypted: the relay, and everyone, can read it.',
+      'Nobody can change it. Signing it is up to you.',
+    ] as const,
+    postWarn: 'Anyone can see this, for 30 days.',
+    postPicture: 'Your own picture stays private: it can’t be posted. Use a painting, or send it as a chain or a postcard.',
+    postOffline: 'You’re offline. Posting needs the internet.',
+    makePost: 'Post it publicly',
   },
 
   ready: {
@@ -313,7 +326,9 @@ export const domi = {
     back: 'Back to settings',
     title: 'About and the rules',
     whatTitle: 'What Moin Domi is',
-    what: 'A private Stille Post for memes between friends, from the cast of the Moin harbour. No accounts, no feed, no search: a meme reaches only the people its link is sent to, and every chain is deleted 30 days after its last stop.',
+    what: 'A private Stille Post for memes between friends, from the cast of the Moin harbour. No accounts, no search: a chain or postcard reaches only the people its link is sent to, and is deleted 30 days after its last stop.',
+    feedTitle: 'The public feed',
+    feed: 'What you post to the public feed is not private: anyone can read it, the relay included, for 30 days from the day it was posted. It shows a meme with a painting or a library image, its captions and the nickname you chose — never your own photos, which stay in private chains. Each post has a Report button; we hide a post that breaks these rules.',
     notAllowed: 'Not allowed',
     rules: [
       'anything illegal where you or the people you send it to live;',
@@ -364,6 +379,31 @@ export const domi = {
   },
 
   /** A notice under DSA Art. 16(2), written in the person's own mail app (`lib/flow.ts`). */
+  feed: {
+    title: 'The public feed',
+    intro: 'Memes anyone can post. No likes, no follows, no ranking: newest first, each gone after 30 days. Not encrypted.',
+    post: 'Post a meme',
+    empty: 'Nothing posted yet. Be the first.',
+    more: 'Load older posts',
+    noMore: 'That’s everything from the last 30 days.',
+    loading: 'Looking…',
+    posted: 'Posted. Anyone can see it for 30 days.',
+    by: (nick: string) => (nick ? `by ${nick}` : 'unsigned'),
+    ago: (days: number) => (days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`),
+    share: 'Share',
+    copyLink: 'Copy link',
+    report: 'Report',
+    reportSent: 'Your mail app has the report with the post’s link. A person reads every report; a post that breaks the rules is hidden for everyone.',
+    reportSubject: 'Moin Domi: report a public post',
+    reportBody: (link: string) => ['The public post:', link, '', 'Why it should come down:', '', '', 'Your name:', '', 'I believe in good faith that this report is accurate and complete.'].join('\n'),
+    one: 'A public post',
+    gone: 'This post is gone: hidden after a report, or older than 30 days.',
+    offline: 'The feed needs the internet.',
+    off: 'The feed isn’t switched on yet: the relay has no home.',
+    all: 'The whole feed',
+    newest: 'Newest first',
+  },
+
   report: {
     link: 'Report this chain',
     sent: 'Your mail app has the report with the full link. A person reads every report and answers by mail; a chain that breaks the rules is deleted for everyone.',

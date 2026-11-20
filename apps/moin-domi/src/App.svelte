@@ -22,6 +22,8 @@
   import Tree from './screens/Tree.svelte';
   import Turn from './screens/Turn.svelte';
   import Yours from './screens/Yours.svelte';
+  import Feed from './screens/Feed.svelte';
+  import { postIdIn, publish } from './lib/feed.js';
   import Icon from './components/Icon.svelte';
   import { domi } from '@moin/ui/copy/domi';
 
@@ -36,7 +38,8 @@
     | { name: 'unlock'; lockName: string; waitUntil: number | null }
     | { name: 'tree'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; stale?: number }
     | { name: 'finale'; item: Item; nodes: Node[]; maxStops: number; expiresDay: number; finalId: string }
-    | { name: 'gone'; title: string; text: string };
+    | { name: 'gone'; title: string; text: string }
+    | { name: 'feed'; focusId: string | null; postedId: string | null };
 
   let screen = $state<Screen>({ name: 'home' });
   let items = $state<Item[]>([]);
@@ -236,9 +239,27 @@
     }
   }
 
+  /** A8: a public post. Never queued offline — it is a deliberate act, done while online. */
+  async function postPublicly() {
+    if (!relay || busy) return;
+    busy = true;
+    error = null;
+    try {
+      const id = await publish(relay, { ...draft, nick: tidy(draft.nick) });
+      await rememberNick(draft.nick);
+      moin();
+      busy = false;
+      await go({ name: 'feed', focusId: null, postedId: id });
+    } catch (e) {
+      busy = false;
+      error = errorText(e);
+    }
+  }
+
   async function make() {
     if (!relay || busy) return;
-    const outgoing: Outgoing = { id: crypto.randomUUID(), kind: 'start', meme: { ...draft, nick: tidy(draft.nick) }, rules, created: Date.now(), ...(lockRequest() ? { lock: lockRequest()! } : {}) };
+    if (rules.kind === 'post') return postPublicly();
+    const outgoing: Outgoing = { id: crypto.randomUUID(), kind: 'start', meme: { ...draft, nick: tidy(draft.nick) }, rules: { ...rules, kind: rules.kind }, created: Date.now(), ...(lockRequest() ? { lock: lockRequest()! } : {}) };
     if (!navigator.onLine) return enqueue(outgoing);
     busy = true;
     error = null;
@@ -394,7 +415,11 @@
     void prunePictures();
     const href = location.href;
     const url = new URL(href);
-    if (/\/m\/[^/]+\/?$/.test(url.pathname) || url.searchParams.has('m')) await openLink(href);
+    const postId = postIdIn(url);
+    if (postId) {
+      history.replaceState(null, '', import.meta.env.BASE_URL);
+      await go({ name: 'feed', focusId: postId, postedId: null });
+    } else if (/\/m\/[^/]+\/?$/.test(url.pathname) || url.searchParams.has('m')) await openLink(href);
     else if (url.searchParams.has('from')) await fromPuzzle(url.searchParams.get('from') ?? '');
     else if (['share-text', 'share-url', 'share-title'].some((k) => url.searchParams.has(k))) {
       // From the phone's share sheet (installed app): open the Moin in what was shared.
@@ -424,7 +449,9 @@
 {#if screen.name === 'home'}
   <Home {waiting} {outbox} {sentNote} sendingOff={relay === null} onchain={() => newMeme('chain')} onsend={() => newMeme('postcard')}
     onopen={openItem} onyours={() => { void go({ name: 'yours' }); void refreshStatuses(); }} onsettings={() => go({ name: 'settings' })}
-    ondiscard={discard} ondismiss={() => (sentNote = null)} />
+    ondiscard={discard} ondismiss={() => (sentNote = null)} onfeed={() => go({ name: 'feed', focusId: null, postedId: null })} />
+{:else if screen.name === 'feed'}
+  <Feed {relay} offline={!online} focusId={screen.focusId} postedId={screen.postedId} onback={() => go({ name: 'home' })} onpost={() => newMeme('post')} />
 {:else if screen.name === 'create'}
   <Create {draft} bind:consent postcard={rules.kind === 'postcard'} onchange={(m) => (draft = m)} onback={() => go({ name: 'home' })} onnext={() => go({ name: 'rules' })} />
 {:else if screen.name === 'rules'}

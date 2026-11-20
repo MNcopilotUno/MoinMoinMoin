@@ -19,6 +19,11 @@
   </section>
 
   <section class="panel">
+    <h2 class="label">{t.feedTitle}</h2>
+    <p>{t.feed}</p>
+  </section>
+
+  <section class="panel">
     <h2 class="label">{t.notAllowed}</h2>
     <ul>
       {#each t.rules as rule (rule)}<li>{rule}</li>{/each}

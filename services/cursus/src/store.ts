@@ -1,8 +1,8 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 
 /** §4 of docs/MOIN_DOMI.md — and nothing else. `.agents/features/cursus.md`. */
-export const LIMITS = { maxHops: 100, lifeDays: 30, pendingMs: 10 * 60 * 1000, contentChars: 2800, wrapChars: 60, mediaBytes: 2.2 * 1024 * 1024, mediaPerChain: 4, mediaOrphanMs: 30 * 60 * 1000 } as const;
+export const LIMITS = { maxHops: 100, lifeDays: 30, pendingMs: 10 * 60 * 1000, contentChars: 2800, wrapChars: 60, mediaBytes: 2.2 * 1024 * 1024, mediaPerChain: 4, mediaOrphanMs: 30 * 60 * 1000, postChars: 2048, postsPerPage: 20 } as const;
 
 const SCHEMA = `
   PRAGMA foreign_keys = ON;
@@ -24,6 +24,10 @@ const SCHEMA = `
   CREATE TABLE IF NOT EXISTS media (
     id TEXT PRIMARY KEY, chainId TEXT NOT NULL, box BLOB NOT NULL, created INTEGER NOT NULL);
   CREATE INDEX IF NOT EXISTS media_chain ON media(chainId);
+  -- A8: the public feed. Plain text by design (it is public); no author, no address.
+  CREATE TABLE IF NOT EXISTS posts (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, day INTEGER NOT NULL,
+    expiresDay INTEGER NOT NULL, content TEXT NOT NULL, hidden INTEGER NOT NULL DEFAULT 0);
 `;
 
 /** The slowdown after wrong passwords (password-links.md): 5 free, then 1, 2, 4 … minutes, ≤ 24 h. */
@@ -65,6 +69,13 @@ export function openStore(path: string) {
     lockResult: db.prepare('UPDATE locks SET failures = ?, waitUntil = ? WHERE name = ?'),
     expired: db.prepare('DELETE FROM chains WHERE expiresDay < ?'),
     stale: db.prepare('DELETE FROM hops WHERE pendingSince IS NOT NULL AND pendingSince < ?'),
+    postInsert: db.prepare('INSERT INTO posts (id, day, expiresDay, content) VALUES (?, ?, ?, ?)'),
+    postIdTaken: db.prepare('SELECT 1 FROM posts WHERE id = ?'),
+    postGet: db.prepare('SELECT id, seq, day, content FROM posts WHERE id = ? AND hidden = 0 AND expiresDay >= ?'),
+    postPage: db.prepare('SELECT id, seq, day, content FROM posts WHERE hidden = 0 AND expiresDay >= ? AND seq < ? ORDER BY seq DESC LIMIT ?'),
+    postHide: db.prepare('UPDATE posts SET hidden = 1 WHERE id = ?'),
+    postDelete: db.prepare('DELETE FROM posts WHERE id = ?'),
+    postsExpired: db.prepare('DELETE FROM posts WHERE expiresDay < ?'),
   };
   const tx = <T>(f: () => T): T => {
     db.exec('BEGIN IMMEDIATE');
@@ -139,12 +150,13 @@ export function openStore(path: string) {
       return ok({ chainId, maxStops: c.maxStops, maxBranches: c.maxBranches, expiresDay: c.expiresDay, hops });
     },
     /** Hourly: chains past their day, pending hops past ten minutes. */
-    sweep(now: number): { chains: number; pending: number; media: number } {
+    sweep(now: number): { chains: number; pending: number; media: number; posts: number } {
       const chains = Number(q.expired.run(dayOf(now)).changes);
       const pending = Number(q.stale.run(now - LIMITS.pendingMs).changes);
       // Pictures whose chain never came (30 min) or is gone (expired, taken down).
       const media = Number(q.mediaOrphans.run(now - LIMITS.mediaOrphanMs).changes);
-      return { chains, pending, media };
+      const posts = Number(q.postsExpired.run(dayOf(now)).changes);
+      return { chains, pending, media, posts };
     },
     /** A8: a sealed picture for a chain that exists and lives, or is about to be made. */
     putMedia(id: string, chainId: string, box: Uint8Array, now: number): Outcome<{ day: number }> {
@@ -194,8 +206,31 @@ export function openStore(path: string) {
         return { ok: false as const, status: 401 as const, waitUntil: wait ? now + wait : null };
       });
     },
-    /** DSA Art. 6: remove a reported chain, by any of its hop ids, a lock name, or its chain id. */
+    /** A8: a public post. The relay chooses its id; it keeps no author and no address. */
+    createPost(content: string, now: number): { id: string; day: number } {
+      return tx(() => {
+        let id: string;
+        do id = randomBytes(6).toString('base64url'); while (q.postIdTaken.get(id));
+        const day = dayOf(now);
+        q.postInsert.run(id, day, day + LIMITS.lifeDays, content);
+        return { id, day };
+      });
+    },
+    /** The newest live, not hidden posts, before `before` (a `seq`), 20 at a time. */
+    listPosts(before: number | null, now: number): { id: string; seq: number; day: number; content: string }[] {
+      return q.postPage.all(dayOf(now), before ?? Number.MAX_SAFE_INTEGER, LIMITS.postsPerPage) as { id: string; seq: number; day: number; content: string }[];
+    },
+    getPost(id: string, now: number): Outcome<{ id: string; seq: number; day: number; content: string }> {
+      const p = q.postGet.get(id, dayOf(now)) as { id: string; seq: number; day: number; content: string } | undefined;
+      return p ? ok(p) : fail(404);
+    },
+    /** Operator, after a report (DSA Arts. 6, 16): the post stops being shown; `takedown` deletes it. */
+    hidePost(id: string): boolean {
+      return Number(q.postHide.run(id).changes) > 0;
+    },
+    /** DSA Art. 6: remove a reported chain (by any of its hop ids, a lock name, its chain id) or post. */
     takedown(id: string): boolean {
+      if (Number(q.postDelete.run(id).changes) > 0) return true;
       const lock = q.lock.get(id) as LockRow | undefined;
       const h = q.hop.get(id) as HopRow | undefined;
       const chainId = lock ? lock.chainId : h ? h.chainId : id;

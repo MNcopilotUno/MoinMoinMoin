@@ -13,7 +13,8 @@ import type { Item } from './db.js';
 import { bytesOf, ensurePicture, remember } from './pictures.svelte.js';
 
 export interface Rules {
-  readonly kind: 'chain' | 'postcard';
+  /** `post`: the public feed (A8) — not a chain at all, no link, no key. */
+  readonly kind: 'chain' | 'postcard' | 'post';
   readonly maxStops: number;
   readonly maxBranches: number;
 }
@@ -63,7 +64,7 @@ export async function start(relay: Relay, rules: Rules, draft: Meme): Promise<It
   const meme = draft.image ? { ...draft, image: await sendPicture(relay, chainId, draft.image) } : draft;
   const { hop, chainSecret } = await startChain(relay, limits, encodeMeme(meme), chainId);
   return {
-    chainId: hop.chainId, kind: rules.kind, status: rules.kind === 'postcard' ? 'postcard-out' : 'travelling',
+    chainId: hop.chainId, kind: rules.kind === 'postcard' ? 'postcard' : 'chain', status: rules.kind === 'postcard' ? 'postcard-out' : 'travelling',
     hopId: hop.hopId, parentId: null, secret: secretToText(hop.secret), chainSecret: secretToText(chainSecret),
     depth: 1, ...limits, meme, expiresDay: today() + 30, updated: Date.now(), mine: true,
   };
