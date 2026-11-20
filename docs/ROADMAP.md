@@ -22,6 +22,9 @@ unfinished platform. The gates are there to stop that.
 > playtest")**; every listed item is now built — the narrator's voice last, as an opt-in. What
 > remains is the relay's host (`HOSTING.md`). [`PLAYTEST.md`](PLAYTEST.md) stays for whenever the
 > gates are run after all. See `HANDOVER.md`.
+>
+> **2026-11-20, Domi A8** (the owner's request): own photos and GIFs in private chains, and a public
+> feed — both built and tested; the open-licensed meme library is in progress.
 
 ## Phase 0 — Design and foundations · ~1–2 weeks
 
