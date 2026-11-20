@@ -89,6 +89,8 @@ export const domi = {
     needConsent: 'Tick “I may share this picture” first',
     removePicture: 'Use a painting instead',
     readingPicture: 'Reading the picture…',
+    library: 'From the library',
+    libraryNote: 'Paintings and photos nobody owns — public domain or CC0. Free to use, public posts too.',
     pictureErrors: {
       tooBig: 'That GIF is over 2 MB. Try a shorter one, or a photo.',
       notPicture: 'That isn’t a photo or a GIF this phone can read (JPEG, PNG, WebP or GIF).',
@@ -327,6 +329,10 @@ export const domi = {
     title: 'About and the rules',
     whatTitle: 'What Moin Domi is',
     what: 'A private Stille Post for memes between friends, from the cast of the Moin harbour. No accounts, no search: a chain or postcard reaches only the people its link is sent to, and is deleted 30 days after its last stop.',
+    libraryTitle: 'Pictures from the library',
+    library: 'Every library picture is in the public domain or given away under CC0: free for anyone, for anything. With thanks to the museums and photographers who made them free:',
+    source: 'source',
+    showCredits: (n: number) => `All ${n} pictures and their sources`,
     feedTitle: 'The public feed',
     feed: 'What you post to the public feed is not private: anyone can read it, the relay included, for 30 days from the day it was posted. It shows a meme with a painting or a library image, its captions and the nickname you chose — never your own photos, which stay in private chains. Each post has a Report button; we hide a post that breaks these rules.',
     notAllowed: 'Not allowed',
@@ -471,6 +477,7 @@ export const domi = {
     caption: (top: string, bottom: string) => [top, bottom].filter(Boolean).join(' / ') || 'no words',
     onWater: 'on the open water',
     overPicture: 'over their own picture',
+    overLibrary: (title: string) => `over “${title}”`,
     at: (place: string) => `at the ${place}`,
   },
 

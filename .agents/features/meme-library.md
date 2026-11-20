@@ -70,3 +70,20 @@ flowchart LR
 | no APP1 (EXIF/XMP) or APP13 (IPTC) segment | a file with EXIF fails |
 | only the known keys | an extra key (e.g. `url`) fails |
 | the header reader reads a hand-made SOF0 | non-JPEG and truncated bytes return null |
+
+## In the app (2026-11-20, `feature/domi-library`)
+- *Make the meme* → **From the library**: a scrolling row of 24 tiles (lazy-loaded), a radio group
+  named by each title; the chosen one's credit (title, creator, year, licence) under it. Picking
+  one sets `template`, drops an own picture, and starts with *Nobody* in front; a painting tile
+  drops it again. Allowed in chains, postcards and **public posts** (nobody owns them).
+- Rendering, *Save image* and the screen-reader label ("over “The Scream”") know `template`; an
+  id this build lacks leaves the ground black rather than failing.
+- **Not precached** (3.6 MB): the worker caches each library file the first time it is shown
+  (`CacheFirst`, `domi-library`, 40 entries). Precache stays at 29 entries, 1.28 MB.
+- *About and the rules* → **Pictures from the library**: all 24 credits with their Commons source,
+  behind *All 24 pictures and their sources*, each a 44 px row link.
+
+### Evidence
+Domi e2e `library.spec.ts` 3 (pick with credit → chain → next stop decodes the 1080 px image; a
+painting drops it; a library meme posts publicly; About: 24 credits, licence and source each,
+≥ 44 px); `domi.spec.ts` About tap-target check caught the first, too-small credit links.

@@ -59,6 +59,8 @@ export default defineConfig(({ mode }) => {
           globPatterns: ['**/*.{js,css,html,woff2,svg,png,webmanifest}', '**/*-night-*.jpg'],
           globIgnores: ['**/*-wide-*.jpg'],
           navigateFallback: 'index.html',
+          // A8: library images (3.6 MB) are not precached; each is kept once it has been seen.
+          runtimeCaching: [{ urlPattern: /\/assets\/[a-z-]+-[A-Za-z0-9_-]{8}\.jpg$/, handler: 'CacheFirst', options: { cacheName: 'domi-library', expiration: { maxEntries: 40 } } }],
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: false,

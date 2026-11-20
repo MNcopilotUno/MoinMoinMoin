@@ -38,10 +38,12 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Side by side | The puzzle's level menu has a Moin Domi card (plain link, offline greyed); Domi's Home links back to the puzzle — `.agents/features/side-by-side.md` |
 | Domi A8: pictures | Your own photo or GIF in a chain or postcard: shrunk to 1080 px and re-encoded (EXIF gone), GIF kept ≤ 2 MB, consent tick, sealed with a key inside the meme, uploaded once per chain, kept on the phone, outbox-safe; *Nobody* in front — `domi-uploads.md` |
 | Domi A8: public feed | *Public* in *How it travels*; Home → *The public feed* (20 a page, Share, Report), post links `…/domi/p/<id>`; relay `posts` with its own rate limit; `cli.ts hide`; About's terms gained the feed — `domi-feed.md` |
-| Not done | a recorded *Moin* (synthesised); illustrator-grade art; the meme library (A8, in progress) |
+| Domi A8: library | 24 public-domain and CC0 backgrounds (`packages/assets/library/`, licence-checked on Commons, test 53) in *Make the meme* with credits; About lists all; cached on first view, not precached — `meme-library.md` |
+| Domi A9: likes | Say *Moin* to a public post: one per phone (token kept on the phone, only its hash on the relay), take it back, counts never reorder the feed — `domi-likes.md` |
+| Not done | a recorded *Moin* (synthesised); illustrator-grade art |
 
-Test counts: core 60, levels 95, narration 70, ui 92, tessera 58, meme 45, cursus 44; e2e puzzle
-50 + Domi 39 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+Test counts: core 60, levels 95, narration 70, ui 92, tessera 58, meme 45, cursus 45, assets 53; e2e
+puzzle 50 + Domi 43 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
 the offline suite, which Playwright's WebKit cannot navigate);
 `validate:levels` 50
 levels ok, 14 fixtures fail as expected.

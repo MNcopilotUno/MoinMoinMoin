@@ -10,6 +10,7 @@
   import { CAST, PAINTINGS, PLACE_NAMES, portraitOf, WEATHER_NAMES } from '../lib/look.js';
   import { pickPicture, PictureError } from '../lib/picture.js';
   import { pictureUrl, remember } from '../lib/pictures.svelte.js';
+  import { credit, LIBRARY, libraryImage } from '../lib/library.js';
   import type { Where } from '@moin/meme';
 
   interface Props { draft: MemeValue; onchange: (m: MemeValue) => void; onback: () => void; onnext: () => void; postcard: boolean; consent: boolean }
@@ -24,9 +25,16 @@
 
   /** Back to a painting: the picture leaves the meme (the kept bytes are pruned later). */
   function painting(where: Where) {
-    const { image: _image, ...rest } = draft;
+    const { image: _image, template: _template, ...rest } = draft;
     onchange({ ...rest, where });
   }
+
+  /** A library image: replaces a painting or an own picture; nobody in front, to start with. */
+  function fromLibrary(id: string) {
+    const { image: _image, ...rest } = draft;
+    onchange({ ...rest, template: id, ...(draft.template ? {} : { who: 'none' as const }) });
+  }
+  const chosen = $derived(draft.template ? libraryImage(draft.template) : undefined);
 
   async function pick(input: HTMLInputElement) {
     const file = input.files?.[0];
@@ -75,11 +83,20 @@
     <h2 id="where" class="label">{t.where}</h2>
     <div class="pick" role="radiogroup" aria-labelledby="where">
       {#each WHERE as w (w)}
-        <button type="button" role="radio" aria-checked={!draft.image && draft.where === w} class="place" onclick={() => painting(w)}>
+        <button type="button" role="radio" aria-checked={!draft.image && !draft.template && draft.where === w} class="place" onclick={() => painting(w)}>
           <img src={PAINTINGS[w]} alt="" /><span>{PLACE_NAMES[w]}</span>
         </button>
       {/each}
     </div>
+    <h2 id="lib" class="label sub">{t.library}</h2>
+    <div class="lib" role="radiogroup" aria-labelledby="lib" aria-describedby="lib-note">
+      {#each LIBRARY as e (e.id)}
+        <button type="button" role="radio" aria-checked={draft.template === e.id} aria-label={e.title} class="tile" onclick={() => fromLibrary(e.id)}>
+          <img src={e.url} alt="" loading="lazy" decoding="async" />
+        </button>
+      {/each}
+    </div>
+    <p id="lib-note" class="credit">{chosen ? credit(chosen) : t.libraryNote}</p>
     <!-- A8: their own photo or GIF, instead of a painting. Never public; sealed before it leaves. -->
     <div class="own" class:on={draft.image !== undefined}>
       <label class="picker">
@@ -131,6 +148,12 @@
   .pick { display: flex; gap: 8px; }
   [aria-labelledby='who'].pick { display: grid; grid-template-columns: repeat(3, 1fr); }
   .face.nobody { font-size: 13px; font-weight: 800; color: var(--lilac); }
+  .label.sub { margin: 12px 4px 6px; }
+  .lib { display: flex; gap: 8px; overflow-x: auto; padding: 3px; scroll-snap-type: x proximity; scrollbar-width: none; }
+  .tile { flex: none; width: 64px; height: 64px; padding: 0; border: 0; border-radius: 14px; overflow: hidden; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); scroll-snap-align: start; }
+  .tile img { width: 100%; height: 100%; object-fit: cover; }
+  .tile[aria-checked='true'] { box-shadow: 0 0 0 3px var(--paper); }
+  .credit { margin: 6px 4px 0; font-size: 12px; line-height: 1.35; color: var(--mist); }
   .own { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
   .picker { position: relative; display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 8px 14px; border-radius: 16px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; }
   .picker:focus-within, .own.on .picker { box-shadow: 0 0 0 3px var(--paper); }

@@ -1,6 +1,7 @@
 import { memeTitle, type Meme } from '@moin/meme';
 import { bubbleText, PAINTINGS } from './look.js';
 import { bytesOf, pictureUrl } from './pictures.svelte.js';
+import { libraryImage } from './library.js';
 
 /**
  * "Save image" (spec §5): the user's choice to take a meme out of the private chain. Draws the
@@ -41,8 +42,8 @@ export async function renderPng(el: HTMLElement, meme: Meme): Promise<Blob> {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, SIZE, SIZE);
   // A8: their own picture (a GIF gives its first frame), centred; else the painting, as on screen.
-  const own = meme.image ? pictureUrl(meme.image.id) : undefined;
-  if (!meme.image || own) {
+  const own = meme.image ? pictureUrl(meme.image.id) : meme.template ? libraryImage(meme.template)?.url : undefined;
+  if ((!meme.image && !meme.template) || own) {
     const bg = await load(own ?? PAINTINGS[meme.where]);
     const scale = Math.max(SIZE / bg.width, SIZE / bg.height);
     const w = bg.width * scale, h = bg.height * scale;

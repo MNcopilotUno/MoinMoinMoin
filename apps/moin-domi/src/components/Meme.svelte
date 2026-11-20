@@ -4,6 +4,7 @@
   import { portrait } from '@moin/ui/portrait';
   import { bubbleText, describe, PAINTINGS, portraitOf } from '../lib/look.js';
   import { pictureUrl } from '../lib/pictures.svelte.js';
+  import { libraryImage } from '../lib/library.js';
   import Weather from './Weather.svelte';
 
   interface Props {
@@ -17,6 +18,7 @@
   const uid = $props.id();
   const face = $derived(meme.who === 'gull' || meme.who === 'none' ? '' : portrait({ ...portraitOf(meme.who, meme.mood), id: `face-${uid}` }));
   const picture = $derived(meme.image ? pictureUrl(meme.image.id) : undefined);
+  const library = $derived(meme.template ? libraryImage(meme.template)?.url : undefined);
   const words = $derived(size >= 90);
   const fs = $derived(Math.round(size * 0.088));
 </script>
@@ -34,6 +36,9 @@
   {#if meme.image}
     <!-- A8: their own picture; until it is here (or if it cannot be had) the ground stays black. -->
     {#if picture}<img class="bg own" src={picture} alt="" draggable="false" />{/if}
+  {:else if meme.template}
+    <!-- A8: a library image; an id this build lacks leaves the ground black. -->
+    {#if library}<img class="bg own" src={library} alt="" draggable="false" />{/if}
   {:else}
     <img class="bg" src={PAINTINGS[meme.where]} alt="" draggable="false" />
   {/if}
