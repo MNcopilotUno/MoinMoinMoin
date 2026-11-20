@@ -1,6 +1,8 @@
 # Handover
 
-_Last session (2026-11-01): Moin Domi S0 done; S1 + the S2 tree built and tested on loopback, not
+_Latest (2026-11-20): Moin Domi amendment A8 — your own photos and GIFs in private chains and
+postcards (sealed, never public) and a small public feed; an open-licensed meme library is being
+assembled on `feature/meme-library`. Earlier session (2026-11-01): Moin Domi S0 done; S1 + the S2 tree built and tested on loopback, not
 hosted. Before that: Phases 0, 1 and 2 built and deployed. The Phase 1 gate (playtest) and the Phase 2
 gate (a month of play) were **waived by the owner on 2026-10-24**, not passed. Phase 3 (Moin Domi)
 is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotuno.github.io/MoinMoinMoin/>._
@@ -34,10 +36,12 @@ is specified in `docs/MOIN_DOMI.md`; stage S0 is next. Live: <https://mncopilotu
 | Domi, more | The gull as the star, harbour master, net mender; the open water and the mudflats as places; weather as a touch; a password for any link you hand on; all Domi copy in `packages/ui/src/copy/domi.ts` |
 | Narrator voice | Opt-in *Read it aloud* (off by default): on-device voices only, after the first tap, silent when muted — `.agents/features/narrator-voice.md` |
 | Side by side | The puzzle's level menu has a Moin Domi card (plain link, offline greyed); Domi's Home links back to the puzzle — `.agents/features/side-by-side.md` |
-| Not done | a recorded *Moin* (synthesised); illustrator-grade art |
+| Domi A8: pictures | Your own photo or GIF in a chain or postcard: shrunk to 1080 px and re-encoded (EXIF gone), GIF kept ≤ 2 MB, consent tick, sealed with a key inside the meme, uploaded once per chain, kept on the phone, outbox-safe; *Nobody* in front — `domi-uploads.md` |
+| Domi A8: public feed | *Public* in *How it travels*; Home → *The public feed* (20 a page, Share, Report), post links `…/domi/p/<id>`; relay `posts` with its own rate limit; `cli.ts hide`; About's terms gained the feed — `domi-feed.md` |
+| Not done | a recorded *Moin* (synthesised); illustrator-grade art; the meme library (A8, in progress) |
 
-Test counts: core 60, levels 95, narration 70, ui 92, tessera 55, meme 37, cursus 37; e2e puzzle
-50 + Domi 28 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
+Test counts: core 60, levels 95, narration 70, ui 92, tessera 58, meme 45, cursus 44; e2e puzzle
+50 + Domi 39 on Chromium (incl. axe WCAG 2.2 AA on every screen) (Domi against a local Cursus; Firefox runs Domi in full, WebKit all but
 the offline suite, which Playwright's WebKit cannot navigate);
 `validate:levels` 50
 levels ok, 14 fixtures fail as expected.
