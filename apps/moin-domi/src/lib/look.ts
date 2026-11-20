@@ -8,6 +8,7 @@ import type { Bubble, Meme, Mood, Weather, Where, Who } from '@moin/meme';
 // Deep imports: the barrel pulls in the puzzle's scene and every day painting.
 import type { PortraitOptions } from '@moin/ui/portrait';
 import { domi } from '@moin/ui/copy/domi';
+import { libraryImage } from './library.js';
 
 /** The night paintings (the style board: "always after dark"). */
 export const PAINTINGS: Readonly<Record<Where, string>> = { harbour, market, ferry, lighthouse, water, mudflats };
@@ -47,6 +48,7 @@ export function describe(meme: Meme): string {
   const m = domi.meme;
   const who = (meme.who === 'none' ? domi.cast.none : CAST.find((c) => c.who === meme.who)?.name ?? m.someone).toLowerCase();
   const extras = [meme.bubble !== 'none' ? m.bubble(bubbleText(meme.bubble)) : '', meme.gull ? m.gull : '', meme.weather !== 'clear' ? WEATHER_NAMES[meme.weather].toLowerCase() : ''].filter(Boolean);
-  const place = meme.image ? m.overPicture : meme.where === 'water' ? m.onWater : m.at(PLACE_NAMES[meme.where].toLowerCase());
+  const lib = meme.template ? libraryImage(meme.template) : undefined;
+  const place = meme.image ? m.overPicture : lib ? m.overLibrary(lib.title) : meme.where === 'water' ? m.onWater : m.at(PLACE_NAMES[meme.where].toLowerCase());
   return m.label(who, MOOD_NAMES[meme.mood], place, extras, m.caption(meme.top, meme.bottom));
 }

@@ -89,3 +89,16 @@ strategy is decided (finding 6).
 - **CLAUDE.md §3**: eight packages have tests now (`assets` 53); updated.
 - **Not precached** (3.6 MB): agreed; the picker will load thumbnails on demand (next branch).
 - Merge conflict in `lessons/technical.md` (both sides appended): both lessons kept.
+
+## Review — feature/domi-library (wiring it into Domi, adversarial)
+1. **Credits as small inline links** failed the 44 px rule (the existing About test caught it).
+   *Fixed*: full-height row links inside a disclosure.
+2. **3.6 MB in the precache** would have tripled the install. *Avoided*: runtime `CacheFirst`;
+   checked in the built `sw.js` (library files absent from the manifest, `domi-library` present).
+   Consequence: a library meme never seen on this phone shows black while offline. *Accepted.*
+3. **Unknown template ids** (a newer phone's library) render black, never crash; the label falls
+   back to the painting's place. *Fine.*
+4. **The row loads up to 3.6 MB** if someone scrolls through all 24 tiles (no thumbnails).
+   *Accepted for now*; 128 px thumbnails would cut it to ~200 KB — a small follow-up if it bites.
+5. **Licence stays with the file**: the credit is shown when picked and in About, not burned into
+   saved images (not required for PD/CC0).

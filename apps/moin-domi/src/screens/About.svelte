@@ -2,6 +2,7 @@
   import Icon from '../components/Icon.svelte';
   import { contact } from '../lib/config.js';
   import { domi } from '@moin/ui/copy/domi';
+  import { credit, LIBRARY } from '../lib/library.js';
 
   const t = domi.about;
   let { onback }: { onback: () => void } = $props();
@@ -16,6 +17,17 @@
   <section class="panel">
     <h2 class="label">{t.whatTitle}</h2>
     <p>{t.what}</p>
+  </section>
+
+  <section class="panel">
+    <h2 class="label">{t.libraryTitle}</h2>
+    <p>{t.library}</p>
+    <details>
+      <summary>{t.showCredits(LIBRARY.length)}</summary>
+      <ul class="credits">
+        {#each LIBRARY as e (e.id)}<li><a href={e.source} rel="noreferrer noopener" target="_blank">{credit(e)} — {t.source}</a></li>{/each}
+      </ul>
+    </details>
   </section>
 
   <section class="panel">
@@ -53,4 +65,8 @@
   p, ul { font-size: 14.5px; line-height: 1.5; color: #d9d3e9; }
   ul { margin: 0; padding-left: 18px; }
   .mail { margin-top: 8px; min-height: 48px; display: flex; align-items: center; padding: 0 14px; border-radius: 14px; background: var(--raised); box-shadow: inset 0 0 0 1px var(--line); font-weight: 800; text-decoration: none; overflow-wrap: anywhere; }
+  summary { min-height: 44px; display: flex; align-items: center; margin-top: 6px; font-weight: 800; cursor: pointer; }
+  .credits { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+  .credits a { display: flex; align-items: center; min-height: 44px; padding: 4px 0; font-size: 12.5px; line-height: 1.35; color: var(--lilac); }
+  .credits li + li { border-top: 1px solid var(--hair); }
 </style>
