@@ -3,7 +3,7 @@ import { TesseraError } from './errors.js';
 import { SECRET_BYTES, type Secret } from './keys.js';
 
 /** Domain separation: one secret, one derived AES key per purpose (tessera.md, Keys). */
-export type Purpose = 'hop-content' | 'chain-key' | 'hop-key' | 'lock-key';
+export type Purpose = 'hop-content' | 'chain-key' | 'hop-key' | 'lock-key' | 'media';
 
 const VERSION = 1;
 const NONCE = 12;
@@ -67,3 +67,28 @@ export interface Place {
 export function placeAad({ chainId, parentId, depth, hopId }: Place): string {
   return `tessera/v1|${chainId}|${parentId ?? '-'}|${depth}|${hopId}`;
 }
+
+/** As `seal`, but bytes in, bytes out — for pictures (A8), where base64 would add a third. */
+export async function sealBytes(secret: Secret, purpose: Purpose, bytes: Uint8Array<ArrayBuffer>, aad: string): Promise<Uint8Array<ArrayBuffer>> {
+  const key = await aesKey(secret, purpose);
+  const nonce = crypto.getRandomValues(new Uint8Array(NONCE));
+  const body = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv: nonce, additionalData: text.encode(aad) }, key, bytes));
+  const out = new Uint8Array(1 + NONCE + body.length);
+  out[0] = VERSION;
+  out.set(nonce, 1);
+  out.set(body, 1 + NONCE);
+  return out;
+}
+
+export async function openBytes(secret: Secret, purpose: Purpose, raw: Uint8Array<ArrayBuffer>, aad: string): Promise<Uint8Array<ArrayBuffer>> {
+  if (raw.length < 1 + NONCE + 16 || raw[0] !== VERSION) throw new TesseraError('locked');
+  const key = await aesKey(secret, purpose);
+  try {
+    return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: raw.slice(1, 1 + NONCE), additionalData: text.encode(aad) }, key, raw.slice(1 + NONCE)));
+  } catch {
+    throw new TesseraError('locked');
+  }
+}
+
+/** A picture's box is bound to its chain and its id: a relay cannot swap pictures between chains. */
+export const mediaAad = (chainId: string, mediaId: string): string => `tessera/v1|media|${chainId}|${mediaId}`;

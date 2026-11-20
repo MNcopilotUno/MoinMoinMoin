@@ -121,7 +121,7 @@ server {
     listen 80;
     server_name $HOST;
     access_log off;
-    client_max_body_size 16k;
+    client_max_body_size 3m;   # pictures (A8) are up to 2.2 MB; Cursus enforces its own limits
     location / {
         proxy_pass http://127.0.0.1:$PORT;
         proxy_set_header X-Forwarded-For \$remote_addr;

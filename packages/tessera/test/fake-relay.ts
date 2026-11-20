@@ -11,6 +11,8 @@ export function fakeRelay() {
   let seq = 0;
   let now = 0;
   const locks = new Map<string, NewLock & { failures: number; waitUntil: number }>();
+  const media = new Map<string, { chainId: string; box: Uint8Array<ArrayBuffer> }>();
+  const posts: { id: string; seq: number; day: number; content: string }[] = [];
   const relay: Relay = {
     async createChain(c: NewChain) {
       if (chains.has(c.chainId) || hops.has(c.hopId)) throw new TesseraError('conflict');
@@ -71,6 +73,29 @@ export function fakeRelay() {
       l.waitUntil = 0;
       return { hopId: l.hopId, wrapped: l.wrapped };
     },
+    async putMedia(id, chainId, box) {
+      if (media.has(id)) throw new TesseraError('conflict');
+      media.set(id, { chainId, box: box.slice() });
+      return { day: 1 };
+    },
+    async getMedia(id) {
+      const m = media.get(id);
+      if (!m) throw new TesseraError('not-found');
+      return m.box.slice();
+    },
+    async createPost(content) {
+      const p = { id: `post${String(posts.length).padStart(4, '0')}`, seq: posts.length + 1, day: 1, content };
+      posts.push(p);
+      return { id: p.id, day: p.day };
+    },
+    async listPosts(before) {
+      return { posts: posts.filter((p) => before === undefined || p.seq < before).reverse().slice(0, 20) };
+    },
+    async getPost(id) {
+      const p = posts.find((x) => x.id === id);
+      if (!p) throw new TesseraError('not-found');
+      return p;
+    },
   };
-  return { relay, hops, locks, tick: (ms: number) => { now += ms; } };
+  return { relay, hops, locks, media, tick: (ms: number) => { now += ms; } };
 }

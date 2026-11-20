@@ -1,7 +1,7 @@
 import { TesseraError } from './errors.js';
 import { newId, newSecret, type Secret } from './keys.js';
 import type { HopView, Relay } from './relay.js';
-import { open, placeAad, seal } from './seal.js';
+import { mediaAad, open, openBytes, placeAad, seal, sealBytes } from './seal.js';
 
 /** What a person keeps after making or opening a hop: enough to show it and to go on. */
 export interface HopKey {
@@ -29,11 +29,13 @@ async function withFreshId<T>(make: (id: string) => Promise<T>): Promise<T> {
   }
 }
 
-/** §3 step 0: the creator makes `T` and the first hop, all wraps in one request. */
-export async function startChain(relay: Relay, limits: Limits, content: Uint8Array<ArrayBuffer>): Promise<{ hop: HopKey; chainSecret: Secret }> {
+/**
+ * §3 step 0: the creator makes `T` and the first hop, all wraps in one request. `chainId` may be
+ * chosen beforehand, e.g. to upload the chain's picture first (A8).
+ */
+export async function startChain(relay: Relay, limits: Limits, content: Uint8Array<ArrayBuffer>, chainId: string = newId()): Promise<{ hop: HopKey; chainSecret: Secret }> {
   const t = newSecret();
   const k = newSecret();
-  const chainId = newId();
   return withFreshId(async (hopId) => {
     const place = { chainId, parentId: null, depth: 1, hopId };
     const aad = placeAad(place);
@@ -99,4 +101,17 @@ export async function readTree(relay: Relay, chainId: string, chainSecret: Secre
   }));
   hops.sort((a, b) => a.seq - b.seq);
   return { limits: { maxStops: tree.maxStops, maxBranches: tree.maxBranches }, expiresDay: tree.expiresDay, hops };
+}
+
+/** A8: seal a picture with a fresh key and upload it for `chainId`. The key goes inside the meme. */
+/** `key` may be chosen earlier (the phone picks it with the picture, before the chain exists). */
+export async function uploadMedia(relay: Relay, chainId: string, bytes: Uint8Array<ArrayBuffer>, key: Secret = newSecret()): Promise<{ mediaId: string; key: Secret }> {
+  return withFreshId(async (mediaId) => {
+    await relay.putMedia(mediaId, chainId, await sealBytes(key, 'media', bytes, mediaAad(chainId, mediaId)));
+    return { mediaId, key };
+  });
+}
+
+export async function downloadMedia(relay: Relay, chainId: string, mediaId: string, key: Secret): Promise<Uint8Array<ArrayBuffer>> {
+  return openBytes(key, 'media', await relay.getMedia(mediaId), mediaAad(chainId, mediaId));
 }

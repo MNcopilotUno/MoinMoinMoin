@@ -81,6 +81,16 @@ export const domi = {
     nextPostcard: 'Next: who can open it',
     nextChain: 'Next: how it travels',
     noCaption: 'Write a caption first',
+    picture: 'Your picture',
+    pictureNote: 'A photo or a GIF from this phone. It is sealed before it leaves, travels only in this chain or postcard, and can never be posted publicly.',
+    consent: 'I may share this picture',
+    needConsent: 'Tick “I may share this picture” first',
+    removePicture: 'Use a painting instead',
+    readingPicture: 'Reading the picture…',
+    pictureErrors: {
+      tooBig: 'That GIF is over 2 MB. Try a shorter one, or a photo.',
+      notPicture: 'That isn’t a photo or a GIF this phone can read (JPEG, PNG, WebP or GIF).',
+    },
   },
 
   rules: {
@@ -396,6 +406,7 @@ export const domi = {
     harbourmaster: 'The harbour master',
     netmender: 'The net mender',
     gull: 'The gull',
+    none: 'Nobody',
   },
   /** By `Where`. */
   places: { harbour: 'Harbour', market: 'Market', ferry: 'Ferry', lighthouse: 'Light', water: 'Water', mudflats: 'Flats' },
@@ -415,6 +426,7 @@ export const domi = {
     gull: 'a gull',
     caption: (top: string, bottom: string) => [top, bottom].filter(Boolean).join(' / ') || 'no words',
     onWater: 'on the open water',
+    overPicture: 'over their own picture',
     at: (place: string) => `at the ${place}`,
   },
 

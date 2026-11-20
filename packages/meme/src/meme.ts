@@ -2,7 +2,20 @@
  * A Moin Domi meme (docs/MOIN_DOMI.md D1–D6): our own cast on a night painting, two free-text
  * captions and a few touches. Pure data — rendering lives in the app. This is what Tessera seals.
  */
-export const WHO = ['captain', 'fisherman', 'market', 'kid', 'chatterbox', 'gull', 'harbourmaster', 'netmender'] as const;
+/** `none`: nobody in front — the picture or the library image is the star (A8). */
+export const WHO = ['captain', 'fisherman', 'market', 'kid', 'chatterbox', 'gull', 'harbourmaster', 'netmender', 'none'] as const;
+/** Pictures people may upload (A8); GIFs stay animated, the rest is re-encoded as JPEG on the phone. */
+export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const;
+export type ImageType = (typeof IMAGE_TYPES)[number];
+
+/** An uploaded picture: where its sealed box is on the relay, and the key that opens it (A8). */
+export interface ImageRef {
+  readonly id: string;
+  readonly key: string;
+  readonly type: ImageType;
+  readonly w: number;
+  readonly h: number;
+}
 export const WHERE = ['harbour', 'market', 'ferry', 'lighthouse', 'water', 'mudflats'] as const;
 /** A touch over the painting (D4 "and similar"): clear sky, rain, fog, or the lighthouse beam. */
 export const WEATHER = ['clear', 'rain', 'fog', 'beam'] as const;
@@ -36,6 +49,10 @@ export interface Meme {
   readonly nick: string;
   /** D3: words each person may swap, 1–3. A chain rule the relay never sees, so it travels sealed. */
   readonly budget: number;
+  /** A8: an uploaded picture instead of the painting — private chains and postcards only. */
+  readonly image?: ImageRef;
+  /** A8: an image from the open-licensed library (its id) instead of the painting. */
+  readonly template?: string;
 }
 
 export const FIRST_MEME: Meme = {
@@ -56,7 +73,22 @@ export function tidy(text: string): string {
   return text.replace(/[\u0000-\u001f\u007f-\u009f\u2028\u2029]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-const KEYS = ['v', 'who', 'where', 'top', 'bottom', 'bubble', 'gull', 'mood', 'weather', 'nick', 'budget'] as const;
+const KEYS = ['v', 'who', 'where', 'top', 'bottom', 'bubble', 'gull', 'mood', 'weather', 'nick', 'budget', 'image', 'template'] as const;
+const IMAGE_KEYS = ['id', 'key', 'type', 'w', 'h'];
+const ID = /^[A-Za-z0-9_-]{8}$/;
+const KEY = /^[A-Za-z0-9_-]{22}$/;
+const TEMPLATE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function imageRef(value: unknown): ImageRef {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new MemeError('image is not an object');
+  const o = value as Record<string, unknown>;
+  for (const key of Object.keys(o)) if (!IMAGE_KEYS.includes(key)) throw new MemeError(`unknown image field ${key}`);
+  if (typeof o.id !== 'string' || !ID.test(o.id)) throw new MemeError('image id is not an id');
+  if (typeof o.key !== 'string' || !KEY.test(o.key)) throw new MemeError('image key is not a key');
+  const size = (v: unknown) => Number.isInteger(v) && (v as number) >= 1 && (v as number) <= 4096;
+  if (!size(o.w) || !size(o.h)) throw new MemeError('image size is not 1–4096');
+  return { id: o.id, key: o.key, type: oneOf(IMAGE_TYPES, o.type, 'image type'), w: o.w as number, h: o.h as number };
+}
 
 function oneOf<T extends string>(list: readonly T[], value: unknown, name: string): T {
   if (typeof value !== 'string' || !(list as readonly string[]).includes(value)) throw new MemeError(`${name} is not one of ${list.join(', ')}`);
@@ -78,6 +110,7 @@ export function toMeme(value: unknown): Meme {
   if (o.v !== 1) throw new MemeError('unknown version');
   if (typeof o.gull !== 'boolean') throw new MemeError('gull is not true or false');
   if (!Number.isInteger(o.budget) || (o.budget as number) < 1 || (o.budget as number) > 3) throw new MemeError('budget is not 1, 2 or 3');
+  if (o.image !== undefined && o.template !== undefined) throw new MemeError('a picture or a library image, not both');
   return {
     v: 1,
     who: oneOf(WHO, o.who, 'who'),
@@ -90,7 +123,19 @@ export function toMeme(value: unknown): Meme {
     weather: o.weather === undefined ? 'clear' : oneOf(WEATHER, o.weather, 'weather'),
     nick: textField(o.nick, 'nick', NICK_MAX),
     budget: o.budget as number,
+    ...(o.image !== undefined ? { image: imageRef(o.image) } : {}),
+    ...(o.template !== undefined ? { template: templateId(o.template) } : {}),
   };
+}
+
+function templateId(value: unknown): string {
+  if (typeof value !== 'string' || value.length > 40 || !TEMPLATE.test(value)) throw new MemeError('template is not a library id');
+  return value;
+}
+
+/** A8: an uploaded picture never goes to the public feed. */
+export function isPublishable(meme: Meme): boolean {
+  return meme.image === undefined;
 }
 
 export function encodeMeme(meme: Meme): Uint8Array<ArrayBuffer> {

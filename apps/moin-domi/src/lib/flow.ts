@@ -2,14 +2,15 @@
  * The app's side of the chain: Tessera does the cryptography, this turns hops into memes and
  * records. Everything thrown is a `TesseraError` (with `reason`) or a `MemeError`.
  */
-import { decodeMeme, encodeMeme, MemeError, type Meme } from '@moin/meme';
+import { decodeMeme, encodeMeme, MemeError, type ImageRef, type Meme } from '@moin/meme';
 import {
-  formatLink, formatLockLink, lockHop, openHop, parseLink, readTree, secretFromText, secretToText, startChain, takeTurn,
-  TesseraError, unlockHop, type HopKey, type Relay,
+  formatLink, formatLockLink, lockHop, newId, openHop, parseLink, readTree, secretFromText, secretToText, startChain, takeTurn,
+  TesseraError, unlockHop, uploadMedia, type HopKey, type Relay,
 } from '@moin/tessera';
 import { domi } from '@moin/ui/copy/domi';
 import { appBase, contact, today } from './config.js';
 import type { Item } from './db.js';
+import { bytesOf, ensurePicture, remember } from './pictures.svelte.js';
 
 export interface Rules {
   readonly kind: 'chain' | 'postcard';
@@ -44,9 +45,23 @@ function keyOf(item: Item): HopKey {
   return { chainId: item.chainId, hopId: item.hopId, parentId: item.parentId, depth: item.depth, secret: secretFromText(item.secret) };
 }
 
-export async function start(relay: Relay, rules: Rules, meme: Meme): Promise<Item> {
+/**
+ * A8: the picture goes up first, sealed with the key the phone chose when it was picked, under the
+ * chain id the chain is about to get; the relay keeps it 30 minutes until that chain appears.
+ */
+async function sendPicture(relay: Relay, chainId: string, image: ImageRef): Promise<ImageRef> {
+  const bytes = await bytesOf(image.id);
+  if (!bytes) throw new TesseraError('rejected', 'the picture is no longer on this phone');
+  const { mediaId } = await uploadMedia(relay, chainId, bytes, secretFromText(image.key));
+  if (mediaId !== image.id) await remember(mediaId, bytes, image.type);
+  return { ...image, id: mediaId };
+}
+
+export async function start(relay: Relay, rules: Rules, draft: Meme): Promise<Item> {
   const limits = rules.kind === 'postcard' ? { maxStops: 1, maxBranches: 1 } : { maxStops: rules.maxStops, maxBranches: rules.maxBranches };
-  const { hop, chainSecret } = await startChain(relay, limits, encodeMeme(meme));
+  const chainId = newId();
+  const meme = draft.image ? { ...draft, image: await sendPicture(relay, chainId, draft.image) } : draft;
+  const { hop, chainSecret } = await startChain(relay, limits, encodeMeme(meme), chainId);
   return {
     chainId: hop.chainId, kind: rules.kind, status: rules.kind === 'postcard' ? 'postcard-out' : 'travelling',
     hopId: hop.hopId, parentId: null, secret: secretToText(hop.secret), chainSecret: secretToText(chainSecret),
@@ -67,6 +82,7 @@ export async function receive(relay: Relay, href: string, knownChain: (chainId: 
     if (error instanceof MemeError) throw new TesseraError('locked', 'not a meme');
     throw error;
   }
+  if (meme.image) await ensurePicture(relay, view.chainId, meme.image);
   const kind = view.maxStops === 1 ? 'postcard' : 'chain';
   if (known?.chainSecret && kind === 'chain') {
     // Already in this chain: keep your own place, you will see this hop in the tree.

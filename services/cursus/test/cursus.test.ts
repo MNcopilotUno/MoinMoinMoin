@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { httpRelay, LockRefusal, lockHop, newId, openHop, readTree, RelayRefusal, startChain, takeTurn, TesseraError, unlockHop, type Relay } from '@moin/tessera';
+import { downloadMedia, httpRelay, LockRefusal, lockHop, newId, openHop, readTree, RelayRefusal, startChain, takeTurn, TesseraError, unlockHop, uploadMedia, type Relay } from '@moin/tessera';
 import { createLimiter } from '../src/limit.ts';
 import { createHandler } from '../src/app.ts';
 import { openStore, type Store } from '../src/store.ts';
@@ -108,7 +108,7 @@ describe('Cursus over HTTP with the Tessera client', () => {
     expect((await readTree(relay, hop.chainId, chainSecret)).hops).toHaveLength(1);
     clock += 11 * 60 * 1000;
     expect(await reason(relay.completeHop(pendingId, { wrapKeyByT: 'A'.repeat(60), wrapTByKey: 'A'.repeat(60) }))).toBe('not-found');
-    expect(store.sweep(clock)).toEqual({ chains: 0, pending: 1 });
+    expect(store.sweep(clock)).toEqual({ chains: 0, pending: 1, media: 0 });
     const done = await takeTurn(relay, hop, bytes('2'));
     expect(await reason(relay.completeHop(done.hop.hopId, { wrapKeyByT: 'A'.repeat(60), wrapTByKey: 'A'.repeat(60) }))).toBe('not-found');
   });
@@ -122,7 +122,7 @@ describe('Cursus over HTTP with the Tessera client', () => {
     clock += DAY;
     expect(await reason(relay.getHop(next.hop.hopId))).toBe('not-found');
     expect(await reason(relay.getTree(hop.chainId))).toBe('not-found');
-    expect(store.sweep(clock)).toEqual({ chains: 1, pending: 0 });
+    expect(store.sweep(clock)).toEqual({ chains: 1, pending: 0, media: 0 });
   });
 
   it('answers a duplicate id with 409', async () => {
@@ -278,5 +278,45 @@ describe('password and custom links (locks, A3)', () => {
     const { name } = await lockHop(relay, hop, PW);
     expect(await reason(unlockHop(r, name, PW))).toBe('slow-down');
     await new Promise((resolve) => limited.close(resolve));
+  });
+});
+
+describe('pictures (A8)', () => {
+  const picture = (n = 300_000) => Uint8Array.from({ length: n }, (_, i) => (i * 7919) & 255);
+
+  it('uploaded before the chain, opened after it; the database holds no picture bytes', async () => {
+    const chainId = newId();
+    const bytes = picture();
+    const { mediaId, key } = await uploadMedia(relay, chainId, bytes);
+    expect(await reason(downloadMedia(relay, chainId, mediaId, key))).toBe('not-found'); // no chain yet
+    await startChain(relay, { maxStops: 3, maxBranches: 1 }, new TextEncoder().encode('meme'), chainId);
+    expect(await downloadMedia(relay, chainId, mediaId, key)).toEqual(bytes);
+    store.db.exec('PRAGMA wal_checkpoint(FULL)');
+    const raw = readFileSync(join(dir, 'db.sqlite'));
+    expect(raw.includes(Buffer.from(bytes.subarray(1000, 1064)))).toBe(false);
+  });
+
+  it('refuses over 2.2 MB (413), a fifth picture for one chain, and junk ids', async () => {
+    const chainId = newId();
+    const big = await fetch(`${base}/v1/media/${newId()}?chain=${chainId}`, { method: 'POST', body: new Uint8Array(2.3 * 1024 * 1024) });
+    expect(big.status).toBe(413);
+    for (let i = 0; i < 4; i++) await uploadMedia(relay, chainId, picture(1000));
+    expect(await reason(uploadMedia(relay, chainId, picture(1000)))).toBe('too-many');
+    expect((await fetch(`${base}/v1/media/bad?chain=${chainId}`, { method: 'POST', body: picture(100) })).status).toBe(422);
+    expect((await fetch(`${base}/v1/media/${newId()}?chain=x`, { method: 'POST', body: picture(100) })).status).toBe(422);
+  });
+
+  it('a picture whose chain never came is swept after 30 minutes; a chain’s pictures go with it', async () => {
+    const orphan = await uploadMedia(relay, newId(), picture(1000));
+    const chainId = newId();
+    const { mediaId, key } = await uploadMedia(relay, chainId, picture(1000));
+    const { hop } = await startChain(relay, { maxStops: 3, maxBranches: 1 }, new TextEncoder().encode('m'), chainId);
+    clock += 31 * 60_000;
+    expect(store.sweep(clock).media).toBe(1);
+    expect(await downloadMedia(relay, chainId, mediaId, key)).toHaveLength(1000);
+    expect(store.takedown(hop.hopId)).toBe(true);
+    expect(await reason(downloadMedia(relay, chainId, mediaId, key))).toBe('not-found');
+    expect((store.db.prepare('SELECT COUNT(*) AS n FROM media').get() as { n: number }).n).toBe(0);
+    void orphan;
   });
 });

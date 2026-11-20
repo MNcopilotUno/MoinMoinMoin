@@ -101,3 +101,25 @@ test('the outbox goes out even if the online event never comes', async ({ page, 
   await context.setOffline(false);
   await expect(page.getByRole('status')).toHaveText(/Your Moin went out/, { timeout: 15_000 });
 });
+
+test('a picture meme made offline survives a reload and goes out with its picture (A8)', async ({ page, context }) => {
+  const GIF = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==', 'base64');
+  let uploads = 0;
+  page.on('request', (r) => { if (r.method() === 'POST' && r.url().includes('/v1/media/')) uploads++; });
+  await loadOnce(page);
+  await context.setOffline(true);
+  await page.getByRole('button', { name: /Start a chain/ }).click();
+  await page.locator('input[type=file]').setInputFiles({ name: 'tide.gif', mimeType: 'image/gif', buffer: GIF });
+  await page.getByPlaceholder('Top caption').fill('Picture from the ferry');
+  await page.getByLabel('I may share this picture').check();
+  await page.getByRole('button', { name: 'Next: how it travels' }).click();
+  await page.getByRole('button', { name: 'Send it when I’m back online' }).click();
+  await expect(page.getByRole('heading', { name: 'Waiting for the tide' })).toBeVisible();
+  await page.reload(); // the picture waits in IndexedDB, not in memory
+  await expect(page.getByRole('heading', { name: 'Waiting to send' })).toBeVisible();
+  await context.setOffline(false);
+  await expect(page.getByRole('status')).toHaveText(/Your Moin went out/, { timeout: 15_000 });
+  expect(uploads).toBe(1);
+  await page.getByRole('button', { name: /All your chains/ }).click();
+  await expect(page.locator('.meme .bg.own').first()).toHaveAttribute('src', /^blob:/);
+});

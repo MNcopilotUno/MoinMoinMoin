@@ -14,7 +14,7 @@ export const PAINTINGS: Readonly<Record<Where, string>> = { harbour, market, fer
 export const PLACE_NAMES: Readonly<Record<Where, string>> = domi.places;
 export const WEATHER_NAMES: Readonly<Record<Weather, string>> = domi.weather;
 
-export const CAST: readonly { who: Who; name: string }[] = [
+export const CAST: readonly { who: Exclude<Who, 'none'>; name: string }[] = [
   { who: 'captain', name: domi.cast.captain },
   { who: 'fisherman', name: domi.cast.fisherman },
   { who: 'market', name: domi.cast.market },
@@ -26,7 +26,7 @@ export const CAST: readonly { who: Who; name: string }[] = [
 ];
 
 /** A portrait for everyone but the gull, who is drawn as itself (`SeagullSprite`). */
-export function portraitOf(who: Exclude<Who, 'gull'>, mood: Meme['mood']): PortraitOptions {
+export function portraitOf(who: Exclude<Who, 'gull' | 'none'>, mood: Meme['mood']): PortraitOptions {
   const base = { mood, facing: 'S', pips: false } as const;
   switch (who) {
     case 'captain': return { ...base, role: 'captain', tone: 0 };
@@ -45,8 +45,8 @@ export const bubbleText = (b: Bubble): string => BUBBLE_TEXT[b];
 
 export function describe(meme: Meme): string {
   const m = domi.meme;
-  const who = (CAST.find((c) => c.who === meme.who)?.name ?? m.someone).toLowerCase();
+  const who = (meme.who === 'none' ? domi.cast.none : CAST.find((c) => c.who === meme.who)?.name ?? m.someone).toLowerCase();
   const extras = [meme.bubble !== 'none' ? m.bubble(bubbleText(meme.bubble)) : '', meme.gull ? m.gull : '', meme.weather !== 'clear' ? WEATHER_NAMES[meme.weather].toLowerCase() : ''].filter(Boolean);
-  const place = meme.where === 'water' ? m.onWater : m.at(PLACE_NAMES[meme.where].toLowerCase());
+  const place = meme.image ? m.overPicture : meme.where === 'water' ? m.onWater : m.at(PLACE_NAMES[meme.where].toLowerCase());
   return m.label(who, MOOD_NAMES[meme.mood], place, extras, m.caption(meme.top, meme.bottom));
 }

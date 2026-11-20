@@ -62,6 +62,14 @@ export interface NewLock {
   readonly wrapped: string;
 }
 
+/** A public post (A8): plain, readable by anyone — the relay too. `content` is the meme as JSON. */
+export interface PublicPost {
+  readonly id: string;
+  readonly seq: number;
+  readonly day: number;
+  readonly content: string;
+}
+
 export interface Relay {
   createChain(chain: NewChain): Promise<{ day: number }>;
   getHop(hopId: string): Promise<HopView>;
@@ -73,6 +81,13 @@ export interface Relay {
   getLock(name: string): Promise<{ salt: string; kdf: Kdf }>;
   /** 200 → the hop and its wrapped key; 401 → `wrong-password`; 429 → `wait` (both with `waitUntil`). */
   openLock(name: string, authKey: string): Promise<{ hopId: string; wrapped: string }>;
+  /** A sealed picture (A8), uploaded before or after its chain exists (kept 30 min without one). */
+  putMedia(mediaId: string, chainId: string, box: Uint8Array<ArrayBuffer>): Promise<{ day: number }>;
+  getMedia(mediaId: string): Promise<Uint8Array<ArrayBuffer>>;
+  createPost(content: string): Promise<{ id: string; day: number }>;
+  /** Newest first; `before` is the `seq` of the last post already shown. */
+  listPosts(before?: number): Promise<{ posts: readonly PublicPost[] }>;
+  getPost(id: string): Promise<PublicPost>;
 }
 
 /** A refused password: how long to wait before the next try, if at all (ms since 1970). */
@@ -97,13 +112,13 @@ type Fetch = (input: string, init?: RequestInit) => Promise<Response>;
 /** The fetch client for Cursus. `baseUrl` is the relay's origin plus any prefix, without `/v1`. */
 export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch(i, init)): Relay {
   const root = baseUrl.replace(/\/+$/, '');
-  async function call<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
+  async function call<T>(method: 'GET' | 'POST', path: string, body?: unknown, bytes?: { send?: Uint8Array<ArrayBuffer>; receive?: boolean }): Promise<T> {
     let res: Response;
     try {
       res = await fetchImpl(`${root}/v1${path}`, {
         method,
-        headers: body === undefined ? {} : { 'content-type': 'application/json' },
-        body: body === undefined ? null : JSON.stringify(body),
+        headers: bytes?.send ? { 'content-type': 'application/octet-stream' } : body === undefined ? {} : { 'content-type': 'application/json' },
+        body: bytes?.send ?? (body === undefined ? null : JSON.stringify(body)),
         credentials: 'omit',
         referrerPolicy: 'no-referrer',
         cache: 'no-store',
@@ -111,7 +126,7 @@ export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch
     } catch {
       throw new TesseraError('offline');
     }
-    if (res.ok) return (await res.json()) as T;
+    if (res.ok) return (bytes?.receive ? new Uint8Array(await res.arrayBuffer()) : await res.json()) as T;
     if (res.status === 404) throw new TesseraError('not-found');
     if (res.status === 401 || res.status === 429) {
       // 429 is the password slowdown (`wait`) or the relay's rate limit (`slow-down`): ask the body.
@@ -139,5 +154,10 @@ export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch
     createLock: (lock) => call('POST', '/locks', lock),
     getLock: (name) => call('GET', `/locks/${at(name)}`),
     openLock: (name, authKey) => call('POST', `/locks/${at(name)}/open`, { authKey }),
+    putMedia: (mediaId, chainId, box) => call('POST', `/media/${at(mediaId)}?chain=${at(chainId)}`, undefined, { send: box }),
+    getMedia: (mediaId) => call('GET', `/media/${at(mediaId)}`, undefined, { receive: true }),
+    createPost: (content) => call('POST', '/posts', { content }),
+    listPosts: (before) => call('GET', before === undefined ? '/posts' : `/posts?before=${before}`),
+    getPost: (id) => call('GET', `/posts/${at(id)}`),
   };
 }

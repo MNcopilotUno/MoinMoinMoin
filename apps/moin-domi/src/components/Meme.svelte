@@ -3,6 +3,7 @@
   import SeagullSprite from '@moin/ui/SeagullSprite.svelte';
   import { portrait } from '@moin/ui/portrait';
   import { bubbleText, describe, PAINTINGS, portraitOf } from '../lib/look.js';
+  import { pictureUrl } from '../lib/pictures.svelte.js';
   import Weather from './Weather.svelte';
 
   interface Props {
@@ -14,7 +15,8 @@
   }
   let { meme, size = 300, decorative = false, element = $bindable() }: Props = $props();
   const uid = $props.id();
-  const face = $derived(meme.who === 'gull' ? '' : portrait({ ...portraitOf(meme.who, meme.mood), id: `face-${uid}` }));
+  const face = $derived(meme.who === 'gull' || meme.who === 'none' ? '' : portrait({ ...portraitOf(meme.who, meme.mood), id: `face-${uid}` }));
+  const picture = $derived(meme.image ? pictureUrl(meme.image.id) : undefined);
   const words = $derived(size >= 90);
   const fs = $derived(Math.round(size * 0.088));
 </script>
@@ -29,9 +31,14 @@
   style:--fs={`${fs}px`}
   style:--stroke={`${Math.max(2, Math.round(fs * 0.16))}px`}
 >
-  <img class="bg" src={PAINTINGS[meme.where]} alt="" draggable="false" />
+  {#if meme.image}
+    <!-- A8: their own picture; until it is here (or if it cannot be had) the ground stays black. -->
+    {#if picture}<img class="bg own" src={picture} alt="" draggable="false" />{/if}
+  {:else}
+    <img class="bg" src={PAINTINGS[meme.where]} alt="" draggable="false" />
+  {/if}
   {#if meme.weather !== 'clear'}<div class="weather"><Weather weather={meme.weather} /></div>{/if}
-  {#if meme.who === 'gull'}<div class="face star"><SeagullSprite /></div>{:else}<div class="face">{@html face}</div>{/if}
+  {#if meme.who === 'gull'}<div class="face star"><SeagullSprite /></div>{:else if meme.who !== 'none'}<div class="face">{@html face}</div>{/if}
   {#if meme.gull}<div class="gull"><SeagullSprite /></div>{/if}
   <!-- Below 90 px the words would be ~4 px: the red bubble stays, its words go (a11y review). -->
   {#if meme.bubble !== 'none'}<span class="bubble" class:mute={!words}>{words ? bubbleText(meme.bubble) : ''}</span>{/if}
@@ -48,6 +55,7 @@
     user-select: none;
   }
   .bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 22%; }
+  .bg.own { object-position: center; }
   .face { position: absolute; left: 50%; bottom: -2%; width: 64%; transform: translateX(-50%); filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55)); }
   .face :global(svg) { display: block; width: 100%; height: auto; }
   .weather { position: absolute; inset: 0; pointer-events: none; }

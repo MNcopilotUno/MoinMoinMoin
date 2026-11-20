@@ -5,6 +5,7 @@
   import { relay, today } from './lib/config.js';
   import { defaultSettings, forgetEverything, listItems, listOutbox, loadSettings, putItem, putOutgoing, removeItem, removeOutgoing, saveSettings, type Item, type Outgoing, type Settings as SettingsValue } from './lib/db.js';
   import { startServiceWorker } from './lib/sw.js';
+  import { ensurePicture, forgetPictures, prune } from './lib/pictures.svelte.js';
   import Queued from './screens/Queued.svelte';
   import About from './screens/About.svelte';
   import { errorText, linkInShare, lock, passOn, receive, start, tree, unlock, type LinkChoice, type Node, type Rules as RulesValue } from './lib/flow.js';
@@ -41,6 +42,8 @@
   let items = $state<Item[]>([]);
   let settings = $state<SettingsValue>(defaultSettings);
   let draft = $state<Meme>({ ...FIRST_MEME });
+  /** A8: "I may share this picture", asked again for every picture. */
+  let consent = $state(false);
   let rules = $state<RulesValue>({ kind: 'chain', maxStops: 6, maxBranches: 1 });
   let link = $state<LinkChoice>({ kind: 'plain', password: '', name: '' });
   let busy = $state(false);
@@ -69,7 +72,12 @@
   async function refresh() {
     items = await listItems();
     outbox = await listOutbox();
+    // A8: pictures in these memes, from this phone or (once) from the relay. Never blocks a screen.
+    for (const it of items) for (const m of [it.meme, ...(it.snapshot?.nodes.map((n) => n.meme) ?? [])]) if (m?.image) void ensurePicture(relay, it.chainId, m.image);
   }
+
+  /** Kept pictures no chain, postcard or queued Moin on this phone still shows. */
+  const prunePictures = () => prune([...items.flatMap((it) => [it.meme, ...(it.snapshot?.nodes.map((n) => n.meme) ?? [])]), ...outbox.map((o) => o.meme), draft]);
 
   const isOffline = (e: unknown) => (e as { reason?: string }).reason === 'offline';
 
@@ -181,6 +189,7 @@
 
   function newMeme(kind: RulesValue['kind']) {
     draft = { ...FIRST_MEME, nick: settings.rememberNick ? settings.nick : '' };
+    consent = false;
     rules = { ...rules, kind };
     link = { kind: 'plain', password: '', name: '' };
     lockNote = null;
@@ -382,6 +391,7 @@
   async function startUp() {
     settings = await loadSettings();
     await refresh();
+    void prunePictures();
     const href = location.href;
     const url = new URL(href);
     if (/\/m\/[^/]+\/?$/.test(url.pathname) || url.searchParams.has('m')) await openLink(href);
@@ -416,7 +426,7 @@
     onopen={openItem} onyours={() => { void go({ name: 'yours' }); void refreshStatuses(); }} onsettings={() => go({ name: 'settings' })}
     ondiscard={discard} ondismiss={() => (sentNote = null)} />
 {:else if screen.name === 'create'}
-  <Create {draft} postcard={rules.kind === 'postcard'} onchange={(m) => (draft = m)} onback={() => go({ name: 'home' })} onnext={() => go({ name: 'rules' })} />
+  <Create {draft} bind:consent postcard={rules.kind === 'postcard'} onchange={(m) => (draft = m)} onback={() => go({ name: 'home' })} onnext={() => go({ name: 'rules' })} />
 {:else if screen.name === 'rules'}
   <Rules {rules} {draft} {busy} {blocked} {error} offline={!online} {link} onlink={(l) => (link = l)} onrules={(r) => (rules = r)} ondraft={(m) => (draft = m)} onback={() => go({ name: 'create' })} onmake={make} />
 {:else if screen.name === 'ready'}
@@ -441,7 +451,7 @@
 {:else if screen.name === 'yours'}
   <Yours {items} onback={() => go({ name: 'home' })} onopen={openItem} onforget={forget} />
 {:else if screen.name === 'settings'}
-  <Settings {settings} onchange={changeSettings} onabout={() => go({ name: 'about' })} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
+  <Settings {settings} onchange={changeSettings} onabout={() => go({ name: 'about' })} onback={() => go({ name: 'home' })} onforget={async () => { await forgetEverything(); forgetPictures(); settings = defaultSettings; await refresh(); await go({ name: 'home' }); }} />
 {:else if screen.name === 'unlock'}
   {@const s = screen}
   <Unlock name={s.lockName} {busy} {error} waitUntil={s.waitUntil} onopen={(pw) => openLock(s.lockName, pw)} onhome={() => go({ name: 'home' })} />

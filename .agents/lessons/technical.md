@@ -52,3 +52,11 @@ Python script that writes `\\u2028`, and grep for the raw bytes `e2 80 a8` after
 password link fell back to a key link — the fallback message was the only clue ("the relay didn't
 answer", because the error surfaced as a generic one). `'wasm-unsafe-eval'` allows WebAssembly
 compilation only, not `eval`. Test the real built page, CSP included, for anything that loads WASM.
+
+## Refusing a body half-way leaves a socket nobody should reuse (2026-11-20, Domi A8)
+Cursus threw 413 from inside `for await (const chunk of req)` once a 2.3 MB upload passed the
+limit. Alone, the test passed; in the full file it hung for the 5-second timeout every time, and
+passed again with two `console.log`s added — a timing bug. The rest of the body was still on the
+keep-alive connection, and the client reused it. Fix: reject on `content-length` before reading,
+stop reading (`pause`) at the limit, and answer 413 with `connection: close` so the socket is
+not reused.

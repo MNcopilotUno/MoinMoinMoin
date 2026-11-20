@@ -37,13 +37,14 @@
   const problem = $derived(checkTurn(received, version));
   const changed = $derived(used > 0 || touch !== 'none');
   const ideas = $derived(IDEAS.filter((w) => w.toLowerCase() !== (base[picked] ?? '').toLowerCase()).slice(0, 4));
-  const touches = $derived([
+  const touches = $derived(([
     { id: 'none', label: c.touches.none },
     { id: 'bubble', label: received.bubble === 'none' ? c.touches.bubbleOn : received.bubble === 'moin' ? c.touches.bubbleMore : c.touches.bubbleOff },
     { id: 'gull', label: received.gull ? c.touches.gullOff : c.touches.gullOn },
     { id: 'mood', label: received.mood === 'smiling' ? c.touches.frown : c.touches.smile },
     { id: 'weather', label: WEATHER_NAMES[nextWeather(received.weather)] },
-  ] as const);
+    // Nobody in front (A8): there is no face to smile or frown, so that touch is not offered.
+  ] as const).filter((x) => x.id !== 'mood' || received.who !== 'none'));
 
   function tap(i: number) {
     if (swaps[i] !== undefined) {
