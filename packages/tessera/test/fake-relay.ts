@@ -12,7 +12,8 @@ export function fakeRelay() {
   let now = 0;
   const locks = new Map<string, NewLock & { failures: number; waitUntil: number }>();
   const media = new Map<string, { chainId: string; box: Uint8Array<ArrayBuffer> }>();
-  const posts: { id: string; seq: number; day: number; content: string }[] = [];
+  const posts: { id: string; seq: number; day: number; content: string; likes: number }[] = [];
+  const liked = new Set<string>();
   const relay: Relay = {
     async createChain(c: NewChain) {
       if (chains.has(c.chainId) || hops.has(c.hopId)) throw new TesseraError('conflict');
@@ -84,7 +85,7 @@ export function fakeRelay() {
       return m.box.slice();
     },
     async createPost(content) {
-      const p = { id: `post${String(posts.length).padStart(4, '0')}`, seq: posts.length + 1, day: 1, content };
+      const p = { id: `post${String(posts.length).padStart(4, '0')}`, seq: posts.length + 1, day: 1, content, likes: 0 };
       posts.push(p);
       return { id: p.id, day: p.day };
     },
@@ -95,6 +96,14 @@ export function fakeRelay() {
       const p = posts.find((x) => x.id === id);
       if (!p) throw new TesseraError('not-found');
       return p;
+    },
+    async likePost(id, token, on) {
+      const p = posts.find((x) => x.id === id);
+      if (!p) throw new TesseraError('not-found');
+      if (on) liked.add(`${id}/${token}`);
+      else liked.delete(`${id}/${token}`);
+      p.likes = [...liked].filter((k) => k.startsWith(`${id}/`)).length;
+      return { likes: p.likes };
     },
   };
   return { relay, hops, locks, media, tick: (ms: number) => { now += ms; } };

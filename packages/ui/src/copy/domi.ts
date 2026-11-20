@@ -60,7 +60,7 @@ export const domi = {
     puzzleBody: 'The puzzle beside it: wake the grumpy harbour, one Moin at a time.',
     footOff: 'Sending isn’t switched on yet: the relay has no home. You can make memes and look around.',
     feedTitle: 'The public feed',
-    feedBody: 'Memes anyone can post and anyone can see. No likes, no follows; each is gone after 30 days.',
+    feedBody: 'Memes anyone can post and anyone can see. Say Moin to the ones you like; each is gone after 30 days.',
     foot: 'No accounts. Chains and postcards are locked on your phone; the relay can’t read them. Only what you post to the feed is public.',
   },
 
@@ -381,7 +381,7 @@ export const domi = {
   /** A notice under DSA Art. 16(2), written in the person's own mail app (`lib/flow.ts`). */
   feed: {
     title: 'The public feed',
-    intro: 'Memes anyone can post. No likes, no follows, no ranking: newest first, each gone after 30 days. Not encrypted.',
+    intro: 'Memes anyone can post. Say Moin to the ones you like — it never changes the order: newest first, each gone after 30 days. Not encrypted.',
     post: 'Post a meme',
     empty: 'Nothing posted yet. Be the first.',
     more: 'Load older posts',
@@ -392,6 +392,10 @@ export const domi = {
     ago: (days: number) => (days <= 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`),
     share: 'Share',
     copyLink: 'Copy link',
+    /** A9: the like is a Moin. Visible word, then the button's full name for screen readers. */
+    like: 'Moin',
+    likeLabel: (n: number, mine: boolean) => `${mine ? 'You said Moin' : 'Say Moin'} (like) — ${n === 1 ? '1 Moin' : `${n} Moins`} so far`,
+    likeFailed: 'That Moin didn’t get through. Try again.',
     report: 'Report',
     reportSent: 'Your mail app has the report with the post’s link. A person reads every report; a post that breaks the rules is hidden for everyone.',
     reportSubject: 'Moin Domi: report a public post',

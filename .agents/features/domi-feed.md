@@ -18,7 +18,7 @@ feed: memes anyone can see.
 - **In the app**: Home gets *The public feed*; the Feed screen shows the newest memes with
   nickname and day, *Load more*, *Share* (the post's link `…/domi/p/<id>`) and *Report* on each.
   A shared post link opens that post. The 404 page learns `/domi/p/<id>` like `/domi/m/<id>`.
-- **Not**: likes, follows, comments, search, ranking, profiles — the owner chose the feed alone.
+- **Not**: follows, comments, search, ranking, profiles. *(Likes came with A9, `domi-likes.md`.)*
 
 ## Risks
 - Abuse in captions: report + hide; no automatic filter.

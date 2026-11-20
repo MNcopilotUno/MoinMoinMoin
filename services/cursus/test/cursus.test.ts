@@ -369,6 +369,32 @@ describe('the public feed (A8)', () => {
     expect(store.sweep(clock).posts).toBe(2); // a (hidden) and c; b was already deleted
   });
 
+  it('likes (A9): one per token, taken back only with it, counted on every read, never reordering', async () => {
+    const older = store.createPost(meme('older'), clock).id;
+    const newer = store.createPost(meme('newer'), clock).id;
+    const mine = 'a'.repeat(22), theirs = 'b'.repeat(22);
+    expect(await relay.likePost(older, mine, true)).toEqual({ likes: 1 });
+    expect(await relay.likePost(older, mine, true)).toEqual({ likes: 1 }); // the same phone again
+    expect(await relay.likePost(older, theirs, true)).toEqual({ likes: 2 });
+    expect(await relay.likePost(older, 'c'.repeat(22), false)).toEqual({ likes: 2 }); // not yours to take back
+    expect((await relay.listPosts()).posts.map((p) => [JSON.parse(p.content).top, p.likes])).toEqual([['newer', 0], ['older', 2]]);
+    expect(await relay.likePost(older, mine, false)).toEqual({ likes: 1 });
+    expect((await relay.getPost(older)).likes).toBe(1);
+    // Only hashes are kept: neither token is in the database.
+    store.db.exec('PRAGMA wal_checkpoint(FULL)');
+    const raw = readFileSync(join(dir, 'db.sqlite'));
+    expect(raw.includes(Buffer.from(theirs))).toBe(false);
+    expect((store.db.prepare('PRAGMA table_info(likes)').all() as { name: string }[]).map((c) => c.name)).toEqual(['postId', 'tokenHash']);
+    // Gone with its post; refused on hidden or unknown posts; junk refused.
+    store.hidePost(newer);
+    expect(await reason(relay.likePost(newer, mine, true))).toBe('not-found');
+    expect(await reason(relay.likePost('AAAAAAAA', mine, true))).toBe('not-found');
+    expect((await post(`/v1/posts/${older}/like`, { token: 'short', on: true })).status).toBe(422);
+    expect((await post(`/v1/posts/${older}/like`, { token: mine, on: 'yes' })).status).toBe(422);
+    expect(store.takedown(older)).toBe(true);
+    expect((store.db.prepare('SELECT COUNT(*) AS n FROM likes').get() as { n: number }).n).toBe(0);
+  });
+
   it('a burst of posts from one address: 5, then slow down', async () => {
     const statuses: number[] = [];
     for (let i = 0; i < 6; i++) statuses.push((await post('/v1/posts', { content: meme(`burst ${i}`) })).status);

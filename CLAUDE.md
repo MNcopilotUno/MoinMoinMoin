@@ -23,8 +23,8 @@ art and the shared *Moin* sound.
   **This is built first.**
 - **Moin Domi** — a real *Moin* passed between real people via a link, in the Domi ecosystem.
   A private Stille Post for memes: specified in `docs/MOIN_DOMI.md` (stages S0–S4, decisions
-  D1–D16, amendments A1–A8: own photos/GIFs in private chains, an open-licensed meme library,
-  and a public feed). S0–S4 are built and tested; the relay (Cursus) waits for the
+  D1–D16, amendments A1–A9: own photos/GIFs in private chains, an open-licensed meme library,
+  and a public feed with likes). S0–S4 are built and tested; the relay (Cursus) waits for the
   owner's home server (`docs/HOSTING.md`), so the live app cannot send yet. Domi never adds a network call to
   the puzzle, and the puzzle keeps working with `services/cursus` deleted.
 
@@ -44,7 +44,7 @@ Properties that are not negotiable:
   can be tapped away. Narration never stands between cold open and the first ripple.
 
 **What this is not:** not a monetised product. The puzzle is not a social network and needs no
-server. Moin Domi has one small public feed (A8) — no accounts, no follows, no ranking; anything
+server. Moin Domi has one small public feed (A8) with likes (A9) — no accounts, no follows, no ranking; anything
 beyond that is scope creep.
 
 ---
@@ -228,7 +228,7 @@ Adding a rule without its fixture is a review **blocker**.
 | **Playwright against the dev server** | It doesn't run the service worker. E2E and offline suites run against `pnpm build` output only. |
 | **Physics that drifts between devices** *(predicted)* | JavaScript's `Math.sin`, `Math.cos` and similar are allowed to differ slightly between engines, and a variable frame rate changes every collision. Either is enough to make a level solvable on one phone and not another. Simulate on a fixed step with no transcendental functions in the hot path (lookup tables or fixed-point), render by interpolation, and keep a replay test that runs a recorded solution on Chromium, Firefox and WebKit and asserts identical events. |
 | **A narrator who blocks play** | Text that must be read before tapping kills the ten-second rule on the first level and gets skipped by everyone on the tenth. Lines appear beside the play, auto-dismiss, and never gate input. |
-| **Scope creep into Moin Domi** | Domi is private chains plus one public feed (A8). Accounts, follows, search, ranking, push and analytics are out of scope (`MOIN_DOMI.md` §8); uploaded photos never go public. The puzzle makes no network call for Domi until "start a Moin chain" is pressed (S4). |
+| **Scope creep into Moin Domi** | Domi is private chains plus one public feed (A8) with likes that never order it (A9). Accounts, follows, comments, search, ranking, push and analytics are out of scope (`MOIN_DOMI.md` §8); uploaded photos never go public. The puzzle makes no network call for Domi until "start a Moin chain" is pressed (S4). |
 
 ---
 

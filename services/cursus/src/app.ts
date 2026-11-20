@@ -207,6 +207,12 @@ export function createHandler({ store, now = () => Date.now(), origin = '*', lim
         if (store.sizeBytes() >= maxBytes) throw new HttpError(507, 'full');
         return send(201, store.createPost(publicMeme(b.content), t));
       }
+      if ((m = /^\/v1\/posts\/([^/]+)\/like$/.exec(path))) {
+        if (method !== 'POST') throw new HttpError(405);
+        const b = await readBody(req);
+        if (typeof b.on !== 'boolean') throw new HttpError(422, 'bad-request');
+        return send(200, unwrap(store.likePost(id(decodeURIComponent(m[1]!)), fixed(b.token, 22), b.on, t)));
+      }
       if ((m = /^\/v1\/posts\/([^/]+)$/.exec(path))) {
         if (method !== 'GET') throw new HttpError(405);
         return send(200, unwrap(store.getPost(id(decodeURIComponent(m[1]!)), t)));
