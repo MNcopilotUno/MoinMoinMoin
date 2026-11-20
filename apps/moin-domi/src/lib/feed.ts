@@ -4,22 +4,25 @@
  * accepted, and one with an uploaded picture is never shown or sent.
  */
 import { isPublishable, toMeme, type Meme } from '@moin/meme';
-import type { PublicPost, Relay } from '@moin/tessera';
+import { newSecret, secretToText, type PublicPost, type Relay } from '@moin/tessera';
 import { domi } from '@moin/ui/copy/domi';
-import { appBase, contact } from './config.js';
+import { appBase, contact, today } from './config.js';
+import { loadLikes, saveLikes, type Likes } from './db.js';
 
 export interface Post {
   readonly id: string;
   readonly seq: number;
   readonly day: number;
   readonly meme: Meme;
+  readonly likes: number;
 }
 
 /** A post as the phone will show it, or `null` if it is not a valid public meme. */
 export function readPost(p: PublicPost): Post | null {
   try {
     const meme = toMeme(JSON.parse(p.content));
-    return isPublishable(meme) ? { id: p.id, seq: p.seq, day: p.day, meme } : null;
+    const likes = Number.isSafeInteger(p.likes) && p.likes >= 0 ? p.likes : 0;
+    return isPublishable(meme) ? { id: p.id, seq: p.seq, day: p.day, meme, likes } : null;
   } catch {
     return null;
   }
@@ -39,6 +42,27 @@ export async function page(relay: Relay, before?: number): Promise<{ posts: Post
 
 export async function one(relay: Relay, id: string): Promise<Post | null> {
   return readPost(await relay.getPost(id));
+}
+
+/** This phone's likes; tokens older than the posts can live (31 days) are dropped. */
+export async function myLikes(): Promise<Likes> {
+  const all = await loadLikes();
+  const fresh = Object.fromEntries(Object.entries(all).filter(([, v]) => today() - v.day <= 31));
+  if (Object.keys(fresh).length !== Object.keys(all).length) await saveLikes(fresh);
+  return fresh;
+}
+
+/**
+ * A9: say Moin to a post, or take it back. The token is made the first time and kept, so the same
+ * phone counts once and only it can take its like back. Returns the new count and this phone's likes.
+ */
+export async function toggleLike(relay: Relay, id: string, on: boolean): Promise<{ likes: number; mine: Likes }> {
+  const all = await loadLikes();
+  const token = all[id]?.token ?? secretToText(newSecret());
+  const { likes } = await relay.likePost(id, token, on);
+  const mine: Likes = on ? { ...all, [id]: { token, day: today() } } : Object.fromEntries(Object.entries(all).filter(([k]) => k !== id));
+  await saveLikes(mine);
+  return { likes, mine };
 }
 
 export const postLink = (id: string): string => `${appBase}p/${id}`;

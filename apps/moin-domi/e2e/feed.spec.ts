@@ -100,6 +100,36 @@ test('junk a hostile client posted is skipped; 20 a page, then older ones on req
   expect(reads).toBe(2); // one page, then the older one: never a reload loop
 });
 
+test('likes (A9): say Moin, kept across a reload, counted on another phone, taken back; order unchanged', async ({ browser, page }) => {
+  const run = Date.now();
+  for (const n of ['first', 'second']) {
+    const content = JSON.stringify({ v: 1, who: 'captain', where: 'ferry', top: `Like ${run} ${n}`, bottom: '', bubble: 'none', gull: false, mood: 'smiling', weather: 'clear', nick: '', budget: 1 });
+    expect((await page.request.post(`${RELAY}/v1/posts`, { data: { content } })).status()).toBe(201);
+  }
+  const card = (p: Page, n: string) => p.locator('.post').filter({ has: p.getByRole('img', { name: new RegExp(`Like ${run} ${n}`) }) });
+  await page.goto('./');
+  await page.getByRole('button', { name: /The public feed/ }).click();
+  const older = card(page, 'first');
+  await older.getByRole('button', { name: /Say Moin \(like\) — 0 Moins so far/ }).click();
+  await expect(older.getByRole('button', { name: /You said Moin \(like\) — 1 Moin so far/ })).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await page.getByRole('button', { name: /The public feed/ }).click();
+  await expect(card(page, 'first').getByRole('button', { name: /You said Moin/ })).toHaveAttribute('aria-pressed', 'true');
+
+  const other = await person(browser);
+  await other.goto('./');
+  await other.getByRole('button', { name: /The public feed/ }).click();
+  await card(other, 'first').getByRole('button', { name: /Say Moin \(like\) — 1 Moin so far/ }).click();
+  await expect(card(other, 'first').getByRole('button', { name: /— 2 Moins so far/ })).toBeVisible();
+  // Newest first, whatever the likes say.
+  const tops = await other.locator('.post [role="img"]').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label') ?? ''));
+  expect(tops.findIndex((t) => t.includes(`Like ${run} second`))).toBeLessThan(tops.findIndex((t) => t.includes(`Like ${run} first`)));
+  await other.context().close();
+
+  await card(page, 'first').getByRole('button', { name: /You said Moin/ }).click();
+  await expect(card(page, 'first').getByRole('button', { name: /Say Moin \(like\) — 1 Moin so far/ })).toHaveAttribute('aria-pressed', 'false');
+});
+
 test('without a relay the feed says it isn’t switched on', async ({ page }) => {
   await page.goto(NO_RELAY);
   await page.getByRole('button', { name: /The public feed/ }).click();

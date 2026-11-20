@@ -28,6 +28,10 @@ const SCHEMA = `
   CREATE TABLE IF NOT EXISTS posts (
     seq INTEGER PRIMARY KEY AUTOINCREMENT, id TEXT NOT NULL UNIQUE, day INTEGER NOT NULL,
     expiresDay INTEGER NOT NULL, content TEXT NOT NULL, hidden INTEGER NOT NULL DEFAULT 0);
+  -- A9: a like is a post id and the SHA-256 of a token only the liking phone holds. Nothing else.
+  CREATE TABLE IF NOT EXISTS likes (
+    postId TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE, tokenHash TEXT NOT NULL,
+    PRIMARY KEY (postId, tokenHash)) WITHOUT ROWID;
 `;
 
 /** The slowdown after wrong passwords (password-links.md): 5 free, then 1, 2, 4 … minutes, ≤ 24 h. */
@@ -35,6 +39,7 @@ export const waitAfter = (failures: number): number => (failures < 5 ? 0 : Math.
 
 interface ChainRow { id: string; maxStops: number; maxBranches: number; lastHopDay: number; expiresDay: number }
 interface LockRow { name: string; chainId: string; hopId: string; salt: string; kdf: string; verifier: string; wrapped: string; failures: number; waitUntil: number; expiresDay: number }
+interface PostRow { id: string; seq: number; day: number; content: string; likes: number }
 interface HopRow { id: string; chainId: string; parentId: string | null; depth: number; day: number; seq: number | null; ciphertext: string; wrapKeyByT: string | null; wrapTByKey: string | null; pendingSince: number | null }
 
 export type Outcome<T> = { ok: true; value: T } | { ok: false; status: 404 | 409 | 422; error?: string };
@@ -71,8 +76,12 @@ export function openStore(path: string) {
     stale: db.prepare('DELETE FROM hops WHERE pendingSince IS NOT NULL AND pendingSince < ?'),
     postInsert: db.prepare('INSERT INTO posts (id, day, expiresDay, content) VALUES (?, ?, ?, ?)'),
     postIdTaken: db.prepare('SELECT 1 FROM posts WHERE id = ?'),
-    postGet: db.prepare('SELECT id, seq, day, content FROM posts WHERE id = ? AND hidden = 0 AND expiresDay >= ?'),
-    postPage: db.prepare('SELECT id, seq, day, content FROM posts WHERE hidden = 0 AND expiresDay >= ? AND seq < ? ORDER BY seq DESC LIMIT ?'),
+    postGet: db.prepare('SELECT id, seq, day, content, (SELECT COUNT(*) FROM likes WHERE postId = posts.id) AS likes FROM posts WHERE id = ? AND hidden = 0 AND expiresDay >= ?'),
+    // A9: newest first, always — likes are counted, never used to order.
+    postPage: db.prepare('SELECT id, seq, day, content, (SELECT COUNT(*) FROM likes WHERE postId = posts.id) AS likes FROM posts WHERE hidden = 0 AND expiresDay >= ? AND seq < ? ORDER BY seq DESC LIMIT ?'),
+    likeOn: db.prepare('INSERT OR IGNORE INTO likes (postId, tokenHash) VALUES (?, ?)'),
+    likeOff: db.prepare('DELETE FROM likes WHERE postId = ? AND tokenHash = ?'),
+    likeCount: db.prepare('SELECT COUNT(*) AS n FROM likes WHERE postId = ?'),
     postHide: db.prepare('UPDATE posts SET hidden = 1 WHERE id = ?'),
     postDelete: db.prepare('DELETE FROM posts WHERE id = ?'),
     postsExpired: db.prepare('DELETE FROM posts WHERE expiresDay < ?'),
@@ -217,12 +226,21 @@ export function openStore(path: string) {
       });
     },
     /** The newest live, not hidden posts, before `before` (a `seq`), 20 at a time. */
-    listPosts(before: number | null, now: number): { id: string; seq: number; day: number; content: string }[] {
-      return q.postPage.all(dayOf(now), before ?? Number.MAX_SAFE_INTEGER, LIMITS.postsPerPage) as { id: string; seq: number; day: number; content: string }[];
+    listPosts(before: number | null, now: number): PostRow[] {
+      return q.postPage.all(dayOf(now), before ?? Number.MAX_SAFE_INTEGER, LIMITS.postsPerPage) as unknown as PostRow[];
     },
-    getPost(id: string, now: number): Outcome<{ id: string; seq: number; day: number; content: string }> {
-      const p = q.postGet.get(id, dayOf(now)) as { id: string; seq: number; day: number; content: string } | undefined;
+    getPost(id: string, now: number): Outcome<PostRow> {
+      const p = q.postGet.get(id, dayOf(now)) as PostRow | undefined;
       return p ? ok(p) : fail(404);
+    },
+    /** A9: like (`on`) or take back a like on a live post. The token is hashed before it is kept. */
+    likePost(id: string, token: string, on: boolean, now: number): Outcome<{ likes: number }> {
+      return tx(() => {
+        if (!q.postGet.get(id, dayOf(now))) return fail(404);
+        const hash = createHash('sha256').update(Buffer.from(token, 'base64url')).digest('base64url');
+        (on ? q.likeOn : q.likeOff).run(id, hash);
+        return ok({ likes: (q.likeCount.get(id) as { n: number }).n });
+      });
     },
     /** Operator, after a report (DSA Arts. 6, 16): the post stops being shown; `takedown` deletes it. */
     hidePost(id: string): boolean {

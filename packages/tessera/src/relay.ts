@@ -68,6 +68,8 @@ export interface PublicPost {
   readonly seq: number;
   readonly day: number;
   readonly content: string;
+  /** A9: how many phones said Moin to it. Counted, never used to order the feed. */
+  readonly likes: number;
 }
 
 export interface Relay {
@@ -88,6 +90,8 @@ export interface Relay {
   /** Newest first; `before` is the `seq` of the last post already shown. */
   listPosts(before?: number): Promise<{ posts: readonly PublicPost[] }>;
   getPost(id: string): Promise<PublicPost>;
+  /** A9: like (`on`) or take back a like, proven by the token only this phone holds. */
+  likePost(id: string, token: string, on: boolean): Promise<{ likes: number }>;
 }
 
 /** A refused password: how long to wait before the next try, if at all (ms since 1970). */
@@ -159,5 +163,6 @@ export function httpRelay(baseUrl: string, fetchImpl: Fetch = (i, init) => fetch
     createPost: (content) => call('POST', '/posts', { content }),
     listPosts: (before) => call('GET', before === undefined ? '/posts' : `/posts?before=${before}`),
     getPost: (id) => call('GET', `/posts/${at(id)}`),
+    likePost: (id, token, on) => call('POST', `/posts/${at(id)}/like`, { token, on }),
   };
 }

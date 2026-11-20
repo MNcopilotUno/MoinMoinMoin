@@ -76,7 +76,7 @@ export interface StoredPicture {
   readonly bytes: ArrayBuffer;
 }
 
-const memory = { items: new Map<string, Item>(), outbox: new Map<string, Outgoing>(), pictures: new Map<string, StoredPicture>(), settings: defaultSettings };
+const memory = { items: new Map<string, Item>(), outbox: new Map<string, Outgoing>(), pictures: new Map<string, StoredPicture>(), likes: {} as Likes, settings: defaultSettings };
 let dbPromise: Promise<IDBDatabase | null> | null = null;
 
 function open(): Promise<IDBDatabase | null> {
@@ -211,6 +211,21 @@ export async function removePicture(id: string): Promise<void> {
   else memory.pictures.delete(id);
 }
 
+/** A9: the token for each post this phone liked, with the day — the only proof it was us. */
+export type Likes = Readonly<Record<string, { readonly token: string; readonly day: number }>>;
+
+export async function loadLikes(): Promise<Likes> {
+  const db = await open();
+  const stored = db ? await run<Likes>('kv', 'readonly', (s) => s.get('likes')) : memory.likes;
+  return stored && typeof stored === 'object' ? stored : {};
+}
+
+export async function saveLikes(likes: Likes): Promise<void> {
+  const db = await open();
+  if (db) await run('kv', 'readwrite', (s) => s.put(plain(likes), 'likes'));
+  else memory.likes = plain(likes);
+}
+
 export async function loadSettings(): Promise<Settings> {
   const db = await open();
   const stored = db ? await run<Partial<Settings>>('kv', 'readonly', (s) => s.get('settings')) : memory.settings;
@@ -229,6 +244,7 @@ export async function forgetEverything(): Promise<void> {
   memory.items.clear();
   memory.outbox.clear();
   memory.pictures.clear();
+  memory.likes = {};
   memory.settings = defaultSettings;
   if (db) {
     await run('items', 'readwrite', (s) => s.clear());

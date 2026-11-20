@@ -5,7 +5,8 @@
   import Icon from '../components/Icon.svelte';
   import Meme from '../components/Meme.svelte';
   import { today } from '../lib/config.js';
-  import { one, page, postLink, postReportHref, type Post } from '../lib/feed.js';
+  import { myLikes, one, page, postLink, postReportHref, toggleLike, type Post } from '../lib/feed.js';
+  import type { Likes } from '../lib/db.js';
 
   interface Props {
     relay: Relay | null;
@@ -30,6 +31,31 @@
   let copied = $state<string | null>(null);
   let reported = $state<string | null>(null);
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  /** A9: this phone's likes, and counts newer than the page they came with. */
+  let mine = $state<Likes>({});
+  let counts = $state<Record<string, number>>({});
+  let liking = $state<string | null>(null);
+  let likeFailed = $state<string | null>(null);
+  const count = (p: Post) => counts[p.id] ?? p.likes;
+
+  async function like(p: Post) {
+    if (!relay || liking) return;
+    const on = !mine[p.id];
+    const before = count(p);
+    liking = p.id;
+    likeFailed = null;
+    counts[p.id] = Math.max(0, before + (on ? 1 : -1)); // shown at once, corrected by the answer
+    try {
+      const r = await toggleLike(relay, p.id, on);
+      counts[p.id] = r.likes;
+      mine = r.mine;
+    } catch {
+      counts[p.id] = before;
+      likeFailed = p.id;
+    } finally {
+      liking = null;
+    }
+  }
 
   async function load(before?: number) {
     if (!relay || loading) return;
@@ -52,6 +78,7 @@
   $effect(() => {
     const r = relay, off = offline, id = focusId;
     untrack(() => {
+      void myLikes().then((m) => (mine = m));
       if (!r || off) return;
       void load();
       if (id) one(r, id).then((p) => { focus = p; focusGone = p === null; }, () => { focusGone = true; });
@@ -83,6 +110,10 @@
     <Meme meme={p.meme} size={300} />
     <p class="meta">{t.by(p.meme.nick)} · {t.ago(today() - p.day)}</p>
     <div class="acts">
+      <button type="button" class="like" aria-pressed={mine[p.id] !== undefined} aria-label={t.likeLabel(count(p), mine[p.id] !== undefined)}
+        disabled={!relay || offline || liking === p.id} onclick={() => like(p)}>
+        <span class="word" aria-hidden="true">{t.like}</span><span class="n" aria-hidden="true">{count(p)}</span>
+      </button>
       <button type="button" class="chip" onclick={() => share(p.id)} aria-live="polite">
         <Icon name="share" size={18} />{copied === p.id ? domi.common.copied : canShare ? t.share : t.copyLink}
       </button>
@@ -90,6 +121,7 @@
         <a class="chip" href={postReportHref(p.id)} onclick={() => (reported = p.id)}><Icon name="alert" size={18} />{t.report}</a>
       {/if}
     </div>
+    {#if likeFailed === p.id}<p class="note" role="alert">{t.likeFailed}</p>{/if}
     {#if reported === p.id}<p class="note" role="status">{t.reportSent}</p>{/if}
   </li>
 {/snippet}
@@ -147,7 +179,13 @@
   .post { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .post.mine :global(.meme) { box-shadow: 0 0 0 3px var(--gold); }
   .meta { margin: 0; font-size: 13px; color: var(--mist); }
-  .acts { display: flex; gap: 8px; }
+  .acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+  /* The like is a Moin: the red bubble, the one thing red means. Filled once you said it. */
+  .like { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 6px; border: 0; border-radius: 999px; background: var(--card); box-shadow: inset 0 0 0 1.5px var(--line); font-weight: 800; }
+  .like .word { padding: 3px 10px 5px; border-radius: 14px 14px 14px 4px; box-shadow: inset 0 0 0 1.5px var(--moin); font-family: var(--serif); font-style: italic; font-weight: 700; font-size: 18px; line-height: 1; color: var(--paper); }
+  .like[aria-pressed='true'] .word { background: var(--moin); box-shadow: none; color: #fbf6ea; }
+  .like .n { font-variant-numeric: tabular-nums; }
+  .like:disabled { opacity: 0.6; }
   .acts .chip { display: inline-flex; align-items: center; gap: 6px; padding: 0 14px; text-decoration: none; color: inherit; }
   .empty { margin: 8px 4px; font-size: 14px; line-height: 1.4; color: var(--mist); }
   .more { width: 100%; margin-top: 18px; }

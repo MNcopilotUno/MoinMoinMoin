@@ -55,6 +55,16 @@ Agreed after a review of this file; each overrides the text it names.
     strangers' images are never published from the owner's home server). No accounts, no follows,
     no ranking: a nickname per post, as in chains. Report on every post; the operator hides posts.
     Under the DSA the feed makes Domi an online platform (`.agents/features/dsa.md`).
+- **A9 — Decided by the owner, 2026-11-20: likes on the public feed.** A post can be liked; the
+  like is a **Moin** — the red bubble, the one thing red means — with its count under the post.
+  - One like per post per phone, and it can be taken back. Without accounts this is held by a
+    random 128-bit token the phone makes per post and keeps; the relay stores only its SHA-256 next
+    to the post id, never an address, and deletes the likes with the post.
+  - **Likes never order anything**: the feed stays newest first (§8: no ranking, no "popular").
+    The count is shown, nothing else — no list of who liked, no notifications.
+  - A determined person can like many times by making new tokens; the per-address rate limit
+    bounds it, and a like count is not worth more protection than that. Likes are not allowed on
+    hidden or expired posts. Private chains and postcards get no likes.
 
 Still open from that review (superseded by A6–A8 where they answer it): whether a touch may recolour the *Moin* bubble (D4) — the project
 rule is that red means *Moin*; hosting and domain for Cursus (needed before S1); the ROADMAP's
@@ -275,8 +285,8 @@ reason when offline.
 ## 8. Out of scope
 
 Video, voice recordings, discovery beyond the one public feed (no search, no ranking, no
-"for you"), accounts, follows, push notifications, and any analytics. *(Photo uploads and a
-public feed moved in with A8.)*
+"for you"), accounts, follows, comments, push notifications, and any analytics. *(Photo uploads and
+a public feed moved in with A8; likes on that feed, never used for ordering, with A9.)*
 
 ## 9. Open questions
 
