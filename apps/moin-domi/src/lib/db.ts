@@ -69,19 +69,27 @@ export interface Settings {
 
 export const defaultSettings: Settings = { rememberNick: true, nick: '', sound: false, calm: null };
 
-const memory = { items: new Map<string, Item>(), outbox: new Map<string, Outgoing>(), settings: defaultSettings };
+/** A picture from this phone or opened from a chain (A8), kept so it shows offline. */
+export interface StoredPicture {
+  readonly id: string;
+  readonly type: string;
+  readonly bytes: ArrayBuffer;
+}
+
+const memory = { items: new Map<string, Item>(), outbox: new Map<string, Outgoing>(), pictures: new Map<string, StoredPicture>(), settings: defaultSettings };
 let dbPromise: Promise<IDBDatabase | null> | null = null;
 
 function open(): Promise<IDBDatabase | null> {
   dbPromise ??= new Promise((resolve) => {
     try {
-      const req = indexedDB.open('moin-domi', 2);
+      const req = indexedDB.open('moin-domi', 3);
       req.onupgradeneeded = (event) => {
         if (event.oldVersion < 1) {
           req.result.createObjectStore('items', { keyPath: 'chainId' });
           req.result.createObjectStore('kv');
         }
         if (event.oldVersion < 2) req.result.createObjectStore('outbox', { keyPath: 'id' });
+        if (event.oldVersion < 3) req.result.createObjectStore('pictures', { keyPath: 'id' });
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => resolve(null);
@@ -179,6 +187,30 @@ export async function removeItem(chainId: string): Promise<void> {
   else memory.items.delete(chainId);
 }
 
+/** Bytes are stored as they are: an ArrayBuffer clones fine, unlike a Svelte Proxy. */
+export async function putPicture(p: StoredPicture): Promise<void> {
+  const db = await open();
+  if (db) await run('pictures', 'readwrite', (s) => s.put({ id: p.id, type: p.type, bytes: p.bytes }));
+  else memory.pictures.set(p.id, p);
+}
+
+export async function getPicture(id: string): Promise<StoredPicture | null> {
+  const db = await open();
+  const p = (db ? await run<StoredPicture>('pictures', 'readonly', (s) => s.get(id)) : memory.pictures.get(id)) ?? null;
+  return p && typeof p.type === 'string' && p.bytes instanceof ArrayBuffer ? p : null;
+}
+
+export async function pictureIds(): Promise<string[]> {
+  const db = await open();
+  return db ? (((await run('pictures', 'readonly', (s) => s.getAllKeys())) ?? []) as string[]) : [...memory.pictures.keys()];
+}
+
+export async function removePicture(id: string): Promise<void> {
+  const db = await open();
+  if (db) await run('pictures', 'readwrite', (s) => s.delete(id));
+  else memory.pictures.delete(id);
+}
+
 export async function loadSettings(): Promise<Settings> {
   const db = await open();
   const stored = db ? await run<Partial<Settings>>('kv', 'readonly', (s) => s.get('settings')) : memory.settings;
@@ -196,10 +228,12 @@ export async function forgetEverything(): Promise<void> {
   const db = await open();
   memory.items.clear();
   memory.outbox.clear();
+  memory.pictures.clear();
   memory.settings = defaultSettings;
   if (db) {
     await run('items', 'readwrite', (s) => s.clear());
     await run('outbox', 'readwrite', (s) => s.clear());
+    await run('pictures', 'readwrite', (s) => s.clear());
     await run('kv', 'readwrite', (s) => s.clear());
   }
 }

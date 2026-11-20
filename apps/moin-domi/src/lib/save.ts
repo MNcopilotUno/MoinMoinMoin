@@ -1,5 +1,6 @@
 import { memeTitle, type Meme } from '@moin/meme';
 import { bubbleText, PAINTINGS } from './look.js';
+import { bytesOf, pictureUrl } from './pictures.svelte.js';
 
 /**
  * "Save image" (spec §5): the user's choice to take a meme out of the private chain. Draws the
@@ -39,10 +40,14 @@ export async function renderPng(el: HTMLElement, meme: Meme): Promise<Blob> {
   if (!ctx) throw new Error('canvas');
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, SIZE, SIZE);
-  const bg = await load(PAINTINGS[meme.where]);
-  const scale = Math.max(SIZE / bg.width, SIZE / bg.height);
-  const w = bg.width * scale, h = bg.height * scale;
-  ctx.drawImage(bg, (SIZE - w) / 2, (SIZE - h) * 0.22, w, h);
+  // A8: their own picture (a GIF gives its first frame), centred; else the painting, as on screen.
+  const own = meme.image ? pictureUrl(meme.image.id) : undefined;
+  if (!meme.image || own) {
+    const bg = await load(own ?? PAINTINGS[meme.where]);
+    const scale = Math.max(SIZE / bg.width, SIZE / bg.height);
+    const w = bg.width * scale, h = bg.height * scale;
+    ctx.drawImage(bg, (SIZE - w) / 2, (SIZE - h) * (own ? 0.5 : 0.22), w, h);
+  }
   const weather = el.querySelector<SVGElement>('.weather svg');
   if (weather) {
     const svg = weather.cloneNode(true) as SVGElement;
@@ -103,14 +108,23 @@ export async function renderPng(el: HTMLElement, meme: Meme): Promise<Blob> {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('png'))), 'image/png'));
 }
 
-export async function saveImage(el: HTMLElement, meme: Meme): Promise<void> {
-  const blob = await renderPng(el, meme);
+function download(blob: Blob, name: string): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${memeTitle(meme).toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'moin'}.png`;
+  a.download = name;
   document.body.append(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
+
+export async function saveImage(el: HTMLElement, meme: Meme): Promise<void> {
+  const name = memeTitle(meme).toLowerCase().replace(/[^a-z0-9äöüß]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'moin';
+  download(await renderPng(el, meme), `${name}.png`);
+  // A still loses the animation: a GIF also comes out as it is (without the captions).
+  if (meme.image?.type === 'image/gif') {
+    const gif = await bytesOf(meme.image.id);
+    if (gif) download(new Blob([gif], { type: 'image/gif' }), `${name}.gif`);
+  }
 }

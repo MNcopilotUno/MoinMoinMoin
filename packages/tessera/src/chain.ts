@@ -29,8 +29,10 @@ async function withFreshId<T>(make: (id: string) => Promise<T>): Promise<T> {
   }
 }
 
-/** §3 step 0: the creator makes `T` and the first hop, all wraps in one request. */
-/** `chainId` may be chosen beforehand, e.g. to upload the chain's picture first (A8). */
+/**
+ * §3 step 0: the creator makes `T` and the first hop, all wraps in one request. `chainId` may be
+ * chosen beforehand, e.g. to upload the chain's picture first (A8).
+ */
 export async function startChain(relay: Relay, limits: Limits, content: Uint8Array<ArrayBuffer>, chainId: string = newId()): Promise<{ hop: HopKey; chainSecret: Secret }> {
   const t = newSecret();
   const k = newSecret();
@@ -102,8 +104,8 @@ export async function readTree(relay: Relay, chainId: string, chainSecret: Secre
 }
 
 /** A8: seal a picture with a fresh key and upload it for `chainId`. The key goes inside the meme. */
-export async function uploadMedia(relay: Relay, chainId: string, bytes: Uint8Array<ArrayBuffer>): Promise<{ mediaId: string; key: Secret }> {
-  const key = newSecret();
+/** `key` may be chosen earlier (the phone picks it with the picture, before the chain exists). */
+export async function uploadMedia(relay: Relay, chainId: string, bytes: Uint8Array<ArrayBuffer>, key: Secret = newSecret()): Promise<{ mediaId: string; key: Secret }> {
   return withFreshId(async (mediaId) => {
     await relay.putMedia(mediaId, chainId, await sealBytes(key, 'media', bytes, mediaAad(chainId, mediaId)));
     return { mediaId, key };
