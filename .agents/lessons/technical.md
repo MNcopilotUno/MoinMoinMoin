@@ -52,3 +52,11 @@ Python script that writes `\\u2028`, and grep for the raw bytes `e2 80 a8` after
 password link fell back to a key link — the fallback message was the only clue ("the relay didn't
 answer", because the error surfaced as a generic one). `'wasm-unsafe-eval'` allows WebAssembly
 compilation only, not `eval`. Test the real built page, CSP included, for anything that loads WASM.
+
+## Wikimedia Commons rate-limits per shared IP (2026-11-20, meme library)
+From the sandbox, one `list=search` every second earned 429s within ten requests, and the
+original-file host later answered `Retry-After: 600`. What worked: no search at all (find
+candidates on Openverse, `license=cc0,pdm`), then **one** `prop=imageinfo` request with up to 50
+`titles=` or `pageids=` joined by `|`, honouring `Retry-After`; download the API's 1920 px
+`thumburl` (thumbnail host) rather than originals. A file whose thumbnail is "unscaled" is
+served from the original host — expect it to be the one that stalls.
