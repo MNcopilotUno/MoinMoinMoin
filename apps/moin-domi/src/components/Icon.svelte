@@ -1,5 +1,5 @@
 <script lang="ts">
-  type Name = 'back' | 'gear' | 'share' | 'lock' | 'wave' | 'speaker' | 'chevron' | 'trash' | 'mail' | 'alert';
+  type Name = 'back' | 'gear' | 'share' | 'lock' | 'wave' | 'speaker' | 'chevron' | 'trash' | 'mail' | 'alert' | 'globe';
   let { name, size = 22, color = 'currentColor' }: { name: Name; size?: number; color?: string } = $props();
 </script>
 
@@ -13,6 +13,7 @@
   {:else if name === 'speaker'}<path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" />
   {:else if name === 'trash'}<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
   {:else if name === 'mail'}<rect x="3" y="6" width="18" height="13" rx="2" /><path d="M3 8l9 6 9-6" />
+  {:else if name === 'globe'}<circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3.2 3.4 3.2 14.6 0 18M12 3c-3.2 3.4-3.2 14.6 0 18" />
   {:else if name === 'alert'}<circle cx="12" cy="12" r="9" /><path d="M12 7v6M12 16.5v.5" />
   {/if}
 </svg>

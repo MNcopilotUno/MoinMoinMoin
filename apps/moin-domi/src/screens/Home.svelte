@@ -21,8 +21,9 @@
     onopen: (item: Item) => void;
     onyours: () => void;
     onsettings: () => void;
+    onfeed: () => void;
   }
-  let { waiting, outbox, sentNote, sendingOff, onchain, onsend, onopen, onyours, onsettings, ondiscard, ondismiss }: Props = $props();
+  let { waiting, outbox, sentNote, sendingOff, onchain, onsend, onopen, onyours, onsettings, ondiscard, ondismiss, onfeed }: Props = $props();
   const t = domi.home;
   const kindOf = (o: Outgoing) => (o.kind === 'start' ? (o.rules?.kind === 'postcard' ? domi.common.outgoing.postcard : domi.common.outgoing.chain) : domi.common.outgoing.turn);
   const chainFaces = [{ ...FIRST_MEME, mood: 'grumpy' as const }, { ...FIRST_MEME, who: 'fisherman' as const, where: 'market' as const, bubble: 'none' as const }];
@@ -54,6 +55,13 @@
       <span class="words">
         <strong>{t.sendTitle}</strong>
         <span>{t.sendBody}</span>
+      </span>
+    </button>
+    <button type="button" class="choice send feed" onclick={onfeed}>
+      <span class="icon" aria-hidden="true"><Icon name="globe" size={34} /></span>
+      <span class="words">
+        <strong>{t.feedTitle}</strong>
+        <span>{t.feedBody}</span>
       </span>
     </button>
   </nav>

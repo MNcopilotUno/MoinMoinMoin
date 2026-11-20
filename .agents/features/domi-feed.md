@@ -30,3 +30,24 @@ feed: memes anyone can see.
 | Happy day | Bad weather |
 |:--|:--|
 | post → appears at the top of another phone's feed; post link opens it; load more pages back; expired posts gone; hidden posts gone | a post with an uploaded picture refused (app and relay); non-JSON or > 2 KB refused; 6th post in a burst → slow-down; invalid meme JSON in the feed skipped on the phone; report mail carries the post link |
+
+## As built (2026-11-20, `feature/domi-feed`)
+- *How it travels* has three kinds: *A chain*, *Just send*, **Public**. Public hides the link
+  choices (there is no key and no password), shows a gold card saying what public means, and
+  refuses a meme with the person's own picture with the reason (`isPublishable`). Not queued
+  offline: posting is deliberate and needs the network.
+- Relay: `posts` table (`seq` autoincrement, relay-chosen 8-character id, `day`, `expiresDay`,
+  `content`, `hidden`); `post` rate kind 5 at once then 1 per 10 min — refused posts spend it too;
+  `publicMeme()` checks a JSON object ≤ 2 KB without `image` (`422 not-public`). Swept with the rest.
+  `cli.ts hide <postId>`; `takedown <postId>` deletes a post.
+- App: Home's third choice *The public feed*; `Feed.svelte` lists 20 a page with *Load older posts*,
+  nickname and age, *Share* (or *Copy link*) and *Report* (mail with the post's link, DSA Art. 16).
+  `…/domi/p/<id>` opens that post first (404 page → `?p=<id>`, the worker's navigation fallback
+  serves the app for it when installed). Each post is checked with `toMeme` on the phone; junk is
+  skipped. About gained *The public feed* (Art. 14); Home's foot no longer says "no feed".
+
+### Evidence
+cursus 44 (feed paging, picture refused, hide/expire/takedown, the burst limit), Domi e2e
+`feed.spec.ts` 6 (post → top of another phone's feed with nickname; report mail carries the post
+link; post link through the 404 page; unknown post gone; own picture refused; junk skipped and
+paging with exactly two reads; without a relay; axe + 44 px on Rules-public, Feed and Home).

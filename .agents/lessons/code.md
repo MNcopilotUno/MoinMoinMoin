@@ -25,3 +25,9 @@ first answer while online and see the chain go out by itself.
 showed no request at all after reconnecting: the `online` event never reached a page loaded
 offline, and the backoff only starts once the browser says it is online. Now the outbox also
 looks every 5 s while it holds something. Read the trace before writing the fix.
+
+## An `$effect` that calls a loader tracks everything the loader reads (2026-11-20, Domi feed)
+`$effect(() => { void load(); })` where `load` reads and sets `loading` and `posts` made the effect
+depend on both: every finished load started the next. The page looked fine (first page shown),
+only *Load older* stayed on "Looking…". Read the inputs you mean to react to, then call the
+loader inside `untrack(...)`; and test the number of requests, not just what is shown.

@@ -108,7 +108,7 @@ describe('Cursus over HTTP with the Tessera client', () => {
     expect((await readTree(relay, hop.chainId, chainSecret)).hops).toHaveLength(1);
     clock += 11 * 60 * 1000;
     expect(await reason(relay.completeHop(pendingId, { wrapKeyByT: 'A'.repeat(60), wrapTByKey: 'A'.repeat(60) }))).toBe('not-found');
-    expect(store.sweep(clock)).toEqual({ chains: 0, pending: 1, media: 0 });
+    expect(store.sweep(clock)).toEqual({ chains: 0, pending: 1, media: 0, posts: 0 });
     const done = await takeTurn(relay, hop, bytes('2'));
     expect(await reason(relay.completeHop(done.hop.hopId, { wrapKeyByT: 'A'.repeat(60), wrapTByKey: 'A'.repeat(60) }))).toBe('not-found');
   });
@@ -122,7 +122,7 @@ describe('Cursus over HTTP with the Tessera client', () => {
     clock += DAY;
     expect(await reason(relay.getHop(next.hop.hopId))).toBe('not-found');
     expect(await reason(relay.getTree(hop.chainId))).toBe('not-found');
-    expect(store.sweep(clock)).toEqual({ chains: 1, pending: 0, media: 0 });
+    expect(store.sweep(clock)).toEqual({ chains: 1, pending: 0, media: 0, posts: 0 });
   });
 
   it('answers a duplicate id with 409', async () => {
@@ -318,5 +318,61 @@ describe('pictures (A8)', () => {
     expect(await reason(downloadMedia(relay, chainId, mediaId, key))).toBe('not-found');
     expect((store.db.prepare('SELECT COUNT(*) AS n FROM media').get() as { n: number }).n).toBe(0);
     void orphan;
+  });
+});
+
+describe('the public feed (A8)', () => {
+  const meme = (top: string, extra: Record<string, unknown> = {}) => JSON.stringify({ v: 1, who: 'captain', where: 'harbour', top, bottom: 'b', bubble: 'moin', gull: false, mood: 'smiling', weather: 'clear', nick: '', budget: 1, ...extra });
+
+  it('post → newest first, by link, 20 a page, then the page before; no author, no address kept', async () => {
+    const ids: string[] = [];
+    for (let i = 0; i < 25; i++) {
+      clock += 60_000;
+      ids.push(store.createPost(meme(`post ${i}`), clock).id);
+    }
+    const first = await relay.listPosts();
+    expect(first.posts).toHaveLength(20);
+    expect(first.posts[0]!.content).toBe(meme('post 24'));
+    const older = await relay.listPosts(first.posts.at(-1)!.seq);
+    expect(older.posts.map((p) => JSON.parse(p.content).top)).toEqual(['post 4', 'post 3', 'post 2', 'post 1', 'post 0']);
+    const one = await relay.getPost(ids[7]!);
+    expect(one).toMatchObject({ id: ids[7], content: meme('post 7'), day: 20_000 });
+    const columns = (store.db.prepare('PRAGMA table_info(posts)').all() as { name: string }[]).map((c) => c.name);
+    expect(columns.sort()).toEqual(['content', 'day', 'expiresDay', 'hidden', 'id', 'seq']);
+  });
+
+  it('created over HTTP; a picture meme, non-JSON, an array and over 2 KB are refused', async () => {
+    const made = await relay.createPost(meme('hello'));
+    expect(made.id).toMatch(/^[A-Za-z0-9_-]{8}$/);
+    expect((await relay.getPost(made.id)).content).toBe(meme('hello'));
+    const image = { id: 'AAAAAAAA', key: 'A'.repeat(22), type: 'image/jpeg', w: 10, h: 10 };
+    expect(await reason(relay.createPost(meme('x', { image })))).toBe('not-public');
+    expect(await reason(relay.createPost('not json'))).toBe('bad-request');
+    expect(await reason(relay.createPost('[1,2]'))).toBe('bad-request');
+    expect(await reason(relay.createPost(meme('x'.repeat(2100))))).toBe('bad-request');
+    clock += 10 * 60_000; // refused posts spend the budget too: one more after ten minutes
+    expect((await post('/v1/posts', { content: 42 })).status).toBe(422);
+    expect((await fetch(`${base}/v1/posts?before=abc`)).status).toBe(422);
+  });
+
+  it('hidden and expired posts are gone from the feed and their link; takedown deletes one', async () => {
+    const a = store.createPost(meme('a'), clock).id;
+    const b = store.createPost(meme('b'), clock).id;
+    const c = store.createPost(meme('c'), clock).id;
+    expect(store.hidePost(a)).toBe(true);
+    expect(store.takedown(b)).toBe(true);
+    expect((await relay.listPosts()).posts.map((p) => p.id)).toEqual([c]);
+    expect(await reason(relay.getPost(a))).toBe('not-found');
+    expect(await reason(relay.getPost(b))).toBe('not-found');
+    clock += 31 * DAY;
+    expect((await relay.listPosts()).posts).toEqual([]);
+    expect(store.sweep(clock).posts).toBe(2); // a (hidden) and c; b was already deleted
+  });
+
+  it('a burst of posts from one address: 5, then slow down', async () => {
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i++) statuses.push((await post('/v1/posts', { content: meme(`burst ${i}`) })).status);
+    expect(statuses).toEqual([201, 201, 201, 201, 201, 429]);
+    expect((await fetch(`${base}/v1/posts`)).status).toBe(200); // reading is its own budget
   });
 });

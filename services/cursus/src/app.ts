@@ -92,6 +92,23 @@ async function readBody(req: IncomingMessage): Promise<Body> {
   throw new HttpError(422, 'bad-request');
 }
 
+/**
+ * A8: what may be posted publicly — a JSON object of at most 2 KB without an uploaded picture.
+ * Only that: every phone checks each post with the strict meme validation and skips what fails.
+ */
+function publicMeme(value: unknown): string {
+  if (typeof value !== 'string' || value.length > LIMITS.postChars) throw new HttpError(422, 'bad-request');
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(value);
+  } catch {
+    throw new HttpError(422, 'bad-request');
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new HttpError(422, 'bad-request');
+  if ('image' in parsed) throw new HttpError(422, 'not-public');
+  return value;
+}
+
 /** A8: a sealed picture, raw bytes, up to the media limit. */
 async function readBytes(req: IncomingMessage): Promise<Uint8Array> {
   const raw = await readRaw(req, LIMITS.mediaBytes);
@@ -135,7 +152,7 @@ export function createHandler({ store, now = () => Date.now(), origin = '*', lim
         if (method !== 'GET') throw new HttpError(405);
         return send(200, { ok: true, api: 1 });
       }
-      const kind: Kind = method !== 'POST' ? 'read' : path === '/v1/chains' || path === '/v1/locks' || path.startsWith('/v1/media/') ? 'create' : 'write';
+      const kind: Kind = method !== 'POST' ? 'read' : path === '/v1/posts' ? 'post' : path === '/v1/chains' || path === '/v1/locks' || path.startsWith('/v1/media/') ? 'create' : 'write';
       const wait = limiter.take(kind, addressOf(req));
       if (wait > 0) {
         headers['retry-after'] = String(wait);
@@ -178,6 +195,21 @@ export function createHandler({ store, now = () => Date.now(), origin = '*', lim
         if (store.sizeBytes() >= maxBytes) throw new HttpError(507, 'full');
         const chainId = id(new URL(req.url ?? '/', 'http://relay').searchParams.get('chain'));
         return send(201, unwrap(store.putMedia(mediaId, chainId, await readBytes(req), t)));
+      }
+      if (path === '/v1/posts') {
+        if (method === 'GET') {
+          const before = new URL(req.url ?? '/', 'http://relay').searchParams.get('before');
+          if (before !== null && !/^[1-9][0-9]{0,15}$/.test(before)) throw new HttpError(422, 'bad-request');
+          return send(200, { posts: store.listPosts(before === null ? null : Number(before), t) });
+        }
+        if (method !== 'POST') throw new HttpError(405);
+        const b = await readBody(req);
+        if (store.sizeBytes() >= maxBytes) throw new HttpError(507, 'full');
+        return send(201, store.createPost(publicMeme(b.content), t));
+      }
+      if ((m = /^\/v1\/posts\/([^/]+)$/.exec(path))) {
+        if (method !== 'GET') throw new HttpError(405);
+        return send(200, unwrap(store.getPost(id(decodeURIComponent(m[1]!)), t)));
       }
       if (path === '/v1/locks') {
         if (method !== 'POST') throw new HttpError(405);
