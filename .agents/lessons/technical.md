@@ -60,3 +60,11 @@ passed again with two `console.log`s added — a timing bug. The rest of the bod
 keep-alive connection, and the client reused it. Fix: reject on `content-length` before reading,
 stop reading (`pause`) at the limit, and answer 413 with `connection: close` so the socket is
 not reused.
+
+## Wikimedia Commons rate-limits per shared IP (2026-11-20, meme library)
+From the sandbox, one `list=search` every second earned 429s within ten requests, and the
+original-file host later answered `Retry-After: 600`. What worked: no search at all (find
+candidates on Openverse, `license=cc0,pdm`), then **one** `prop=imageinfo` request with up to 50
+`titles=` or `pageids=` joined by `|`, honouring `Retry-After`; download the API's 1920 px
+`thumburl` (thumbnail host) rather than originals. A file whose thumbnail is "unscaled" is
+served from the original host — expect it to be the one that stalls.

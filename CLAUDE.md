@@ -89,7 +89,7 @@ The name *Moin Moin Moin* appears in source only in `packages/core/src/constants
 pnpm install --frozen-lockfile
 pnpm --filter @moin/moin-moin-moin dev     # 127.0.0.1:5173 — never --host
 pnpm build
-pnpm test                                  # vitest: core, levels, narration, ui, tessera, meme, cursus
+pnpm test                                  # vitest: core, levels, narration, ui, tessera, meme, cursus, assets
 pnpm test:e2e                              # Playwright against the BUILT app, never the dev server
 pnpm test:offline                          # load once, cut the network, solve a level, reload, progress survives
 pnpm validate:levels                       # schema + solver on every level; negative fixtures must FAIL
