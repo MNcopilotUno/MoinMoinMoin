@@ -45,6 +45,8 @@ export type TurnProblem = 'template' | 'shape' | 'words' | 'touch';
  */
 export function checkTurn(before: Meme, after: Meme, budget: number = before.budget): TurnProblem | null {
   if (before.who !== after.who || before.where !== after.where || before.budget !== after.budget) return 'template';
+  // The picture and the library image are the template too (A8): passed on, never swapped.
+  if (JSON.stringify(before.image ?? null) !== JSON.stringify(after.image ?? null) || before.template !== after.template) return 'template';
   const changed = wordsChanged(before, after);
   if (changed === null) return 'shape';
   if (changed > budget) return 'words';

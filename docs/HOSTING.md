@@ -67,7 +67,7 @@ server {
     server_name relay.<your-domain>;
     # ssl_certificate … (certbot fills these in)
     access_log off;                       # the relay must not record addresses
-    client_max_body_size 16k;
+    client_max_body_size 3m;   # pictures (A8) are up to 2.2 MB; Cursus enforces its own limits
     location / {
         proxy_pass http://127.0.0.1:4175;
         proxy_set_header X-Forwarded-For $remote_addr;   # one hop: the client's address only

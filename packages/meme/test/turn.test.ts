@@ -36,6 +36,13 @@ describe('a turn (D3–D5)', () => {
     expect(checkTurn(two, next)).toBeNull();
     expect(checkTurn(m, { ...swapWord(swapWord(m, 2, 'gull'), 4, 'sings'), budget: 2 })).toBe('template');
   });
+  it('the picture and the library image cannot be swapped in a turn (A8)', () => {
+    const img = { id: 'abcdEFGH', key: 'A'.repeat(22), type: 'image/jpeg' as const, w: 10, h: 10 };
+    const photo = { ...m, image: img };
+    expect(checkTurn(photo, { ...photo, gull: true })).toBeNull();
+    expect(checkTurn(photo, { ...photo, image: { ...img, id: 'zzzzZZZZ' } })).toBe('template');
+    expect(checkTurn(m, { ...m, template: 'great-wave' })).toBe('template');
+  });
   it('changing the cast member or the place is rejected', () => {
     expect(checkTurn(m, { ...m, who: 'kid' }, 3)).toBe('template');
     expect(checkTurn(m, { ...m, where: 'ferry' }, 3)).toBe('template');

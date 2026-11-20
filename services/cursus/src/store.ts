@@ -2,7 +2,7 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 
 /** §4 of docs/MOIN_DOMI.md — and nothing else. `.agents/features/cursus.md`. */
-export const LIMITS = { maxHops: 100, lifeDays: 30, pendingMs: 10 * 60 * 1000, contentChars: 2800, wrapChars: 60 } as const;
+export const LIMITS = { maxHops: 100, lifeDays: 30, pendingMs: 10 * 60 * 1000, contentChars: 2800, wrapChars: 60, mediaBytes: 2.2 * 1024 * 1024, mediaPerChain: 4, mediaOrphanMs: 30 * 60 * 1000 } as const;
 
 const SCHEMA = `
   PRAGMA foreign_keys = ON;
@@ -20,6 +20,10 @@ const SCHEMA = `
     hopId TEXT NOT NULL, salt TEXT NOT NULL, kdf TEXT NOT NULL, verifier TEXT NOT NULL, wrapped TEXT NOT NULL,
     failures INTEGER NOT NULL DEFAULT 0, waitUntil INTEGER NOT NULL DEFAULT 0);
   CREATE INDEX IF NOT EXISTS locks_chain ON locks(chainId);
+  -- A8: sealed pictures. No foreign key: a picture is uploaded before its chain exists.
+  CREATE TABLE IF NOT EXISTS media (
+    id TEXT PRIMARY KEY, chainId TEXT NOT NULL, box BLOB NOT NULL, created INTEGER NOT NULL);
+  CREATE INDEX IF NOT EXISTS media_chain ON media(chainId);
 `;
 
 /** The slowdown after wrong passwords (password-links.md): 5 free, then 1, 2, 4 … minutes, ≤ 24 h. */
@@ -51,6 +55,11 @@ export function openStore(path: string) {
     touch: db.prepare('UPDATE chains SET lastHopDay = ?, expiresDay = ? WHERE id = ?'),
     tree: db.prepare('SELECT * FROM hops WHERE chainId = ? AND pendingSince IS NULL ORDER BY seq'),
     deleteChain: db.prepare('DELETE FROM chains WHERE id = ?'),
+    mediaGet: db.prepare('SELECT media.box, chains.expiresDay FROM media JOIN chains ON chains.id = media.chainId WHERE media.id = ?'),
+    mediaCount: db.prepare('SELECT COUNT(*) AS n FROM media WHERE chainId = ?'),
+    mediaInsert: db.prepare('INSERT INTO media (id, chainId, box, created) VALUES (?, ?, ?, ?)'),
+    mediaOrphans: db.prepare('DELETE FROM media WHERE chainId NOT IN (SELECT id FROM chains) AND created < ?'),
+    mediaOfChain: db.prepare('DELETE FROM media WHERE chainId = ?'),
     lock: db.prepare('SELECT locks.*, chains.expiresDay FROM locks JOIN chains ON chains.id = locks.chainId WHERE locks.name = ?'),
     insertLock: db.prepare('INSERT INTO locks (name, chainId, hopId, salt, kdf, verifier, wrapped) VALUES (?, ?, ?, ?, ?, ?, ?)'),
     lockResult: db.prepare('UPDATE locks SET failures = ?, waitUntil = ? WHERE name = ?'),
@@ -130,10 +139,28 @@ export function openStore(path: string) {
       return ok({ chainId, maxStops: c.maxStops, maxBranches: c.maxBranches, expiresDay: c.expiresDay, hops });
     },
     /** Hourly: chains past their day, pending hops past ten minutes. */
-    sweep(now: number): { chains: number; pending: number } {
+    sweep(now: number): { chains: number; pending: number; media: number } {
       const chains = Number(q.expired.run(dayOf(now)).changes);
       const pending = Number(q.stale.run(now - LIMITS.pendingMs).changes);
-      return { chains, pending };
+      // Pictures whose chain never came (30 min) or is gone (expired, taken down).
+      const media = Number(q.mediaOrphans.run(now - LIMITS.mediaOrphanMs).changes);
+      return { chains, pending, media };
+    },
+    /** A8: a sealed picture for a chain that exists and lives, or is about to be made. */
+    putMedia(id: string, chainId: string, box: Uint8Array, now: number): Outcome<{ day: number }> {
+      return tx(() => {
+        const c = q.chain.get(chainId) as ChainRow | undefined;
+        if (c && c.expiresDay < dayOf(now)) return fail(404);
+        if (taken(id) || q.hop.get(id) || (db.prepare('SELECT 1 FROM media WHERE id = ?').get(id) !== undefined)) return fail(409);
+        if ((q.mediaCount.get(chainId) as { n: number }).n >= LIMITS.mediaPerChain) return fail(422, 'too-many');
+        q.mediaInsert.run(id, chainId, box, now);
+        return ok({ day: dayOf(now) });
+      });
+    },
+    getMedia(id: string, now: number): Outcome<Uint8Array> {
+      const m = q.mediaGet.get(id) as { box: Uint8Array; expiresDay: number } | undefined;
+      if (!m || m.expiresDay < dayOf(now)) return fail(404);
+      return ok(m.box);
     },
     createLock(input: { name: string; hopId: string; salt: string; kdf: string; verifier: string; wrapped: string }, now: number): Outcome<{ day: number }> {
       return tx(() => {
@@ -170,9 +197,10 @@ export function openStore(path: string) {
     /** DSA Art. 6: remove a reported chain, by any of its hop ids, a lock name, or its chain id. */
     takedown(id: string): boolean {
       const lock = q.lock.get(id) as LockRow | undefined;
-      if (lock) return Number(q.deleteChain.run(lock.chainId).changes) > 0;
       const h = q.hop.get(id) as HopRow | undefined;
-      return Number(q.deleteChain.run(h ? h.chainId : id).changes) > 0;
+      const chainId = lock ? lock.chainId : h ? h.chainId : id;
+      q.mediaOfChain.run(chainId);
+      return Number(q.deleteChain.run(chainId).changes) > 0;
     },
     /** For the disk guard: the database's size in bytes. */
     sizeBytes(): number {

@@ -4,7 +4,7 @@
  * Imports nothing from Moin and knows nothing about memes.
  */
 export { decode as fromBase64url, encode as toBase64url } from './base64url.js';
-export { openHop, readTree, startChain, takeTurn } from './chain.js';
+export { downloadMedia, openHop, readTree, startChain, takeTurn, uploadMedia } from './chain.js';
 export type { HopKey, Limits, OpenedHop } from './chain.js';
 export { TesseraError } from './errors.js';
 export type { TesseraReason } from './errors.js';
@@ -13,7 +13,7 @@ export type { Secret } from './keys.js';
 export { formatLink, parseLink } from './link.js';
 export type { ParsedLink } from './link.js';
 export { httpRelay, LockRefusal, RelayRefusal } from './relay.js';
-export type { HopView, Kdf, NewChain, NewLock, Refusal, Relay, TreeHop, TreeView } from './relay.js';
+export type { HopView, Kdf, NewChain, NewLock, PublicPost, Refusal, Relay, TreeHop, TreeView } from './relay.js';
 export { formatLockLink, isCustomName, isLockName, KDF, KDF_LIMITS, lockAad, lockHop, lockKeys, lockNameIn, passwordProblem, slugify, unlockHop } from './lock.js';
-export { open, placeAad, seal } from './seal.js';
+export { mediaAad, open, openBytes, placeAad, seal, sealBytes } from './seal.js';
 export type { Place, Purpose } from './seal.js';
