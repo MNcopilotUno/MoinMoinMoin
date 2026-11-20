@@ -95,8 +95,8 @@ pnpm test:offline                          # load once, cut the network, solve a
 pnpm validate:levels                       # schema + solver on every level; negative fixtures must FAIL
 ```
 
-> **Exit code 0 is not green.** Quote the test count per package. Seven have tests (`core`,
-> `levels`, `narration`, `ui`, `tessera`, `meme`, `cursus`); a run that names fewer has told you
+> **Exit code 0 is not green.** Quote the test count per package. Eight have tests (`core`,
+> `levels`, `narration`, `ui`, `tessera`, `meme`, `cursus`, `assets`); a run that names fewer has told you
 > nothing. `pnpm test:e2e` runs the puzzle and then Domi against a throwaway local Cursus.
 
 ---
